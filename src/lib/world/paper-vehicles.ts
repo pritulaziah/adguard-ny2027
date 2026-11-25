@@ -338,6 +338,9 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
     update: (distance, delta, time, reduced) => {
       const dt = Math.max(delta, 1 / 120);
 
+      // Steam only appears once the train has picked up speed, not while it rolls out.
+      const STEAM_SPEED = 2.0;
+
       const S = STOP_SPACING;
       const wtX = softClamp(distance, -10, S + 4.2, 0.7);
       const sbX = softClamp(distance, S * 2 - 4.5, S * 2 + 3.0, 0.7);
@@ -345,11 +348,11 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
       const vanX = softClamp(distance, S * 4 - 4.3, S * 5 + 3.6, 0.7);
       const ftX = softClamp(distance, S * 6 - 2.35, TRACK_LENGTH, 0.7);
 
-      const wtMoving = Math.abs(wtX - prev.winterTrain) / dt > 0.08;
+      const wtMoving = Math.abs(wtX - prev.winterTrain) / dt > STEAM_SPEED;
       const sbMoving = Math.abs(sbX - prev.springBike) / dt > 0.08;
       const boatMoving = Math.abs(boatX - prev.summerBoat) / dt > 0.08;
       const vanMoving = Math.abs(vanX - prev.autumnVan) / dt > 0.08;
-      const ftMoving = Math.abs(ftX - prev.finaleTrain) / dt > 0.08;
+      const ftMoving = Math.abs(ftX - prev.finaleTrain) / dt > STEAM_SPEED;
 
       winterTrain.update(wtX, time, wtMoving, reduced);
       springBike.update(sbX, time, sbMoving, reduced);
