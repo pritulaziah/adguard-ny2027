@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { WebGPURenderer } from 'three/webgpu';
-import { CSS3DObject, CSS3DSprite, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
+import { CSS3DSprite, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import { mount, unmount } from 'svelte';
 import { get } from 'svelte/store';
 import { language, translations, type Interaction } from '../content/i18n';
@@ -16,12 +16,11 @@ import { paperLaptop, paperLantern } from './paper-props';
 import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, WALL_Z, STORY_Z, stopIndexAt } from './route';
 import { FLOOR_RAMP, SEASON_BORDERS, WALL_RAMP, sampleRampColor } from './seasons';
 
-const STORY_SCALE = 0.006;
 // One wheel notch or drag event moves at most a fraction of a station.
 const STEP_LIMIT = 1.6;
 
 interface Story {
-  object: CSS3DObject;
+  element: HTMLDivElement;
   component: ReturnType<typeof mount>;
   x: number;
 }
@@ -63,6 +62,7 @@ export class YearWorld {
   private fleet: SeasonalFleet | null = null;
   private weatherFields: WeatherField[] = [];
   private stories: Story[] = [];
+  private layer: HTMLDivElement;
   private sparks: Spark[] = [];
   private factProjection = new THREE.Vector3();
   private time = 0;
@@ -100,6 +100,7 @@ export class YearWorld {
     // Focus must not scroll the layer away from its WebGL geometry.
     this.cssRenderer.domElement.style.overflow = 'clip';
     host.layer.append(this.cssRenderer.domElement);
+    this.layer = host.layer;
     this.scene.background = this.bgColor;
     this.createWalls();
     this.createWeather();
@@ -244,11 +245,9 @@ export class YearWorld {
       const element = document.createElement('div');
       element.className = 'wall-copy';
       const component = mount(WallStory, { target: element, props: { index } });
-      const object = new CSS3DObject(element);
-      object.position.set(x, 4.38, STORY_Z);
-      object.scale.setScalar(STORY_SCALE);
-      this.cssScene.add(object);
-      this.stories.push({ object, component, x });
+      // Stories live in screen space, so every viewport centres them the same way.
+      this.layer.append(element);
+      this.stories.push({ element, component, x });
     }
   }
 
@@ -362,10 +361,7 @@ export class YearWorld {
       this.camera.updateProjectionMatrix();
     }
     this.cssRenderer.setSize(width, height);
-    for (const story of this.stories) {
-      story.object.element.classList.toggle('is-portrait', this.portrait);
-      story.object.position.y = this.portrait ? 4.44 : 4.38;
-    }
+    for (const story of this.stories) story.element.classList.toggle('is-portrait', this.portrait);
     this.settling = 0;
   };
 
@@ -487,15 +483,13 @@ export class YearWorld {
       const absDiff = Math.abs(story.x - this.motion.distance);
       const opacity = 1 - smoothstep(1.5, 4.7, absDiff);
       const visible = opacity > 0.004;
-      story.object.visible = visible;
-      if (visible) {
-        story.object.element.style.opacity = opacity.toFixed(3);
-      }
-      const active = visible && opacity > 0.85 && !this.motion.moving;
-      story.object.element.inert = !active;
-      story.object.element.setAttribute('aria-hidden', String(!active));
-      // Let the snowman's mark receive clicks through the Home story's empty area.
-      story.object.element.style.pointerEvents = active && i !== 1 ? 'auto' : 'none';
+      story.element.style.display = visible ? '' : 'none';
+      if (visible) story.element.style.opacity = opacity.toFixed(3);
+      const active = visible && opacity > 0.85;
+      story.element.inert = !active;
+      story.element.setAttribute('aria-hidden', String(!active));
+      // The Home story's button handles input. Its empty area must not cover the snowman.
+      story.element.style.pointerEvents = active && i !== 1 ? 'auto' : 'none';
     }
 
     const labels = translations[get(language)].interactions;
@@ -589,7 +583,7 @@ export class YearWorld {
     window.removeEventListener('touchcancel', this.onTouchEnd);
     for (const story of this.stories) {
       void unmount(story.component);
-      this.cssScene.remove(story.object);
+      story.element.remove();
     }
     for (const spark of this.sparks) this.cssScene.remove(spark.object);
     this.cssRenderer.domElement.remove();
