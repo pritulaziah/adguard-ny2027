@@ -40,10 +40,6 @@ button:focus-visible, a:focus-visible { outline: 2px dashed #fff5ce; outline-off
 .language-switch button { min-width: 44px; min-height: 44px; padding: 8px; border: 0; background: transparent; color: #fff4dfa6; font-size: 13px; font-weight: 500; }
 .language-switch button[aria-pressed='true'] { color: #fff6e4; text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
 .language-switch button:hover { color: #fff6e4; }
-.journey-footer { position: absolute; z-index: 3; bottom: 0; left: 0; right: 0; display: flex; align-items: end; justify-content: flex-end; gap: 15px; padding: 22px 34px; pointer-events: none; color: #fff1d8; opacity: 0; transition: opacity 400ms ease; background: linear-gradient(transparent, #3e445224); }
-.journey-footer.visible { opacity: 1; }
-.journey-controls { display: flex; align-items: center; justify-content: end; gap: 24px; }
-.journey-status { max-width: 370px; color: #fff4df; font-family: var(--font-hand); font-size: 21px; line-height: 1.1; text-align: right; text-shadow: 0 1px 8px #262c2b77; }
 .loading-state { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; background: #b1b9c8; color: #fff0d4; font-family: var(--font-hand); font-size: 25px; }
 .loading-state p { margin-top: 0; }
 .loading-paper { font-size: 55px; animation: turn 6s linear infinite; }
@@ -56,13 +52,8 @@ button:focus-visible, a:focus-visible { outline: 2px dashed #fff5ce; outline-off
 @media (max-width: 700px) {
   .masthead { padding: max(18px, env(safe-area-inset-top)) 18px 18px; }
   .brand-logo { width: 144px; }
-  .journey-footer { flex-direction: column-reverse; align-items: stretch; gap: 20px; padding: 18px 18px max(20px, env(safe-area-inset-bottom)); }
-  .journey-controls { justify-content: space-between; gap: 14px; }
-  .journey-status { font-size: 18px; text-align: left; max-width: 170px; }
 }
 @media (max-height: 500px) {
   .masthead { padding: 12px 20px; }
-  .journey-footer { padding: 12px 20px; }
-  .journey-status { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition-duration: 0s !important; } }

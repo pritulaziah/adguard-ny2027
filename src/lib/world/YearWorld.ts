@@ -78,7 +78,6 @@ export class YearWorld {
   private state: JourneyState;
   private observer: ResizeObserver;
   private mailX = STOP_SPACING * 4 + 2.15;
-  private messageTime = -100;
   private found = new Set<string>();
   private propUpdates: Array<(time: number, delta: number, reduced: boolean) => void> = [];
   private touchActive = false;
@@ -287,8 +286,7 @@ export class YearWorld {
 
   private discover(id: Interaction): void {
     this.found.add(id);
-    this.messageTime = this.time;
-    this.journey.update(s => ({ ...s, discoveries: this.found.size, message: id }));
+    this.journey.update(s => ({ ...s, discoveries: this.found.size }));
   }
 
   private createMail(): void {
@@ -378,7 +376,7 @@ export class YearWorld {
     const limited = Math.max(-limit, Math.min(limit, units));
     if (!this.motion.scroll(limited)) return;
     this.settling = 0;
-    this.journey.update(s => ({ ...s, moving: true, cameraSettled: false, message: '' }));
+    this.journey.update(s => ({ ...s, moving: true, cameraSettled: false }));
   }
 
   private isInteractiveTarget(target: EventTarget | null): boolean {
@@ -532,9 +530,6 @@ export class YearWorld {
         if (closeEnough || this.settling > 0.9) {
           this.journey.update(s => ({ ...s, cameraSettled: true }));
         }
-      }
-      if (this.state.message && this.time - this.messageTime > 4) {
-        this.journey.update(s => ({ ...s, message: '' }));
       }
       this.updateLayers();
     }

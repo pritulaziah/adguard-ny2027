@@ -34,13 +34,4 @@
     <div class="error-state" role="alert"><p>{$copy[error]}</p><button type="button" onclick={() => window.location.reload()}>{$copy.retry}</button></div>
   {/if}
 
-  <footer class="journey-footer" class:visible={$journey.ready}>
-    <div class="journey-controls">
-      <div class="journey-status" aria-live="polite">
-        {#if $journey.message}{$copy.interactions[$journey.message].message}
-        {:else if $journey.moving}{$copy.travelHint}
-        {/if}
-      </div>
-    </div>
-  </footer>
 </main>
