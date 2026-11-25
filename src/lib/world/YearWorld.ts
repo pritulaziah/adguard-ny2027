@@ -481,7 +481,8 @@ export class YearWorld {
       // Keep the touch target steady while the paper character moves underneath it.
       spark.object.position.copy(spark.position);
       const difference = Math.abs(spark.x - this.motion.distance);
-      const visible = !this.motion.moving && this.state.cameraSettled && difference < 5.6;
+      // The marks stay visible while the train moves; only distance hides them.
+      const visible = difference < 5.6;
       spark.object.visible = visible;
       spark.button.inert = !visible;
     }
