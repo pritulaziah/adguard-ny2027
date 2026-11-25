@@ -24,7 +24,7 @@ export const translations: Record<Language, Copy> = {
     finalTitle: 'Next stop —\na new year!', finalSummary: 'Thank you for being with us. Here’s to more good things and fewer distractions in 2027.',
     interactions: {
       deer: { label: 'Say hello to the deer' },
-      snowman: { label: 'Wave to the snowman' },
+      snowman: { label: 'Hear a fact about AdGuard Home' },
       fire: { label: 'Warm up by the fire' },
       gate: { label: 'Open the gate' },
       fox: { label: 'Wake the fox' },
@@ -50,7 +50,7 @@ export const translations: Record<Language, Copy> = {
     finalTitle: 'Следующая остановка —\nновый год!', finalSummary: 'Спасибо, что были с нами. Пусть в 2027 будет больше хорошего и меньше лишнего.',
     interactions: {
       deer: { label: 'Поздороваться с оленем' },
-      snowman: { label: 'Помахать снеговику' },
+      snowman: { label: 'Узнать факт об AdGuard Home' },
       fire: { label: 'Согреться у костра' },
       gate: { label: 'Открыть калитку' },
       fox: { label: 'Разбудить лису' },

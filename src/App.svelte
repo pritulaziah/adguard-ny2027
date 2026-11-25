@@ -2,6 +2,8 @@
   import Stage from './lib/world/Stage.svelte';
   import { createJourneyState } from './lib/world/journey-state';
   import { language, copy, setLanguage } from './lib/content/i18n';
+  import HomeStoryModal from './lib/ui/HomeStoryModal.svelte';
+  import SnowmanFact from './lib/ui/SnowmanFact.svelte';
 
   const journey = createJourneyState();
   let contentLayer = $state<HTMLDivElement>();
@@ -35,3 +37,6 @@
   {/if}
 
 </main>
+
+<HomeStoryModal />
+<SnowmanFact />

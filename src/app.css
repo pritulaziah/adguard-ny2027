@@ -24,6 +24,9 @@ button:focus-visible, a:focus-visible { outline: 2px dashed #fff5ce; outline-off
 .wall-summary { max-width: 740px; margin: 0; font-family: var(--font-hand); font-size: 43px; font-weight: 500; line-height: 1.12; }
 .wall-note { max-width: 690px; margin: 20px 0 0; font-family: var(--font-hand); color: #fae5b0; font-size: 33px; line-height: 1.08; }
 .wall-story a { display: inline-block; color: #fff2ce; font-family: var(--font-hand); font-size: 26px; margin-top: 16px; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.story-open { pointer-events: auto; display: inline-flex; align-items: center; gap: 16px; margin-top: 18px; padding: 8px 19px; background: #f2e7ce; color: #60785e; border: 1px solid #d6c7a4; border-radius: 2px 5px 3px 2px; box-shadow: 2px 3px 0 #433f3020; font-family: var(--font-hand); font-size: 28px; transform: rotate(-1deg); }
+.story-open:hover { background: #fff2d7; }
+.is-portrait .story-open { font-size: 33px; }
 .wall-story.welcome h1 { font-size: 105px; }
 .is-portrait .wall-story { padding: 10px 14px; }
 .is-portrait .wall-story h1 { font-size: 82px; line-height: 0.98; margin-bottom: 22px; }

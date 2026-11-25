@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { NoToneMapping, PerspectiveCamera, Scene, SRGBColorSpace } from 'three';
   import { WebGPURenderer } from 'three/webgpu';
   import { YearWorld } from './YearWorld';
   import type { JourneyStore } from './journey-state';
+  import { homeStoryOpen } from '../content/home-story';
 
   let { layer, journey, onerror }: {
     layer: HTMLDivElement;
@@ -51,6 +53,8 @@
     const frame = (time: number): void => {
       const delta = Math.min((time - last) / 1000, 0.05);
       last = time;
+      // Keep the canvas still while the reader uses the story dialog.
+      if (get(homeStoryOpen)) return;
       world?.tick(delta);
       renderer.render(scene, camera);
     };

@@ -4,6 +4,8 @@ import { CSS3DObject, CSS3DSprite, CSS3DRenderer } from 'three/addons/renderers/
 import { mount, unmount } from 'svelte';
 import { get } from 'svelte/store';
 import { language, translations, type Interaction } from '../content/i18n';
+import { homeStoryOpen } from '../content/home-story';
+import { snowmanFact } from '../content/snowman-fact';
 import WallStory from '../ui/WallStory.svelte';
 import type { JourneyStore, JourneyState } from './journey-state';
 import { createWeatherField, resetPaperMaterials, seasonalPaperMaterial, type WeatherField } from './paper-materials';
@@ -62,6 +64,7 @@ export class YearWorld {
   private weatherFields: WeatherField[] = [];
   private stories: Story[] = [];
   private sparks: Spark[] = [];
+  private factProjection = new THREE.Vector3();
   private time = 0;
   private ready = false;
   private disposed = false;
@@ -254,7 +257,16 @@ export class YearWorld {
     for (const [key, anchor] of this.paper.objects) {
       const part = this.paper.parts.find(item => item.mesh === anchor);
       if (!part) continue;
-      this.spark(anchor, key, () => this.discover(key));
+      this.spark(anchor, key, () => {
+        this.discover(key);
+        if (key === 'snowman') {
+          if (get(snowmanFact)) snowmanFact.set(null);
+          else {
+            const spark = this.sparks.find(item => item.key === 'snowman');
+            if (spark) this.positionSnowmanFact(spark);
+          }
+        }
+      });
     }
   }
 
@@ -262,6 +274,7 @@ export class YearWorld {
     const label = translations[get(language)].interactions[key].label;
     const button = document.createElement('button');
     button.className = 'object-spark';
+    button.dataset.interaction = key;
     button.type = 'button';
     button.title = label;
     button.setAttribute('aria-label', label);
@@ -287,6 +300,15 @@ export class YearWorld {
   private discover(id: Interaction): void {
     this.found.add(id);
     this.journey.update(s => ({ ...s, discoveries: this.found.size }));
+  }
+
+  private positionSnowmanFact(spark: Spark): void {
+    const point = this.factProjection.copy(spark.position).project(this.camera);
+    const width = this.renderer.domElement.clientWidth;
+    const height = this.renderer.domElement.clientHeight;
+    const next = { x: (point.x + 1) * width / 2, y: (1 - point.y) * height / 2, width, height };
+    const previous = get(snowmanFact);
+    if (!previous || Math.abs(previous.x - next.x) > 0.75 || Math.abs(previous.y - next.y) > 0.75 || previous.width !== width || previous.height !== height) snowmanFact.set(next);
   }
 
   private createMail(): void {
@@ -348,11 +370,13 @@ export class YearWorld {
   };
 
   private movePointer = (event: PointerEvent): void => {
+    if (get(homeStoryOpen)) return;
     if (event.pointerType === 'touch') return;
     this.pointer.set(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
   };
 
   private onWheel = (event: WheelEvent): void => {
+    if (get(homeStoryOpen)) return;
     if (!this.ready || this.disposed) return;
     event.preventDefault();
     const raw = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
@@ -361,6 +385,7 @@ export class YearWorld {
   };
 
   private onKeyDown = (event: KeyboardEvent): void => {
+    if (get(homeStoryOpen)) return;
     if (!this.ready || this.disposed) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const target = event.target as HTMLElement | null;
@@ -375,6 +400,7 @@ export class YearWorld {
     if (!Number.isFinite(units)) return;
     const limited = Math.max(-limit, Math.min(limit, units));
     if (!this.motion.scroll(limited)) return;
+    snowmanFact.set(null);
     this.settling = 0;
     this.journey.update(s => ({ ...s, moving: true, cameraSettled: false }));
   }
@@ -385,6 +411,7 @@ export class YearWorld {
   }
 
   private onTouchStart = (event: TouchEvent): void => {
+    if (get(homeStoryOpen)) return;
     if (!this.ready || this.disposed || event.touches.length !== 1) return;
     if (this.isInteractiveTarget(event.target)) return;
     const touch = event.touches[0];
@@ -394,6 +421,7 @@ export class YearWorld {
   };
 
   private onTouchMove = (event: TouchEvent): void => {
+    if (get(homeStoryOpen)) { this.touchActive = false; return; }
     if (!this.touchActive || event.touches.length !== 1) return;
     event.preventDefault();
     const touch = event.touches[0];
@@ -466,7 +494,8 @@ export class YearWorld {
       const active = visible && opacity > 0.85 && !this.motion.moving;
       story.object.element.inert = !active;
       story.object.element.setAttribute('aria-hidden', String(!active));
-      story.object.element.style.pointerEvents = active ? 'auto' : 'none';
+      // Let the snowman's mark receive clicks through the Home story's empty area.
+      story.object.element.style.pointerEvents = active && i !== 1 ? 'auto' : 'none';
     }
 
     const labels = translations[get(language)].interactions;
@@ -483,6 +512,15 @@ export class YearWorld {
       const visible = difference < 5.6;
       spark.object.visible = visible;
       spark.button.inert = !visible;
+      if (spark.key === 'snowman') {
+        const expanded = String(!!get(snowmanFact));
+        if (spark.button.getAttribute('aria-expanded') !== expanded) spark.button.setAttribute('aria-expanded', expanded);
+        if (!spark.button.hasAttribute('aria-controls')) spark.button.setAttribute('aria-controls', 'snowman-fact');
+        if (get(snowmanFact)) {
+          if (visible) this.positionSnowmanFact(spark);
+          else snowmanFact.set(null);
+        }
+      }
     }
   }
 
@@ -506,6 +544,7 @@ export class YearWorld {
   // Threlte calls this task every frame, before it renders the scene.
   tick = (delta: number): void => {
     if (this.disposed) return;
+    if (get(homeStoryOpen)) return;
     const step = Math.min(delta, 0.05);
     this.time += step;
     if (this.ready) {
@@ -537,6 +576,7 @@ export class YearWorld {
   };
 
   destroy(): void {
+    snowmanFact.set(null);
     this.disposed = true;
     this.observer.disconnect();
     this.unsubscribe();
