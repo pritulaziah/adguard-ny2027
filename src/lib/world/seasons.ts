@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { STRETCH } from './route';
 
 export type SeasonId = 'winter-start' | 'spring' | 'summer' | 'autumn' | 'winter-end';
 
@@ -13,14 +14,22 @@ export interface SeasonalRamp {
   stops: SeasonalStop[];
 }
 
+/** Scenes are stretched, so every border and gradient stop scales with them. */
+const at = (x: number): number => Math.round(x * STRETCH * 100) / 100;
+
+const scale = (ramp: SeasonalRamp): SeasonalRamp => ({
+  base: ramp.base,
+  stops: ramp.stops.map(stop => ({ ...stop, from: at(stop.from), to: at(stop.to) })),
+});
+
 export const SEASON_BORDERS = {
-  spring: 16.5,
-  summer: 27.5,
-  autumn: 38.5,
-  winterEnd: 59.8,
+  spring: at(16.5),
+  summer: at(27.5),
+  autumn: at(38.5),
+  winterEnd: at(59.8),
 } as const;
 
-export const WALL_RAMP: SeasonalRamp = {
+export const WALL_RAMP: SeasonalRamp = scale({
   base: '#7e8fa9',
   stops: [
     { from: 13.0, to: 20.0, color: '#748b63' },
@@ -29,9 +38,9 @@ export const WALL_RAMP: SeasonalRamp = {
     { from: 46.5, to: 52.5, color: '#a46d6b' },
     { from: 56.6, to: 63.0, color: '#7588a7' },
   ],
-};
+});
 
-export const GROUND_RAMP: SeasonalRamp = {
+export const GROUND_RAMP: SeasonalRamp = scale({
   base: '#e4e5db',
   stops: [
     { from: 13.2, to: 19.8, color: '#b5c199' },
@@ -40,9 +49,9 @@ export const GROUND_RAMP: SeasonalRamp = {
     { from: 46.5, to: 52.5, color: '#c79c89' },
     { from: 56.8, to: 62.8, color: '#e4e5db' },
   ],
-};
+});
 
-export const FAR_RIDGE_RAMP: SeasonalRamp = {
+export const FAR_RIDGE_RAMP: SeasonalRamp = scale({
   base: '#c5cdd6',
   stops: [
     { from: 13.0, to: 20.0, color: '#99ab87' },
@@ -51,9 +60,9 @@ export const FAR_RIDGE_RAMP: SeasonalRamp = {
     { from: 46.5, to: 52.5, color: '#b48780' },
     { from: 56.6, to: 63.0, color: '#c1cad5' },
   ],
-};
+});
 
-export const NEAR_RIDGE_RAMP: SeasonalRamp = {
+export const NEAR_RIDGE_RAMP: SeasonalRamp = scale({
   base: '#dde1da',
   stops: [
     { from: 13.0, to: 20.0, color: '#aebc94' },
@@ -62,9 +71,9 @@ export const NEAR_RIDGE_RAMP: SeasonalRamp = {
     { from: 46.5, to: 52.5, color: '#c39787' },
     { from: 56.6, to: 63.0, color: '#dce0da' },
   ],
-};
+});
 
-export const FLOOR_RAMP: SeasonalRamp = {
+export const FLOOR_RAMP: SeasonalRamp = scale({
   base: '#dcd9c8',
   stops: [
     { from: 13.2, to: 19.8, color: '#d5d8bc' },
@@ -73,7 +82,7 @@ export const FLOOR_RAMP: SeasonalRamp = {
     { from: 46.5, to: 52.5, color: '#dbc8b7' },
     { from: 56.8, to: 62.8, color: '#dcd9c8' },
   ],
-};
+});
 
 const scratchColor = new THREE.Color();
 

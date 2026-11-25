@@ -1,8 +1,10 @@
-export const TRACK_LENGTH = 84;
+/** One knob that stretches every scene along the route. */
+export const STRETCH = 1.15;
 export const STOP_COUNT = 6;
-export const STOP_SPACING = 11;
+export const STOP_SPACING = 11 * STRETCH;
 /** The last story stands here; the road continues past it. */
 export const STORY_END = STOP_COUNT * STOP_SPACING;
+export const TRACK_LENGTH = STORY_END + 14;
 export const WALL_Z = -2.92;
 export const STORY_Z = -2.23;
 

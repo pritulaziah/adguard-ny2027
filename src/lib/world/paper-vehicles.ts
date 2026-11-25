@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { carded } from './paper-mesh';
 import { PaperBatch, ovalGeometry } from './paper-brush';
 import { paperSheet } from './paper-materials';
-import { TRACK_LENGTH } from './route';
+import { TRACK_LENGTH, STOP_SPACING } from './route';
 import { createPaperTrain } from './paper-train';
 
 function cutout(points: number[][], color: string, depth = 0.045): THREE.Mesh {
@@ -338,11 +338,12 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
     update: (distance, delta, time, reduced) => {
       const dt = Math.max(delta, 1 / 120);
 
-      const wtX = softClamp(distance, -10, 15.2, 0.7);
-      const sbX = softClamp(distance, 17.5, 26.4, 0.7);
-      const boatX = softClamp(distance, 28.7, 37.3, 0.7);
-      const vanX = softClamp(distance, 39.7, 58.6, 0.7);
-      const ftX = softClamp(distance, 63.65, TRACK_LENGTH, 0.7);
+      const S = STOP_SPACING;
+      const wtX = softClamp(distance, -10, S + 4.2, 0.7);
+      const sbX = softClamp(distance, S * 2 - 4.5, S * 2 + 3.0, 0.7);
+      const boatX = softClamp(distance, S * 3 - 4.3, S * 3 + 4.3, 0.7);
+      const vanX = softClamp(distance, S * 4 - 4.3, S * 5 + 3.6, 0.7);
+      const ftX = softClamp(distance, S * 6 - 2.35, TRACK_LENGTH, 0.7);
 
       const wtMoving = Math.abs(wtX - prev.winterTrain) / dt > 0.08;
       const sbMoving = Math.abs(sbX - prev.springBike) / dt > 0.08;

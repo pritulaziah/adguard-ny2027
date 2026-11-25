@@ -531,7 +531,7 @@ export function createPaperScenery(): PaperSet {
   garden(spacing * 2 + 1.95);
   pond(spacing * 2 + 3.85);
   for (let i = 0; i < 24; i++) {
-    flower(17.1 + i * 0.41, -0.6 - (i % 3) * 0.45, i % 2 ? '#e3c7b5' : '#d8b7b1', 0.24 + (i % 4) * 0.09);
+    flower(spacing * 2 - 5.6 + i * 0.47, -0.6 - (i % 3) * 0.45, i % 2 ? '#e3c7b5' : '#d8b7b1', 0.24 + (i % 4) * 0.09);
   }
 
   // Stop 3 (Summer AdGuard Mini Mac, x = 33): Sailboat covers [32.05, 33.95]; laptop is at 31.15.
@@ -550,7 +550,7 @@ export function createPaperScenery(): PaperSet {
   woodlandAnimal(spacing * 5 - 2.35, 'cat');
   woodlandAnimal(spacing * 5 + 3.35, 'bunny');
   for (let i = 0; i < 26; i++) {
-    const fallen = detail('fallen-paper-leaf', 39.6 + i * 0.76, -0.58 - (i % 3) * 0.42);
+    const fallen = detail('fallen-paper-leaf', spacing * 4 - 5.1 + i * 0.87, -0.58 - (i % 3) * 0.42);
     fallen.leaf(0.16, 0.3, i % 2 ? '#c49370' : '#d7bb8a', 0, 0.02, 0, [0, 0, i * 0.7]);
   }
 
@@ -558,7 +558,7 @@ export function createPaperScenery(): PaperSet {
   fir(STORY_END - 6.2, 3.6, true, true);
   snowman(STORY_END + 2.2, false);
   cabin(STORY_END + 4.2, true);
-  fir(STORY_END + 16, 3.1, true, true);
+  fir(STORY_END + 9.5, 3.1, true, true);
 
   // All firs share one buffer and one material, so the eight trees cost one draw call.
   const firSheet = firs.build();
