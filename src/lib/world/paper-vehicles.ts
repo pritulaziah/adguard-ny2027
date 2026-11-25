@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { carded } from './paper-mesh';
 import { PaperBatch, ovalGeometry } from './paper-brush';
 import { paperSheet } from './paper-materials';
+import { TRACK_LENGTH } from './route';
 import { createPaperTrain } from './paper-train';
 
 function cutout(points: number[][], color: string, depth = 0.045): THREE.Mesh {
@@ -341,7 +342,7 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
       const sbX = softClamp(distance, 17.5, 26.4, 0.7);
       const boatX = softClamp(distance, 28.7, 37.3, 0.7);
       const vanX = softClamp(distance, 39.7, 58.6, 0.7);
-      const ftX = softClamp(distance, 63.65, 76, 0.7);
+      const ftX = softClamp(distance, 63.65, TRACK_LENGTH, 0.7);
 
       const wtMoving = Math.abs(wtX - prev.winterTrain) / dt > 0.08;
       const sbMoving = Math.abs(sbX - prev.springBike) / dt > 0.08;

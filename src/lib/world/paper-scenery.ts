@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
-import { TRACK_LENGTH, STOP_SPACING } from './route';
+import { TRACK_LENGTH, STOP_SPACING, STORY_END } from './route';
 import { cut, oval, rect, stroke, leaf, star } from './paper-shapes';
 import { paperSheet, seasonalPaperMaterial } from './paper-materials';
 import { PaperBatch, PaperDetail, cutGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
@@ -554,11 +554,11 @@ export function createPaperScenery(): PaperSet {
     fallen.leaf(0.16, 0.3, i % 2 ? '#c49370' : '#d7bb8a', 0, 0.02, 0, [0, 0, i * 0.7]);
   }
 
-  // Stop 6 (Winter New Year finale, x = 66): Finale train covers [62.34, 66.76].
-  fir(TRACK_LENGTH - 5.6, 3.6, true, true);
-  snowman(TRACK_LENGTH + 2.0, false);
-  cabin(TRACK_LENGTH + 4.0, true);
-  fir(TRACK_LENGTH + 6.4, 3.1, true, true);
+  // Stop 6 (Winter New Year finale, x = 66). The road runs on past the story.
+  fir(STORY_END - 6.2, 3.6, true, true);
+  snowman(STORY_END + 2.2, false);
+  cabin(STORY_END + 4.2, true);
+  fir(STORY_END + 16, 3.1, true, true);
 
   // All firs share one buffer and one material, so the eight trees cost one draw call.
   const firSheet = firs.build();

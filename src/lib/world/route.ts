@@ -1,6 +1,8 @@
-export const TRACK_LENGTH = 66;
+export const TRACK_LENGTH = 84;
 export const STOP_COUNT = 6;
-export const STOP_SPACING = TRACK_LENGTH / STOP_COUNT;
+export const STOP_SPACING = 11;
+/** The last story stands here; the road continues past it. */
+export const STORY_END = STOP_COUNT * STOP_SPACING;
 export const WALL_Z = -2.92;
 export const STORY_Z = -2.23;
 
