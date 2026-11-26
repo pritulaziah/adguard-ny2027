@@ -1,4 +1,6 @@
-const base = import.meta.env.BASE_URL;
+import type { Language } from './i18n';
+
+const base = import.meta.env ? import.meta.env.BASE_URL : '';
 
 export interface Article {
   id: string;
@@ -15,97 +17,184 @@ export interface Article {
   color: string;
 }
 
-export const articles: Article[] = [
+/** Text that changes with the language; everything else is shared. */
+interface StoryCopy {
+  station: string;
+  title: string;
+  summary: string;
+  statLabel: string;
+  facts: string[];
+  hiddenFact: string;
+  imageAlt: string;
+}
+
+interface Story {
+  id: string;
+  /** Blog address without the language segment. */
+  slug: string;
+  /** Set only when the Russian blog uses another address. */
+  ruSlug?: string;
+  color: string;
+  stat: string;
+  image: string;
+  ru: StoryCopy;
+  en: StoryCopy;
+}
+
+const stories: Story[] = [
   {
-    id: 'home', station: 'Домашняя', color: '#43745b',
-    title: 'AdGuard Home 1.0',
-    summary: 'Большой шаг для домашней сети: стабильная версия, обновлённый интерфейс и привычный контроль над защитой всех устройств.',
-    stat: '1.0', statLabel: 'первая стабильная версия',
-    facts: ['Обновлённый интерфейс', 'Новая система нумерации версий'],
-    hiddenFact: 'Путь AdGuard Home начался с прототипа в 2018 году.',
-    image: `${base}blog/home.jpg`, imageAlt: 'Иллюстрация AdGuard Home',
-    link: 'https://adguard.com/ru/blog/adguard-home-v-1-0.html',
+    id: 'ios-pqc', slug: 'adguard-for-ios-v4-5-15', color: '#526c84',
+    stat: '4.5.15', image: `${base}blog/ios-pqc.jpg`,
+    ru: {
+      station: 'Защищённая', title: 'iOS 4.5.15: постквантовая защита',
+      summary: 'AdGuard для iOS 4.5.15 добавил постквантовую криптографию в DNS и обновил SafariConverterLib.',
+      statLabel: 'постквантовая защита DNS',
+      facts: ['Постквантовая криптография в DNS', 'Обновлённый SafariConverterLib'],
+      hiddenFact: 'В версии 4.5.15 обновились и DNS-защита, и SafariConverterLib.',
+      imageAlt: 'Иллюстрация AdGuard для iOS',
+    },
+    en: {
+      station: 'Secure', title: 'iOS v4.5.15: post-quantum',
+      summary: 'AdGuard for iOS 4.5.15 adds post-quantum cryptography to DNS and updates SafariConverterLib.',
+      statLabel: 'post-quantum DNS protection',
+      facts: ['Post-quantum cryptography in DNS', 'Updated SafariConverterLib'],
+      hiddenFact: 'Version 4.5.15 updates both DNS protection and SafariConverterLib.',
+      imageAlt: 'AdGuard for iOS illustration',
+    },
   },
   {
-    id: 'mini-android', station: 'Мобильная', color: '#56744e',
-    title: 'Больше, чем браузер',
-    summary: 'AdGuard Content Blocker стал AdGuard Mini для Android. В версии 3.0 защита вышла за пределы браузерных вкладок.',
-    stat: '3.0', statLabel: 'AdGuard Mini для Android',
-    facts: ['DNS-защита для всего устройства', 'Видеобраузер и статистика'],
-    hiddenFact: 'AdGuard Mini доступен в Google Play.',
-    image: `${base}blog/mini-android.png`, imageAlt: 'AdGuard Mini для Android',
-    link: 'https://adguard.com/ru/blog/adguard-mini-v3-0-for-android.html',
+    id: 'quest', slug: 'adguard-adblocker-vr-meta-quest', color: '#876447',
+    stat: 'Meta Quest', image: `${base}blog/quest.jpg`,
+    ru: {
+      station: 'Виртуальная', title: 'AdGuard на Meta Quest',
+      summary: 'AdGuard появился на Meta Quest как одно из первых расширений для блокировки рекламы в Meta Quest Browser.',
+      statLabel: 'блокировка рекламы на Meta Quest',
+      facts: ['Одно из первых расширений-блокировщиков для Meta Quest Browser', 'Расширение для браузера Meta Quest'],
+      hiddenFact: 'Это одно из первых расширений для блокировки рекламы в Meta Quest Browser.',
+      imageAlt: 'Иллюстрация AdGuard на Meta Quest',
+    },
+    en: {
+      station: 'Virtual', title: 'AdGuard on Meta Quest',
+      summary: 'AdGuard comes to Meta Quest as one of the first ad-blocking browser extensions for the Meta Quest Browser.',
+      statLabel: 'ad blocking on Meta Quest',
+      facts: ['One of the first ad-blocking extensions for Meta Quest Browser', 'A browser extension for Meta Quest'],
+      hiddenFact: 'The extension is one of the first ad blockers built for the Meta Quest Browser.',
+      imageAlt: 'AdGuard on Meta Quest illustration',
+    },
   },
   {
-    id: 'mini-mac', station: 'Яблочная', color: '#876447',
-    title: 'Легче. Быстрее. Mini.',
-    summary: 'AdGuard Mini для Mac 3.0 получил интерфейс на WKWebView и экспериментальную защиту за пределами Safari.',
-    stat: '3.0', statLabel: 'AdGuard Mini для Mac',
-    facts: ['Меньше нагрузка на память и процессор', 'Первые шаги к защите всей системы'],
-    hiddenFact: 'В новой версии началась работа над поддержкой экранных дикторов.',
-    image: `${base}blog/mini-mac.jpg`, imageAlt: 'AdGuard Mini для Mac',
-    link: 'https://adguard.com/ru/blog/adguard-mini-for-mac-v3-0.html',
+    id: 'extension', slug: 'adguard-browser-extension-v5-4', color: '#56744e',
+    stat: '5.4', image: `${base}blog/extension.jpg`,
+    ru: {
+      station: 'Браузерная', title: 'Браузерное расширение 5.4',
+      summary: 'Браузерное расширение AdGuard 5.4 делает фильтрацию надёжнее и предсказуемее, добавляет общие настройки и более понятный интерфейс.',
+      statLabel: 'стабильная фильтрация и общие настройки',
+      facts: ['Надёжная и предсказуемая фильтрация', 'Общие настройки и понятный интерфейс'],
+      hiddenFact: 'В версии 5.4 настройками можно поделиться.',
+      imageAlt: 'Иллюстрация Браузерного расширения AdGuard',
+    },
+    en: {
+      station: 'Browser', title: 'Browser Extension v5.4',
+      summary: 'AdGuard Browser Extension 5.4 makes filtering more reliable and predictable, adds shareable settings, and clears up the interface.',
+      statLabel: 'steadier filtering and shared settings',
+      facts: ['More reliable and predictable filtering', 'Shareable settings and a clearer interface'],
+      hiddenFact: 'Version 5.4 lets you share your settings.',
+      imageAlt: 'AdGuard Browser Extension illustration',
+    },
   },
   {
-    id: 'mail', station: 'Почтовая', color: '#a05d4d',
-    title: 'Письма без знакомства',
-    summary: 'В AdGuard Mail 1.7 появился гостевой режим: временный адрес и входящие письма доступны без регистрации.',
-    stat: '1.7', statLabel: 'гостевой режим AdGuard Mail',
-    facts: ['Временная почта без аккаунта', 'Получение и чтение писем сразу'],
-    hiddenFact: 'Для гостевого режима не нужно указывать банковскую карту.',
-    image: `${base}blog/mail.jpg`, imageAlt: 'Иллюстрация AdGuard Mail',
-    link: 'https://adguard.com/ru/blog/adguard-mail-v1-7.html',
+    id: 'windows', slug: 'adguard-for-windows-v8-0', color: '#43745b',
+    stat: '8.0', image: `${base}blog/windows.jpg`,
+    ru: {
+      station: 'Настольная', title: 'Windows 8.0',
+      summary: 'AdGuard для Windows 8.0 получил полностью новый дизайн, общесистемную сетевую фильтрацию и контроль над трафиком приложений и трекингом.',
+      statLabel: 'обновлённое приложение для Windows',
+      facts: ['Полностью новый дизайн', 'Общесистемная фильтрация и контроль трафика приложений'],
+      hiddenFact: 'В версии 8.0 фильтрация работает на уровне всей системы.',
+      imageAlt: 'Иллюстрация AdGuard для Windows',
+    },
+    en: {
+      station: 'Windows', title: 'Windows v8.0',
+      summary: 'AdGuard for Windows 8.0 brings a full redesign, system-wide network filtering, and control over app traffic and tracking.',
+      statLabel: 'a redesigned Windows app',
+      facts: ['Full redesign', 'System-wide filtering and control over app traffic'],
+      hiddenFact: 'Version 8.0 filters traffic across the whole system.',
+      imageAlt: 'AdGuard for Windows illustration',
+    },
   },
   {
-    id: 'emudhra', station: 'Надёжная', color: '#526c84',
-    title: 'Защита без выходных',
-    summary: 'После инцидента с сертификатами eMudhra мы выпустили срочные обновления приложений для безопасной HTTPS-фильтрации.',
-    stat: 'HTTPS', statLabel: 'внимание к безопасности соединений',
-    facts: ['Срочные обновления приложений', 'Проверка сертификатов при фильтрации'],
-    hiddenFact: 'При HTTPS-фильтрации AdGuard самостоятельно проверяет сертификаты серверов.',
-    image: `${base}blog/emudhra.jpg`, imageAlt: 'Замок как символ безопасности',
-    link: 'https://adguard.com/ru/blog/emudhra-certificate-incident.html',
+    id: 'mini-android', slug: 'adguard-mini-v3-0-for-android', color: '#56744e',
+    stat: '3.0', image: `${base}blog/mini-android.png`,
+    ru: {
+      station: 'Мобильная', title: 'Больше, чем браузер',
+      summary: 'AdGuard Content Blocker стал AdGuard Mini для Android. В версии 3.0 защита вышла за пределы браузерных вкладок.',
+      statLabel: 'AdGuard Mini для Android',
+      facts: ['DNS-защита для всего устройства', 'Видеобраузер и статистика'],
+      hiddenFact: 'AdGuard Mini доступен в Google Play.',
+      imageAlt: 'AdGuard Mini для Android',
+    },
+    en: {
+      station: 'Mobile', title: 'Beyond the browser',
+      summary: 'AdGuard Content Blocker became AdGuard Mini for Android. Version 3.0 takes protection beyond browser tabs.',
+      statLabel: 'AdGuard Mini for Android',
+      facts: ['Device-wide DNS protection', 'Video browser and statistics'],
+      hiddenFact: 'AdGuard Mini is available on Google Play.',
+      imageAlt: 'AdGuard Mini for Android',
+    },
+  },
+  {
+    id: 'home', slug: 'adguard-home-v-1-0', ruSlug: 'adguard-home-v1-0', color: '#43745b',
+    stat: '1.0', image: `${base}blog/home.jpg`,
+    ru: {
+      station: 'Домашняя', title: 'AdGuard Home 1.0',
+      summary: 'Большой шаг для домашней сети: стабильная версия, обновлённый интерфейс и привычный контроль над защитой всех устройств.',
+      statLabel: 'первая стабильная версия',
+      facts: ['Обновлённый интерфейс', 'Новая система нумерации версий'],
+      hiddenFact: 'Путь AdGuard Home начался с прототипа в 2018 году.',
+      imageAlt: 'Иллюстрация AdGuard Home',
+    },
+    en: {
+      station: 'Home', title: 'AdGuard Home 1.0',
+      summary: 'A big step for your home network: a stable release, a refreshed interface, and control over protection for every device.',
+      statLabel: 'the first stable release',
+      facts: ['Refreshed interface', 'New version numbering'],
+      hiddenFact: 'AdGuard Home began as a prototype in 2018.',
+      imageAlt: 'AdGuard Home illustration',
+    },
   },
 ];
 
-export const articleStops = [1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6];
+function blogSlug(story: Story, language: Language): string {
+  return language === 'ru' ? story.ruSlug ?? story.slug : story.slug;
+}
 
-const english: Array<Pick<Article, 'station' | 'title' | 'summary' | 'statLabel' | 'facts' | 'hiddenFact' | 'imageAlt'>> = [
-  {
-    station: 'Home', title: 'AdGuard Home 1.0',
-    summary: 'A big step for your home network: a stable release, a refreshed interface, and control over protection for every device.',
-    statLabel: 'the first stable release', facts: ['Refreshed interface', 'New version numbering'],
-    hiddenFact: 'AdGuard Home began as a prototype in 2018.', imageAlt: 'AdGuard Home illustration',
-  },
-  {
-    station: 'Mobile', title: 'Beyond the browser',
-    summary: 'AdGuard Content Blocker became AdGuard Mini for Android. Version 3.0 takes protection beyond browser tabs.',
-    statLabel: 'AdGuard Mini for Android', facts: ['Device-wide DNS protection', 'Video browser and statistics'],
-    hiddenFact: 'AdGuard Mini is available on Google Play.', imageAlt: 'AdGuard Mini for Android',
-  },
-  {
-    station: 'Mac', title: 'Lighter. Faster. Mini.',
-    summary: 'AdGuard Mini for Mac 3.0 introduces a WKWebView interface and experimental protection beyond Safari.',
-    statLabel: 'AdGuard Mini for Mac', facts: ['Lower memory and CPU use', 'First steps toward system-wide protection'],
-    hiddenFact: 'This release begins work on screen reader support.', imageAlt: 'AdGuard Mini for Mac',
-  },
-  {
-    station: 'Mail', title: 'No sign-up. Just mail.',
-    summary: 'AdGuard Mail 1.7 adds guest mode: get a temporary address and receive email without creating an account.',
-    statLabel: 'AdGuard Mail guest mode', facts: ['Temporary email without an account', 'Receive and read messages right away'],
-    hiddenFact: 'Guest mode does not require a bank card.', imageAlt: 'AdGuard Mail illustration',
-  },
-  {
-    station: 'Security', title: 'Protection never rests',
-    summary: 'After the eMudhra certificate incident, we released urgent app updates to keep HTTPS filtering secure.',
-    statLabel: 'keeping connections secure', facts: ['Urgent app updates', 'Certificate checks during filtering'],
-    hiddenFact: 'AdGuard checks server certificates independently during HTTPS filtering.', imageAlt: 'A lock as a symbol of security',
-  },
-];
+function toArticle(story: Story, language: Language): Article {
+  const copy = story[language];
+  return {
+    id: story.id,
+    station: copy.station,
+    color: story.color,
+    title: copy.title,
+    summary: copy.summary,
+    stat: story.stat,
+    statLabel: copy.statLabel,
+    facts: copy.facts,
+    hiddenFact: copy.hiddenFact,
+    image: story.image,
+    imageAlt: copy.imageAlt,
+    link: `https://adguard.com/${language}/blog/${blogSlug(story, language)}.html`,
+  };
+}
 
-export const articlesByLanguage = {
-  ru: articles,
-  en: articles.map((article, index): Article => ({
-    ...article, ...english[index], link: article.link.replace('/ru/blog/', '/en/blog/'),
-  })),
+export const articlesByLanguage: Record<Language, Article[]> = {
+  ru: stories.map(story => toArticle(story, 'ru')),
+  en: stories.map(story => toArticle(story, 'en')),
 };
+
+export const articles = articlesByLanguage.ru;
+
+export const homeStoryStop = stories.findIndex(story => story.id === 'home') + 1;
+
+export function findHomeArticle(language: Language): Article | undefined {
+  return articlesByLanguage[language].find(article => article.id === 'home');
+}

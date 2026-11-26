@@ -1,6 +1,6 @@
 /** One knob that stretches every scene along the route. */
 export const STRETCH = 1.15;
-export const STOP_COUNT = 6;
+export const STOP_COUNT = 7;
 export const STOP_SPACING = 11 * STRETCH;
 /** The last story stands here; the road continues past it. */
 export const STORY_END = STOP_COUNT * STOP_SPACING;
@@ -21,6 +21,10 @@ export function clampDistance(distance: number): number {
 
 export function stopIndexAt(distance: number): number {
   return Math.max(0, Math.min(STOP_COUNT, Math.round(distance / STOP_SPACING)));
+}
+
+export function stopX(index: number): number {
+  return index * STOP_SPACING;
 }
 
 /**

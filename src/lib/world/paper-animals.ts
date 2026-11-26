@@ -612,24 +612,25 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
   const cat = ctx.detail('paper-cat', x, z, 0.96);
   addGroundShadow(cat, 0.88, 0.26, '#876d5d');
 
-  // Graceful lush curled S-tail rising behind the cat with a cream tip.
+  // Graceful upright S-tail with a small cream tip, tucked behind the body.
   const tail = shapeFrom(s => {
-    s.moveTo(-0.2, 0.11);
-    s.bezierCurveTo(-0.58, 0.14, -0.7, 0.54, -0.56, 0.88);
-    s.bezierCurveTo(-0.5, 1.0, -0.64, 1.06, -0.7, 0.94);
-    s.bezierCurveTo(-0.78, 0.78, -0.66, 0.44, -0.44, 0.29);
-    s.quadraticCurveTo(-0.34, 0.24, -0.18, 0.25);
+    s.moveTo(-0.16, 0.2);
+    s.bezierCurveTo(-0.46, 0.1, -0.62, 0.34, -0.54, 0.62);
+    s.bezierCurveTo(-0.515, 0.72, -0.54, 0.8, -0.58, 0.85);
+    s.lineTo(-0.51, 0.79);
+    s.bezierCurveTo(-0.46, 0.71, -0.435, 0.64, -0.42, 0.5);
+    s.bezierCurveTo(-0.4, 0.32, -0.3, 0.2, -0.16, 0.2);
     s.closePath();
   });
-  cat.shape(tail, '#566470', 0, 0, -0.055, undefined, 0.036);
+  cat.shape(tail, '#566470', 0, 0, -0.08, undefined, 0.03);
   const tailTip = shapeFrom(s => {
-    s.moveTo(-0.56, 0.88);
-    s.bezierCurveTo(-0.5, 1.0, -0.64, 1.06, -0.7, 0.94);
-    s.quadraticCurveTo(-0.73, 0.86, -0.66, 0.8);
-    s.quadraticCurveTo(-0.58, 0.82, -0.56, 0.88);
+    s.moveTo(-0.51, 0.79);
+    s.lineTo(-0.58, 0.85);
+    s.bezierCurveTo(-0.62, 0.9, -0.68, 0.91, -0.67, 0.95);
+    s.bezierCurveTo(-0.65, 1.02, -0.55, 0.89, -0.51, 0.79);
     s.closePath();
   });
-  cat.shape(tailTip, CREAM, 0, 0, -0.025, undefined, 0.024);
+  cat.shape(tailTip, CREAM, 0, 0, -0.08, undefined, 0.03);
 
   // Seated pear-shaped body with tucked haunch.
   const body = shapeFrom(s => {
@@ -642,7 +643,7 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
   cat.shape(body, '#60707c', 0, 0, 0, undefined, 0.044);
 
   // Tucked hind haunch shading and crisp cream tuxedo chest bib.
-  cat.oval(0.3, 0.34, '#51606b', -0.17, 0.24, 0.02, undefined, 0.024);
+  cat.oval(0.3, 0.34, '#51606b', -0.17, 0.24, 0.05, undefined, 0.006);
   const bib = shapeFrom(s => {
     s.moveTo(-0.13, 0.66);
     s.quadraticCurveTo(0, 0.72, 0.13, 0.66);

@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { JourneyMotion, STOP_SPACING, TRACK_LENGTH, pointOnTrack } from './route.ts';
+import {
+  JourneyMotion,
+  STOP_COUNT,
+  STOP_SPACING,
+  STORY_END,
+  TRACK_LENGTH,
+  pointOnTrack,
+  stopX,
+} from './route.ts';
+import { SEASON_BORDERS, seasonAt, seasonCenter } from './seasons.ts';
 
 const close = (a, b, tolerance = 1e-6) => assert.ok(Math.abs(a - b) < tolerance, `${a} differs from ${b}`);
 
@@ -70,4 +79,49 @@ test('reset returns the train to the start', () => {
   close(motion.distance, 0);
   close(motion.target, 0);
   assert.equal(motion.moving, false);
+});
+
+test('the route ends at the finale stop after the stories', () => {
+  assert.equal(STOP_COUNT, 7);
+  close(stopX(0), 0);
+  close(stopX(7), STORY_END);
+  close(STORY_END, 7 * STOP_SPACING);
+  close(TRACK_LENGTH, STORY_END + 14);
+});
+
+test('each stop sits inside its named season', () => {
+  const expected = [
+    'winter-start',
+    'winter-start',
+    'spring',
+    'spring',
+    'summer',
+    'autumn',
+    'autumn',
+    'winter-end',
+  ];
+  expected.forEach((season, index) => {
+    assert.equal(seasonAt(stopX(index)), season, `stop ${index}`);
+  });
+});
+
+test('season borders fall halfway between the stops they separate', () => {
+  close(SEASON_BORDERS.spring, 1.5 * STOP_SPACING);
+  close(SEASON_BORDERS.summer, 3.5 * STOP_SPACING);
+  close(SEASON_BORDERS.autumn, 4.5 * STOP_SPACING);
+  close(SEASON_BORDERS.winterEnd, 6.5 * STOP_SPACING);
+});
+
+test('the midpoint between two stops shows no story', () => {
+  for (let index = 0; index < STOP_COUNT; index++) {
+    const midpoint = (stopX(index) + stopX(index + 1)) / 2;
+    assert.ok(Math.abs(midpoint - stopX(index)) > 4.7, `midpoint ${index} reaches the stop before it`);
+    assert.ok(Math.abs(midpoint - stopX(index + 1)) > 4.7, `midpoint ${index} reaches the stop after it`);
+  }
+});
+
+test('season centers land inside their own season', () => {
+  for (const id of ['winter-start', 'spring', 'summer', 'autumn', 'winter-end']) {
+    assert.equal(seasonAt(seasonCenter(id)), id, id);
+  }
 });

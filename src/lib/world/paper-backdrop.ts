@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, starGeometry } from './paper-brush';
 import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
-import { STOP_SPACING, TRACK_LENGTH } from './route';
-import { DISTANT_PEAKS_RAMP, FAR_RIDGE_RAMP, NEAR_RIDGE_RAMP, SEASON_BORDERS } from './seasons';
+import { stopX, TRACK_LENGTH } from './route';
+import { DISTANT_PEAKS_RAMP, FAR_RIDGE_RAMP, NEAR_RIDGE_RAMP, SEASON_BORDERS, seasonCenter } from './seasons';
 
 export interface BackdropContext {
   group: THREE.Group;
@@ -84,7 +84,7 @@ export async function addPanoramaRidges({ group, cameraX }: BackdropContext, pau
     x => {
       const wave = 2.05 + Math.sin(x * 0.14 + 0.3) * 0.72 + Math.sin(x * 0.31 + 1.4) * 0.44 + Math.cos(x * 0.53) * 0.18;
       // Gently dip along the summer coast so the open sea feels wide and airy.
-      const coastDip = Math.exp(-Math.pow((x - STOP_SPACING * 3) / 9.5, 2)) * 0.88;
+      const coastDip = Math.exp(-Math.pow((x - seasonCenter('summer')) / 9.5, 2)) * 0.88;
       return Math.max(1.05, wave - coastDip);
     },
   );
@@ -135,22 +135,25 @@ export async function addPanoramaRidges({ group, cameraX }: BackdropContext, pau
     { x: 6.2, kind: 'fir', color: '#7c909d', scale: 0.68 },
     { x: 14.8, kind: 'fir', color: '#6e838e', scale: 0.78 },
     // Spring
-    { x: 20.5, kind: 'round', color: '#7a9671', scale: 0.82 },
-    { x: 22.1, kind: 'round', color: '#8aa47d', scale: 0.66 },
-    { x: 29.0, kind: 'round', color: '#7e9975', scale: 0.76 },
+    { x: stopX(2) - 4.8, kind: 'round', color: '#7a9671', scale: 0.82 },
+    { x: stopX(2) - 3.2, kind: 'round', color: '#8aa47d', scale: 0.66 },
+    { x: stopX(2) + 3.7, kind: 'round', color: '#7e9975', scale: 0.76 },
+    { x: stopX(3) - 4.8, kind: 'round', color: '#7e9975', scale: 0.76 },
+    { x: stopX(3) - 3.2, kind: 'round', color: '#8aa47d', scale: 0.66 },
+    { x: stopX(3) + 3.7, kind: 'round', color: '#7a9671', scale: 0.72 },
     // Summer distant headland pines
-    { x: 35.5, kind: 'fir', color: '#699194', scale: 0.7 },
-    { x: 42.4, kind: 'fir', color: '#719898', scale: 0.74 },
+    { x: stopX(4) - 2.45, kind: 'fir', color: '#699194', scale: 0.7 },
+    { x: stopX(4) + 4.45, kind: 'fir', color: '#719898', scale: 0.74 },
     // Autumn
-    { x: 48.0, kind: 'round', color: '#ad7d58', scale: 0.84 },
-    { x: 49.7, kind: 'round', color: '#bf9160', scale: 0.68 },
-    { x: 56.5, kind: 'round', color: '#a86f5f', scale: 0.78 },
-    { x: 64.2, kind: 'round', color: '#b77d69', scale: 0.82 },
-    { x: 65.8, kind: 'round', color: '#c48f68', scale: 0.66 },
+    { x: stopX(5) - 2.6, kind: 'round', color: '#ad7d58', scale: 0.84 },
+    { x: stopX(5) - 0.9, kind: 'round', color: '#bf9160', scale: 0.68 },
+    { x: stopX(5) + 5.9, kind: 'round', color: '#a86f5f', scale: 0.78 },
+    { x: stopX(6) + 0.95, kind: 'round', color: '#b77d69', scale: 0.82 },
+    { x: stopX(6) + 2.55, kind: 'round', color: '#c48f68', scale: 0.66 },
     // Winter finale
-    { x: 72.5, kind: 'fir', color: '#6a7f90', scale: 0.88 },
-    { x: 74.2, kind: 'fir', color: '#798e9e', scale: 0.72 },
-    { x: 82.0, kind: 'fir', color: '#697f90', scale: 0.82 },
+    { x: stopX(7) - 3.4, kind: 'fir', color: '#6a7f90', scale: 0.88 },
+    { x: stopX(7) - 1.7, kind: 'fir', color: '#798e9e', scale: 0.72 },
+    { x: stopX(7) + 6.1, kind: 'fir', color: '#697f90', scale: 0.82 },
   ];
 
   let placed = 0;
@@ -205,7 +208,6 @@ export async function addPanoramaRidges({ group, cameraX }: BackdropContext, pau
 /** Builds soft low-contrast sky clouds, winter moon & stars, summer sun, and distant birds. */
 export async function addSkyDetails(group: THREE.Group, pause: () => Promise<void>): Promise<void> {
   const sky = new PaperBatch();
-  const S = STOP_SPACING;
 
   // Low-contrast folded-paper clouds floating in the far sky plane (z = -8.4, 0.42x speed).
   const clouds: Array<[number, number, number, string, string]> = [
@@ -214,13 +216,16 @@ export async function addSkyDetails(group: THREE.Group, pause: () => Promise<voi
     [14.2, 7.9, 1.15, '#99abc1', '#889ab1'],
     [23.8, 8.5, 1.12, '#a2b793', '#8ea680'],
     [29.4, 7.7, 1.05, '#a7bc98', '#92aa84'],
-    [35.2, 8.6, 1.22, '#98bdc6', '#83aab5'],
-    [45.6, 7.9, 1.08, '#c5a57a', '#b19167'],
-    [51.4, 8.5, 1.18, '#cfa775', '#bc9362'],
-    [58.8, 7.8, 1.15, '#cc9b89', '#b88777'],
-    [66.2, 8.5, 1.1, '#c8978b', '#b58479'],
-    [74.5, 8.2, 1.18, '#99abc4', '#879ab4'],
-    [84.5, 7.6, 1.1, '#98aac2', '#8698b2'],
+    [36.45, 8.5, 1.12, '#a2b793', '#8ea680'],
+    [42.05, 7.7, 1.05, '#a7bc98', '#92aa84'],
+    [47.85, 8.6, 1.22, '#98bdc6', '#83aab5'],
+    [53.0, 8.6, 1.22, '#98bdc6', '#83aab5'],
+    [59.0, 7.9, 1.08, '#c5a57a', '#b19167'],
+    [64.5, 8.5, 1.18, '#cfa775', '#bc9362'],
+    [71.5, 7.8, 1.15, '#cc9b89', '#b88777'],
+    [78.5, 8.5, 1.1, '#c8978b', '#b58479'],
+    [86.5, 8.2, 1.18, '#99abc4', '#879ab4'],
+    [96.0, 7.6, 1.1, '#98aac2', '#8698b2'],
   ];
   for (const [cx, cy, scale, tint, shadow] of clouds) {
     addCloud(sky, cx, cy, -8.4, scale, tint, shadow);
@@ -228,7 +233,7 @@ export async function addSkyDetails(group: THREE.Group, pause: () => Promise<voi
   await pause();
 
   // Winter crescent moons built cleanly from two matching Bezier arcs (no horn pinch).
-  for (const [mx, my] of [[-6.8, 8.9], [S * 6 + 6.4, 8.8]] as Array<[number, number]>) {
+  for (const [mx, my] of [[-6.8, 8.9], [stopX(7) + 6.4, 8.8]] as Array<[number, number]>) {
     const crescent = shapeFrom(s => {
       s.moveTo(0.26, 0.62);
       s.bezierCurveTo(-0.46, 0.66, -0.78, 0.08, -0.5, -0.44);
@@ -246,7 +251,7 @@ export async function addSkyDetails(group: THREE.Group, pause: () => Promise<voi
 
   const starSpots: Array<[number, number, number]> = [
     [-9.2, 9.2, 0.14], [-1.8, 9.5, 0.12], [7.8, 9.2, 0.15], [12.5, 9.4, 0.11],
-    [S * 6 - 5.5, 9.1, 0.15], [S * 6 + 1.8, 9.5, 0.13], [S * 6 + 9.2, 8.9, 0.14],
+    [stopX(7) - 5.5, 9.1, 0.15], [stopX(7) + 1.8, 9.5, 0.13], [stopX(7) + 9.2, 8.9, 0.14],
   ];
   for (const [sx, sy, sr] of starSpots) {
     sky.add(starGeometry(sr, 0.02), '#f2e5be', { x: sx, y: sy, z: -8.15 });
@@ -254,19 +259,19 @@ export async function addSkyDetails(group: THREE.Group, pause: () => Promise<voi
   await pause();
 
   // Warm soft paper sun framed cleanly inside the summer stop (clear of Spring, Autumn, and title).
-  sky.add(ovalGeometry(1.48, 1.48, 0.02), '#b8cab8', { x: S * 3 - 0.1, y: 8.65, z: -6.85 });
-  sky.add(ovalGeometry(1.02, 1.02, 0.02), '#f5e2b2', { x: S * 3 - 0.1, y: 8.65, z: -6.78 });
+  sky.add(ovalGeometry(1.48, 1.48, 0.02), '#b8cab8', { x: seasonCenter('summer') - 0.1, y: 8.65, z: -6.85 });
+  sky.add(ovalGeometry(1.02, 1.02, 0.02), '#f5e2b2', { x: seasonCenter('summer') - 0.1, y: 8.65, z: -6.78 });
 
   const birdSpots: Array<[number, number, number, string]> = [
-    [S * 3 - 4.8, 7.6, 0.28, '#e8efe8'],
-    [S * 3 - 3.6, 8.0, 0.22, '#e8efe8'],
-    [S * 3 + 2.8, 7.5, 0.25, '#e8efe8'],
+    [stopX(4) - 4.8, 7.6, 0.28, '#e8efe8'],
+    [stopX(4) - 3.6, 8.0, 0.22, '#e8efe8'],
+    [stopX(4) + 2.8, 7.5, 0.25, '#e8efe8'],
     // Autumn migrating geese V-formation
-    [S * 4 + 4.4, 8.2, 0.24, '#7d5f4c'],
-    [S * 4 + 5.1, 8.45, 0.22, '#7d5f4c'],
-    [S * 4 + 5.8, 8.15, 0.2, '#7d5f4c'],
-    [S * 5 - 3.8, 8.5, 0.22, '#7c5c52'],
-    [S * 5 - 3.1, 8.75, 0.2, '#7c5c52'],
+    [stopX(5) + 4.4, 8.2, 0.24, '#7d5f4c'],
+    [stopX(5) + 5.1, 8.45, 0.22, '#7d5f4c'],
+    [stopX(5) + 5.8, 8.15, 0.2, '#7d5f4c'],
+    [stopX(6) - 3.8, 8.5, 0.22, '#7c5c52'],
+    [stopX(6) - 3.1, 8.75, 0.2, '#7c5c52'],
   ];
   for (const [bx, by, bs, col] of birdSpots) {
     const bird = shapeFrom(s => {
@@ -300,7 +305,10 @@ export async function addForegroundFraming(group: THREE.Group, batch: PaperBatch
 
   // --- 1. Grounded bottom-edge foreground details (rooted at y = 0.26, below vehicle wheels) ---
   // Winter start & finale: crisp folded-paper snowdrifts + tiny foreground pine tips.
-  const snowBanks = [-4.2, -0.8, 3.6, 7.9, 12.2, 15.8, 69.5, 73.2, 77.6, 82.0];
+  const snowBanks = [
+    -4.2, -0.8, 3.6, 7.9, 12.2, 15.8,
+    stopX(7) - 4.2, stopX(7) - 0.8, stopX(7) + 3.6, stopX(7) + 7.9,
+  ];
   for (let i = 0; i < snowBanks.length; i++) {
     const x = snowBanks[i];
     const bank = fg('fg-snowbank', x, 0.25, 1.18 + (i % 2) * 0.14);
@@ -383,3 +391,4 @@ export async function addForegroundFraming(group: THREE.Group, batch: PaperBatch
     }
   }
 }
+

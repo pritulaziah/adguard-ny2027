@@ -1,13 +1,24 @@
 <script lang="ts">
+  import type { Component } from 'svelte';
   import Stage from './lib/world/Stage.svelte';
   import { createJourneyState } from './lib/world/journey-state';
   import { language, copy, setLanguage } from './lib/content/i18n';
-  import HomeStoryModal from './lib/ui/HomeStoryModal.svelte';
-  import SnowmanFact from './lib/ui/SnowmanFact.svelte';
+  import { openStoryId } from './lib/content/story-modal';
+  import ObjectFact from './lib/ui/ObjectFact.svelte';
 
   const journey = createJourneyState();
   let contentLayer = $state<HTMLDivElement>();
   let error = $state<'loadError' | 'webglError' | ''>('');
+
+  // The story dialogs are long and rarely opened; load them on first use so
+  // the ride starts with a smaller main bundle.
+  let StoryModal = $state<Component | null>(null);
+  $effect(() => {
+    if (!$openStoryId || StoryModal) return;
+    void import('./lib/ui/StoryModal.svelte').then(module => {
+      StoryModal = module.default;
+    });
+  });
 
   $effect(() => {
     document.documentElement.lang = $language;
@@ -38,5 +49,7 @@
 
 </main>
 
-<HomeStoryModal />
-<SnowmanFact />
+{#if StoryModal}
+  <StoryModal />
+{/if}
+<ObjectFact />

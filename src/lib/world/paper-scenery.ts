@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
-import { TRACK_LENGTH, STOP_SPACING, STORY_END } from './route';
+import { TRACK_LENGTH, stopX, STORY_END } from './route';
 import { cut, oval, rect, stroke } from './paper-shapes';
 import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
 import { PaperBatch, PaperDetail, cutGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
@@ -54,7 +54,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   group.name = 'adguard-paper-scenery';
   const parts: PaperPart[] = [];
   const objects = new Map<Interaction, THREE.Mesh>();
-  const spacing = STOP_SPACING;
   const firs = new PaperBatch();
   const sheets = new PaperBatch();
 
@@ -170,36 +169,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     if (final) {
       for (let i = 0; i < 5; i++) house.star(0.09, colors.gold, -0.84 + i * 0.42, 1.33, 0.24);
     }
-  }
-
-  function fire(x: number): void {
-    const camp = detail('paper-campfire', x, -0.88);
-    // Warm river-stone hearth ring.
-    const stones: Array<[number, number, number, string]> = [
-      [-0.46, 0.06, 0.18, '#8d877f'], [-0.22, 0.04, 0.2, '#9d968d'], [0.04, 0.03, 0.22, '#88827a'],
-      [0.29, 0.05, 0.19, '#999289'], [0.49, 0.07, 0.17, '#857f78'],
-    ];
-    for (const [sx, sy, sw, col] of stones) camp.oval(sw, 0.12, col, sx, sy, 0.09, undefined, 0.026);
-
-    for (const a of [-0.28, 0.28]) camp.rect(0.96, 0.13, '#8e6d57', 0, 0.04, a > 0 ? 0.04 : -0.01, [0, 0, a]);
-    const outerFlame = shapeFrom(s => {
-      s.moveTo(-0.3, 0);
-      s.bezierCurveTo(-0.4, 0.26, -0.24, 0.52, -0.18, 0.58);
-      s.quadraticCurveTo(-0.14, 0.42, -0.08, 0.44);
-      s.bezierCurveTo(-0.04, 0.68, 0.02, 0.88, 0.04, 0.98);
-      s.bezierCurveTo(0.14, 0.78, 0.18, 0.56, 0.24, 0.62);
-      s.bezierCurveTo(0.38, 0.44, 0.4, 0.18, 0.28, 0);
-      s.closePath();
-    });
-    const flame = cut(camp.group, outerFlame, '#dc8653', 0, 0.12, 0.11, 0.036);
-    const innerFlame = shapeFrom(s => {
-      s.moveTo(-0.16, 0);
-      s.bezierCurveTo(-0.22, 0.22, -0.06, 0.48, 0.01, 0.62);
-      s.bezierCurveTo(0.14, 0.42, 0.2, 0.18, 0.14, 0);
-      s.closePath();
-    });
-    cut(flame, innerFlame, '#f5d88f', 0, 0, 0.042, 0.022);
-    animate(flame, 'fire', 'fire', 0.22);
   }
 
   type TreeVariant = 'spring-green' | 'spring-blossom' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
@@ -382,14 +351,14 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
 
     // Natural drift zones around tree bases, road verges, and animal resting spots.
     const zones: Array<{ cx: number; spreadX: number; cz: number; spreadZ: number; count: number }> = [
-      { cx: spacing * 4 - 4.3, spreadX: 2.3, cz: -1.35, spreadZ: 0.75, count: 14 },
-      { cx: spacing * 4 - 1.4, spreadX: 2.0, cz: -0.95, spreadZ: 0.55, count: 9 },
-      { cx: spacing * 4 + 2.5, spreadX: 2.2, cz: -1.05, spreadZ: 0.65, count: 12 },
-      { cx: spacing * 4 + 4.4, spreadX: 2.1, cz: -1.45, spreadZ: 0.7, count: 12 },
-      { cx: spacing * 5 - 4.4, spreadX: 2.2, cz: -1.4, spreadZ: 0.7, count: 13 },
-      { cx: spacing * 5 - 2.1, spreadX: 1.9, cz: -0.9, spreadZ: 0.5, count: 10 },
-      { cx: spacing * 5 + 2.6, spreadX: 2.4, cz: -1.15, spreadZ: 0.65, count: 12 },
-      { cx: spacing * 5 + 4.7, spreadX: 2.0, cz: -1.45, spreadZ: 0.68, count: 11 },
+      { cx: stopX(5) - 4.3, spreadX: 2.3, cz: -1.35, spreadZ: 0.75, count: 14 },
+      { cx: stopX(5) - 1.4, spreadX: 2.0, cz: -0.95, spreadZ: 0.55, count: 9 },
+      { cx: stopX(5) + 2.5, spreadX: 2.2, cz: -1.05, spreadZ: 0.65, count: 12 },
+      { cx: stopX(5) + 4.4, spreadX: 2.1, cz: -1.45, spreadZ: 0.7, count: 12 },
+      { cx: stopX(6) - 4.4, spreadX: 2.2, cz: -1.4, spreadZ: 0.7, count: 13 },
+      { cx: stopX(6) - 2.1, spreadX: 1.9, cz: -0.9, spreadZ: 0.5, count: 10 },
+      { cx: stopX(6) + 2.6, spreadX: 2.4, cz: -1.15, spreadZ: 0.65, count: 12 },
+      { cx: stopX(6) + 4.7, spreadX: 2.0, cz: -1.45, spreadZ: 0.68, count: 11 },
     ];
 
     for (const zone of zones) {
@@ -460,6 +429,18 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     tower.rect(0.18, 0.34, '#7a6558', 0, 0.3, 0.06);
     tower.oval(0.13, 0.13, '#6d837d', 0, 1.32, 0.06);
     tower.oval(0.08, 0.08, '#f5dea0', 0, 1.32, 0.09);
+
+    // Slow paper glint on the lantern room; a click also lights the beacon.
+    const beacon = cut(
+      tower.group,
+      [[0, 0.34], [0.06, 0.1], [0.3, 0.06], [0.07, 0.01], [0.13, -0.24], [0, -0.08], [-0.13, -0.24], [-0.07, 0.01], [-0.3, 0.06], [-0.06, 0.1]],
+      '#fbeab4',
+      0,
+      2.18,
+      0.02,
+      0.01,
+    );
+    animate(beacon, 'spin', 'lighthouse', 0.5);
 
     // Subtle beach grass & pastel seashells resting along the summer shore.
     const shells = detail('summer-beach-details', x - 1.15, -0.82);
@@ -629,66 +610,73 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
 
   const animalCtx: AnimalBuilderContext = { detail, place, animate };
 
-  // Stop 0 (Winter start, x = 0): Train covers [-3.66, +0.76].
+  // Stop 0 (Winter start, x = 0.00): train clamp -10 .. 16.85; deer at +2.05.
   fir(-5.2, 3.7, true, false, -2.1);
   fir(-3.6, 2.7, true, false, -2.35);
   await pause();
   addDeer(animalCtx, 2.05, -1.08);
   cabin(3.85);
-  fire(5.25);
   await pause();
   fir(7.3, 3.0, true, false, -2.15);
   fir(9.1, 3.5, true, false, -1.98);
   await pause();
 
-  // Stop 1 (Winter AdGuard Home, x = 12.65): Train covers [8.99, 13.41].
-  fir(spacing - 4.4, 3.1, true, false, -2.2);
-  addSnowman(animalCtx, spacing + 2.35, true, -1.04);
-  fir(spacing + 4.45, 3.5, true, false, -2.0);
-  fir(spacing + 5.7, 2.6, true, false, -2.32);
+  // Stop 1 (iOS v4.5.15, winter, x = 12.65): train clamp -10 .. 16.85; snowman at +2.35.
+  fir(stopX(1) - 4.4, 3.1, true, false, -2.2);
+  addSnowman(animalCtx, stopX(1) + 2.35, true, -1.04);
+  fir(stopX(1) + 4.45, 3.5, true, false, -2.0);
+  fir(stopX(1) + 5.7, 2.6, true, false, -2.32);
   await pause();
 
-  // Stop 2 (Spring AdGuard Mini Android, x = 25.3): Bicycle covers [24.5, 26.1].
-  broadTree(spacing * 2 - 5.9, 'spring-green', 0.88, -2.35);
-  broadTree(spacing * 2 - 4.55, 'spring-blossom', 1.08, -2.08);
-  addFox(animalCtx, spacing * 2 - 2.45, -1.02);
+  // Stop 2 (AdGuard on Meta Quest, spring, x = 25.30): bicycle clamp 20.8 .. 41.95.
+  broadTree(stopX(2) - 5.9, 'spring-green', 0.88, -2.35);
+  broadTree(stopX(2) - 4.55, 'spring-blossom', 1.08, -2.08);
+  addFox(animalCtx, stopX(2) - 2.45, -1.02);
+  broadTree(stopX(2) + 5.6, 'spring-green', 0.96, -2.2);
   await pause();
-  garden(spacing * 2 + 1.9);
-  addPondWithFrog(animalCtx, spacing * 2 + 4.05, -1.04);
-  broadTree(spacing * 2 + 5.6, 'spring-green', 0.96, -2.2);
+
+  // Stop 3 (Browser Extension v5.4, spring, x = 37.95): bicycle clamp 20.8 .. 41.95.
+  broadTree(stopX(3) - 5.0, 'spring-blossom', 1.0, -2.3);
+  broadTree(stopX(3) - 4.55, 'spring-green', 0.86, -2.08);
+  garden(stopX(3) + 1.9);
+  addPondWithFrog(animalCtx, stopX(3) + 4.05, -1.04);
+  broadTree(stopX(3) + 5.6, 'spring-blossom', 0.96, -2.2);
   await pause();
   const meadowSpots: Array<[number, number]> = [
     [-5.3, -0.78], [-3.8, -1.3], [-1.4, -0.75], [-0.4, -1.45],
     [0.75, -0.82], [2.85, -0.78], [5.15, -0.85], [5.95, -1.35],
   ];
-  meadowSpots.forEach(([dx, dz], idx) => springMeadowCluster(spacing * 2 + dx, dz, 202604 + idx * 17));
+  meadowSpots.forEach(([dx, dz], idx) =>
+    springMeadowCluster((dx < 0 ? stopX(2) : stopX(3)) + dx, dz, 202604 + idx * 17),
+  );
   await pause();
 
-  // Stop 3 (Summer AdGuard Mini Mac, x = 37.95): Sailboat covers [36.95, 38.95]; laptop is at -1.95.
-  addSeaDragon(animalCtx, spacing * 3 - 4.05, -1.15);
-  addCrab(animalCtx, spacing * 3 + 1.65, -1.14);
-  lighthouse(spacing * 3 + 3.2);
-  coastalPine(spacing * 3 + 4.55, 0.88, -2.22);
-  addFish(animalCtx, spacing * 3 + 4.15, -0.34);
+  // Stop 4 (AdGuard for Windows v8.0, summer, x = 50.60): sailboat clamp 46.3 .. 54.9; laptop at -1.95.
+  addSeaDragon(animalCtx, stopX(4) - 4.05, -1.15);
+  addCrab(animalCtx, stopX(4) + 1.65, -1.14);
+  addFish(animalCtx, stopX(4) + 4.15, -0.34);
+  coastalPine(stopX(4) + 3.4, 0.88, -2.22);
+  coastalPine(stopX(4) - 5.1, 0.82, -2.2);
+  lighthouse(stopX(4) - 2.6);
   await pause();
 
-  // Stop 4 (Autumn AdGuard Mail, x = 50.6): Car covers [49.65, 51.55]; mailbox is at +2.2.
-  broadTree(spacing * 4 - 4.3, 'autumn-maple', 1.08, -2.08);
-  broadTree(spacing * 4 - 2.6, 'autumn-birch', 0.88, -2.32);
-  broadTree(spacing * 4 + 4.1, 'autumn-oak', 1.05, -2.05);
+  // Stop 5 (AdGuard Mini for Android v3.0, autumn, x = 63.25): car clamp 58.95 .. 79.5; lantern at +1.95.
+  broadTree(stopX(5) - 4.3, 'autumn-maple', 1.08, -2.08);
+  broadTree(stopX(5) - 2.6, 'autumn-birch', 0.88, -2.32);
+  addCat(animalCtx, stopX(5) - 2.45, -1.02);
+  addBunny(animalCtx, stopX(5) + 3.55, -0.98);
+  broadTree(stopX(5) + 4.1, 'autumn-oak', 1.05, -2.05);
   await pause();
 
-  // Stop 5 (Autumn eMudhra, x = 63.25): Car covers [62.3, 64.2]; lantern is at +1.95.
-  broadTree(spacing * 5 - 4.55, 'autumn-birch', 1.06, -2.12);
-  addCat(animalCtx, spacing * 5 - 2.45, -1.02);
-  await pause();
-  addBunny(animalCtx, spacing * 5 + 3.55, -0.98);
-  broadTree(spacing * 5 + 4.6, 'autumn-maple', 1.04, -2.15);
+  // Stop 6 (AdGuard Home 1.0, autumn, x = 75.90): car clamp 58.95 .. 79.5; mailbox at -2.2.
+  broadTree(stopX(6) - 4.55, 'autumn-birch', 1.06, -2.12);
+  broadTree(stopX(6) - 2.6, 'autumn-oak', 0.92, -2.3);
+  broadTree(stopX(6) + 4.6, 'autumn-maple', 1.04, -2.15);
   await pause();
   autumnLeafDrifts();
   await pause();
 
-  // Stop 6 (Winter New Year finale, x = 75.9). The road runs on past the story.
+  // Stop 7 (Finale, x = 88.55): finale train clamp 86.2 .. 102.55; the road runs on past the story.
   fir(STORY_END - 5.9, 3.7, true, true, -2.05);
   fir(STORY_END - 4.4, 2.5, true, false, -2.35);
   addSnowman(animalCtx, STORY_END + 2.15, false, -1.04);
@@ -719,3 +707,5 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
 
   return { group, parts, objects };
 }
+
+

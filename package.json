@@ -16,7 +16,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json --config ./vite.config.ts && tsc -p tsconfig.node.json",
-    "test": "node --test src/lib/world/route.test.mjs"
+    "test": "node --test src/lib/world/route.test.mjs src/lib/content/articles.test.mjs src/lib/content/story.test.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

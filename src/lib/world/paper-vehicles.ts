@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { carded } from './paper-mesh';
 import { PaperBatch, ovalGeometry } from './paper-brush';
 import { paperSheet } from './paper-materials';
-import { TRACK_LENGTH, STOP_SPACING } from './route';
+import { TRACK_LENGTH, stopX } from './route';
 import { createPaperTrain } from './paper-train';
 
 function cutout(points: number[][], color: string, depth = 0.045): THREE.Mesh {
@@ -508,10 +508,10 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
 
   const prev = {
     winterTrain: 0,
-    springBike: 17.5,
-    summerBoat: 28.7,
-    autumnVan: 39.7,
-    finaleTrain: 63.65,
+    springBike: 20.8,
+    summerBoat: 46.3,
+    autumnVan: 58.95,
+    finaleTrain: 86.2,
   };
 
   return {
@@ -521,12 +521,11 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
       // Steam only appears once the train has picked up speed, not while it rolls out.
       const STEAM_SPEED = 2.0;
 
-      const S = STOP_SPACING;
-      const wtX = softClamp(distance, -10, S + 4.2, 0.7);
-      const sbX = softClamp(distance, S * 2 - 4.5, S * 2 + 3.0, 0.7);
-      const boatX = softClamp(distance, S * 3 - 4.3, S * 3 + 4.3, 0.7);
-      const vanX = softClamp(distance, S * 4 - 4.3, S * 5 + 3.6, 0.7);
-      const ftX = softClamp(distance, S * 6 - 2.35, TRACK_LENGTH, 0.7);
+      const wtX = softClamp(distance, -10, stopX(1) + 4.2, 0.7);
+      const sbX = softClamp(distance, stopX(2) - 4.5, stopX(3) + 4.0, 0.7);
+      const boatX = softClamp(distance, stopX(4) - 4.3, stopX(4) + 4.3, 0.7);
+      const vanX = softClamp(distance, stopX(5) - 4.3, stopX(6) + 3.6, 0.7);
+      const ftX = softClamp(distance, stopX(7) - 2.35, TRACK_LENGTH, 0.7);
 
       const wtMoving = Math.abs(wtX - prev.winterTrain) / dt > STEAM_SPEED;
       const sbMoving = Math.abs(sbX - prev.springBike) / dt > 0.08;

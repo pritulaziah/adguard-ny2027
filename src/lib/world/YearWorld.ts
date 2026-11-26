@@ -4,16 +4,15 @@ import { CSS3DSprite, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer
 import { mount, unmount } from 'svelte';
 import { get } from 'svelte/store';
 import { language, translations, type Interaction } from '../content/i18n';
-import { homeStoryOpen } from '../content/home-story';
-import { snowmanFact } from '../content/snowman-fact';
+import { objectFact } from '../content/object-fact';
+import { openStoryId } from '../content/story-modal';
 import WallStory from '../ui/WallStory.svelte';
 import type { JourneyStore, JourneyState } from './journey-state';
 import { createScalarUniform, createWeatherField, resetPaperMaterials, seasonalPaperMaterial, type WeatherField } from './paper-materials';
 import { carded } from './paper-mesh';
 import { createPaperScenery, type PaperSet } from './paper-scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './paper-vehicles';
-import { paperLaptop, paperLantern } from './paper-props';
-import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, STORY_Z, stopIndexAt } from './route';
+import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, STORY_Z, stopIndexAt, stopX } from './route';
 import { createYieldPacer } from './schedule';
 import { FLOOR_RAMP, SEASON_BORDERS, WALL_RAMP, sampleRampColor } from './seasons';
 
@@ -87,7 +86,7 @@ export class YearWorld {
   private unsubscribe: () => void;
   private state: JourneyState;
   private observer: ResizeObserver;
-  private mailX = STOP_SPACING * 4 + 2.25;
+  private mailX = stopX(6) - 2.2;
   private found = new Set<string>();
   private wakeTimes = new Map<Interaction, number>();
   private gateOpen = false;
@@ -200,13 +199,13 @@ export class YearWorld {
     this.addWeatherZone(140, sampleWinterX, -6.2, -2.8, {
       color: '#f5f2e8', size: 2.2, fallMin: 0.06, fallRange: 0.14, driftAmp: 0.14, driftFreq: 0.5, opacity: 0.5, spanY: 9.0,
     });
-    this.addWeatherZone(55, sampleSpringX, -5.8, -2.6, {
+    this.addWeatherZone(110, sampleSpringX, -5.8, -2.6, {
       color: '#f5dbd4', size: 2.4, fallMin: 0.04, fallRange: 0.1, driftAmp: 0.22, driftFreq: 0.45, opacity: 0.48, spanY: 8.6,
     });
-    this.addWeatherZone(50, sampleSummerX, -5.8, -2.6, {
+    this.addWeatherZone(100, sampleSummerX, -5.8, -2.6, {
       color: '#fff3c9', size: 2.0, fallMin: -0.03, fallRange: 0.06, driftAmp: 0.2, driftFreq: 0.4, opacity: 0.42, spanY: 8.6,
     });
-    this.addWeatherZone(80, sampleAutumnX, -5.8, -2.6, {
+    this.addWeatherZone(160, sampleAutumnX, -5.8, -2.6, {
       color: '#e5b374', size: 2.5, fallMin: 0.06, fallRange: 0.12, driftAmp: 0.24, driftFreq: 0.5, opacity: 0.5, spanY: 8.6,
     });
 
@@ -214,13 +213,13 @@ export class YearWorld {
     this.addWeatherZone(150, sampleWinterX, -1.9, 0.8, {
       color: '#fff9e9', size: 4.0, fallMin: 0.11, fallRange: 0.24, driftAmp: 0.24, driftFreq: 0.72, opacity: 0.76,
     });
-    this.addWeatherZone(65, sampleSpringX, -1.9, 0.8, {
+    this.addWeatherZone(130, sampleSpringX, -1.9, 0.8, {
       color: '#f8dcd4', size: 4.5, fallMin: 0.06, fallRange: 0.15, driftAmp: 0.34, driftFreq: 0.55, opacity: 0.74,
     });
-    this.addWeatherZone(55, sampleSummerX, -1.9, 0.8, {
+    this.addWeatherZone(110, sampleSummerX, -1.9, 0.8, {
       color: '#fff2c4', size: 3.6, fallMin: -0.05, fallRange: 0.09, driftAmp: 0.28, driftFreq: 0.45, opacity: 0.58,
     });
-    this.addWeatherZone(95, sampleAutumnX, -1.9, 0.8, {
+    this.addWeatherZone(190, sampleAutumnX, -1.9, 0.8, {
       color: '#eab570', size: 4.8, fallMin: 0.09, fallRange: 0.2, driftAmp: 0.36, driftFreq: 0.65, opacity: 0.76,
     });
 
@@ -228,13 +227,13 @@ export class YearWorld {
     this.addWeatherZone(90, sampleWinterX, 2.05, 3.35, {
       color: '#fffdf4', size: 17.5, fallMin: 0.18, fallRange: 0.32, driftAmp: 0.32, driftFreq: 0.82, opacity: 0.36, minY: 0.55, spanY: 4.8, soft: true,
     });
-    this.addWeatherZone(40, sampleSpringX, 2.05, 3.35, {
+    this.addWeatherZone(80, sampleSpringX, 2.05, 3.35, {
       color: '#fbdcd4', size: 18.0, fallMin: 0.1, fallRange: 0.2, driftAmp: 0.4, driftFreq: 0.68, opacity: 0.34, minY: 0.55, spanY: 4.8, soft: true,
     });
-    this.addWeatherZone(34, sampleSummerX, 2.05, 3.35, {
+    this.addWeatherZone(68, sampleSummerX, 2.05, 3.35, {
       color: '#fff4cb', size: 15.5, fallMin: -0.07, fallRange: 0.12, driftAmp: 0.34, driftFreq: 0.55, opacity: 0.3, minY: 0.55, spanY: 4.8, soft: true,
     });
-    this.addWeatherZone(58, sampleAutumnX, 2.05, 3.35, {
+    this.addWeatherZone(116, sampleAutumnX, 2.05, 3.35, {
       color: '#e8a25d', size: 18.5, fallMin: 0.14, fallRange: 0.26, driftAmp: 0.42, driftFreq: 0.76, opacity: 0.36, minY: 0.55, spanY: 4.8, soft: true,
     });
   }
@@ -261,9 +260,6 @@ export class YearWorld {
     await pause();
 
     this.createMail();
-    await pause();
-
-    this.createProps();
     await pause();
 
     this.resize();
@@ -309,7 +305,7 @@ export class YearWorld {
 
   private createStories(): void {
     for (let index = 0; index <= STOP_COUNT; index++) {
-      const x = index * STOP_SPACING;
+      const x = stopX(index);
       const element = document.createElement('div');
       element.className = 'wall-copy';
       const component = mount(WallStory, { target: element, props: { index } });
@@ -331,13 +327,7 @@ export class YearWorld {
         if (key === 'gate') {
           this.gateOpen = !this.gateOpen;
         }
-        if (key === 'snowman') {
-          if (get(snowmanFact)) snowmanFact.set(null);
-          else {
-            const spark = this.sparks.find(item => item.key === 'snowman');
-            if (spark) this.positionSnowmanFact(spark);
-          }
-        }
+        this.toggleFact(key);
       }, part.sparkLift, part.sparkOffsetX);
     }
   }
@@ -375,13 +365,22 @@ export class YearWorld {
     this.journey.update(s => ({ ...s, discoveries: this.found.size }));
   }
 
-  private positionSnowmanFact(spark: Spark): void {
+  private toggleFact(key: Interaction): void {
+    if (get(objectFact)?.key === key) {
+      objectFact.set(null);
+      return;
+    }
+    const spark = this.sparks.find(item => item.key === key);
+    if (spark) this.positionFact(spark);
+  }
+
+  private positionFact(spark: Spark): void {
     const point = this.factProjection.copy(spark.position).project(this.camera);
     const width = this.renderer.domElement.clientWidth;
     const height = this.renderer.domElement.clientHeight;
-    const next = { x: (point.x + 1) * width / 2, y: (1 - point.y) * height / 2, width, height };
-    const previous = get(snowmanFact);
-    if (!previous || Math.abs(previous.x - next.x) > 0.75 || Math.abs(previous.y - next.y) > 0.75 || previous.width !== width || previous.height !== height) snowmanFact.set(next);
+    const next = { key: spark.key, x: (point.x + 1) * width / 2, y: (1 - point.y) * height / 2, width, height };
+    const previous = get(objectFact);
+    if (!previous || previous.key !== next.key || Math.abs(previous.x - next.x) > 0.75 || Math.abs(previous.y - next.y) > 0.75 || previous.width !== width || previous.height !== height) objectFact.set(next);
   }
 
   private createMail(): void {
@@ -452,28 +451,8 @@ export class YearWorld {
     this.spark(body, 'mail', () => {
       flagRaised = !flagRaised;
       this.discover('mail');
+      this.toggleFact('mail');
     }, 0.22);
-  }
-
-  private createProps(): void {
-    const laptop = paperLaptop();
-    laptop.group.position.set(STOP_SPACING * 3 - 1.95, 0.35, -1.48);
-    laptop.group.scale.setScalar(0.84);
-    this.scene.add(laptop.group);
-    this.propUpdates.push(laptop.update);
-    this.spark(laptop.screen, 'laptop', () => {
-      laptop.toggle();
-      this.discover('laptop');
-    }, 0.24);
-
-    const lantern = paperLantern();
-    lantern.group.position.set(STOP_SPACING * 5 + 1.95, 0.34, -1.42);
-    this.scene.add(lantern.group);
-    this.propUpdates.push(lantern.update);
-    this.spark(lantern.body, 'lantern', () => {
-      lantern.toggle(this.time);
-      this.discover('lantern');
-    }, 0.62);
   }
 
   private resize = (): void => {
@@ -492,13 +471,13 @@ export class YearWorld {
   };
 
   private movePointer = (event: PointerEvent): void => {
-    if (get(homeStoryOpen)) return;
+    if (get(openStoryId)) return;
     if (event.pointerType === 'touch') return;
     this.pointer.set(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
   };
 
   private onWheel = (event: WheelEvent): void => {
-    if (get(homeStoryOpen)) return;
+    if (get(openStoryId)) return;
     if (!this.ready || this.disposed) return;
     event.preventDefault();
     const raw = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
@@ -507,7 +486,7 @@ export class YearWorld {
   };
 
   private onKeyDown = (event: KeyboardEvent): void => {
-    if (get(homeStoryOpen)) return;
+    if (get(openStoryId)) return;
     if (!this.ready || this.disposed) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const target = event.target as HTMLElement | null;
@@ -522,7 +501,7 @@ export class YearWorld {
     if (!Number.isFinite(units)) return;
     const limited = Math.max(-limit, Math.min(limit, units));
     if (!this.motion.scroll(limited)) return;
-    snowmanFact.set(null);
+    objectFact.set(null);
     this.settling = 0;
     this.journey.update(s => ({ ...s, moving: true, cameraSettled: false }));
   }
@@ -533,7 +512,7 @@ export class YearWorld {
   }
 
   private onTouchStart = (event: TouchEvent): void => {
-    if (get(homeStoryOpen)) return;
+    if (get(openStoryId)) return;
     if (!this.ready || this.disposed || event.touches.length !== 1) return;
     if (this.isInteractiveTarget(event.target)) return;
     const touch = event.touches[0];
@@ -543,7 +522,7 @@ export class YearWorld {
   };
 
   private onTouchMove = (event: TouchEvent): void => {
-    if (get(homeStoryOpen)) { this.touchActive = false; return; }
+    if (get(openStoryId)) { this.touchActive = false; return; }
     if (!this.touchActive || event.touches.length !== 1) return;
     event.preventDefault();
     const touch = event.touches[0];
@@ -618,8 +597,10 @@ export class YearWorld {
       const active = visible && opacity > 0.85;
       story.element.inert = !active;
       story.element.setAttribute('aria-hidden', String(!active));
-      // The Home story's button handles input. Its empty area must not cover the snowman.
-      story.element.style.pointerEvents = active && i !== 1 ? 'auto' : 'none';
+      // Every story now has a button, so the copy must stay click-through:
+      // the figures behind it keep their own targets, and the button in
+      // app.css opts back into pointer events.
+      story.element.style.pointerEvents = 'none';
     }
 
     const labels = translations[get(language)].interactions;
@@ -636,14 +617,13 @@ export class YearWorld {
       const visible = difference < 5.6;
       spark.object.visible = visible;
       spark.button.inert = !visible;
-      if (spark.key === 'snowman') {
-        const expanded = String(!!get(snowmanFact));
-        if (spark.button.getAttribute('aria-expanded') !== expanded) spark.button.setAttribute('aria-expanded', expanded);
-        if (!spark.button.hasAttribute('aria-controls')) spark.button.setAttribute('aria-controls', 'snowman-fact');
-        if (get(snowmanFact)) {
-          if (visible) this.positionSnowmanFact(spark);
-          else snowmanFact.set(null);
-        }
+      const factOpen = get(objectFact)?.key === spark.key;
+      const expanded = String(factOpen);
+      if (spark.button.getAttribute('aria-expanded') !== expanded) spark.button.setAttribute('aria-expanded', expanded);
+      if (!spark.button.hasAttribute('aria-controls')) spark.button.setAttribute('aria-controls', 'object-fact');
+      if (factOpen) {
+        if (visible) this.positionFact(spark);
+        else objectFact.set(null);
       }
     }
   }
@@ -695,7 +675,9 @@ export class YearWorld {
       } else if (part.kind === 'jump') {
         mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
       } else if (part.kind === 'spin') {
-        mesh.rotation.z = part.rotation.z + this.time * 0.3;
+        mesh.rotation.z = part.rotation.z + this.time * 0.35;
+        const pulse = 1 + boost * 0.5;
+        mesh.scale.set(part.scale.x * pulse, part.scale.y * pulse, part.scale.z);
       } else if (part.kind === 'wave') {
         mesh.position.x = part.position.x + Math.sin(t * 1.1) * 0.14;
         mesh.position.y = part.position.y + Math.sin(t * 1.9) * 0.025;
@@ -706,7 +688,7 @@ export class YearWorld {
   // Threlte calls this task every frame, before it renders the scene.
   tick = (delta: number): void => {
     if (this.disposed) return;
-    if (get(homeStoryOpen)) return;
+    if (get(openStoryId)) return;
     const step = Math.min(delta, 0.05);
     this.time += step;
     if (this.ready) {
@@ -738,7 +720,7 @@ export class YearWorld {
   };
 
   destroy(): void {
-    snowmanFact.set(null);
+    objectFact.set(null);
     this.disposed = true;
     this.resolveLoaded();
     this.observer.disconnect();
