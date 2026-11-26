@@ -51,6 +51,11 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
+function motionPulse(time: number, start: number, duration: number): number {
+  const progress = THREE.MathUtils.clamp((time - start) / duration, 0, 1);
+  return Math.sin(progress * Math.PI);
+}
+
 export class YearWorld {
   readonly scene: THREE.Scene;
   readonly camera: THREE.PerspectiveCamera;
@@ -655,6 +660,10 @@ export class YearWorld {
       }
       if (this.reduced) continue;
 
+      const reaction = part.key === undefined ? undefined : this.wakeTimes.get(part.key);
+      const activityTime = this.time - (reaction ?? 0);
+      const idle = reaction === undefined;
+
       if (part.kind === 'sway') {
         mesh.rotation.z = part.rotation.z + Math.sin(t * 1.25) * 0.055 + Math.sin(t * 9.5) * 0.14 * boost;
         mesh.position.y = part.position.y + Math.abs(Math.sin(t * 7)) * 0.08 * boost;
@@ -674,6 +683,44 @@ export class YearWorld {
         mesh.rotation.z = part.rotation.z + Math.sin(t * 1.1) * 0.035;
       } else if (part.kind === 'jump') {
         mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
+      } else if (part.kind === 'cat-blink') {
+        mesh.scale.y = part.scale.y * (1 - 0.9 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.08, 0.52));
+      } else if (part.kind === 'cat-tail') {
+        mesh.rotation.z = part.rotation.z + 0.13 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.52, 0.35);
+      } else if (part.kind === 'bunny-ear') {
+        mesh.rotation.z = part.rotation.z + 0.32 * motionPulse((activityTime + (idle ? 3.2 : 0)) % 6.5, 0.08, 0.62);
+      } else if (part.kind === 'deer-ear') {
+        const time = (activityTime + (idle ? 2.5 : 0)) % 6.2;
+        mesh.rotation.z = part.rotation.z + 0.36 * motionPulse(time, 0.1, 0.2) + 0.24 * motionPulse(time, 0.43, 0.24);
+      } else if (part.kind === 'crab-step') {
+        const time = (activityTime + (idle ? 1.2 : 0)) % 6.8;
+        const first = THREE.MathUtils.smoothstep(time, 0, 0.24);
+        const second = THREE.MathUtils.smoothstep(time, 0.3, 0.54);
+        const back = THREE.MathUtils.smoothstep(time, 1.05, 1.55);
+        mesh.position.x = part.position.x + (first + second - 2 * back) * 0.18;
+        mesh.rotation.z = part.rotation.z + 0.07 * (motionPulse(time, 0, 0.24) - motionPulse(time, 0.3, 0.24));
+      } else if (part.kind === 'crab-claw') {
+        mesh.rotation.z = part.rotation.z + 0.35 * motionPulse((activityTime + (idle ? 1.2 : 0)) % 6.8, 0.55, 0.52);
+      } else if (part.kind === 'fish-dive') {
+        const time = (activityTime + (idle ? 3.5 : 0)) % 5.8;
+        const leap = motionPulse(time, 0, 0.78);
+        const dive = motionPulse(time, 0.35, 1.08);
+        mesh.position.set(part.position.x - dive * 0.24, part.position.y + leap * 0.35 - dive * 0.61, part.position.z);
+        mesh.rotation.z = part.rotation.z + leap * 0.42 - dive * 0.58;
+        mesh.visible = dive < 0.95;
+      } else if (part.kind === 'fish-splash') {
+        const splash = motionPulse((activityTime + (idle ? 3.5 : 0)) % 5.8, 0.6, 0.48);
+        mesh.visible = splash > 0.01;
+        mesh.scale.set(0.7 + 0.45 * splash, splash, 1);
+      } else if (part.kind === 'gull') {
+        const cycle = t % 8;
+        const angle = cycle / 8 * Math.PI * 2;
+        mesh.position.x = part.position.x + 1.15 * Math.sin(angle);
+        mesh.position.y = part.position.y + 0.27 * Math.cos(angle);
+        mesh.position.z = part.position.z + 0.55 * Math.cos(angle);
+        const flap = 0.48 * Math.sin(cycle * 11) * motionPulse(cycle, 0.15, 1.7);
+        mesh.children[0].rotation.z = -flap;
+        mesh.children[1].rotation.z = flap;
       } else if (part.kind === 'spin') {
         mesh.rotation.z = part.rotation.z + this.time * 0.35;
         const pulse = 1 + boost * 0.5;

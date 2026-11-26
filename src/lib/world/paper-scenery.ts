@@ -11,11 +11,11 @@ import { addForegroundFraming, addPanoramaRidges, addSkyDetails } from './paper-
 import { createYieldPacer } from './schedule';
 
 export interface PaperPart {
-  mesh: THREE.Mesh;
+  mesh: THREE.Object3D;
   position: THREE.Vector3;
   rotation: THREE.Euler;
   scale: THREE.Vector3;
-  kind: 'sway' | 'wing' | 'fire' | 'float' | 'jump' | 'gate' | 'spin' | 'wave' | 'flutter';
+  kind: Parameters<AnimalBuilderContext['animate']>[1] | 'fire' | 'gate' | 'spin' | 'wave' | 'gull';
   phase: number;
   key?: Interaction;
   sparkLift?: number;
@@ -25,7 +25,7 @@ export interface PaperPart {
 export interface PaperSet {
   group: THREE.Group;
   parts: PaperPart[];
-  objects: Map<Interaction, THREE.Mesh>;
+  objects: Map<Interaction, THREE.Object3D>;
 }
 
 const colors = { cream: '#f4ead5', snow: '#eeeae0', wood: '#967665', ink: '#4d5551', green: '#759486', gold: '#e4c07c' };
@@ -53,7 +53,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   const group = new THREE.Group();
   group.name = 'adguard-paper-scenery';
   const parts: PaperPart[] = [];
-  const objects = new Map<Interaction, THREE.Mesh>();
+  const objects = new Map<Interaction, THREE.Object3D>();
   const firs = new PaperBatch();
   const sheets = new PaperBatch();
 
@@ -71,7 +71,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   }
 
   function animate(
-    mesh: THREE.Mesh,
+    mesh: THREE.Object3D,
     kind: PaperPart['kind'],
     key?: Interaction,
     sparkLift?: number,
@@ -600,7 +600,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   // Multi-plane parallax backdrop: distant peaks, far rolling hills, near ridge, sky details.
   await addPanoramaRidges({ group, cameraX }, pause);
   await pause();
-  await addSkyDetails(group, pause);
+  await addSkyDetails(group, pause, gull => animate(gull, 'gull'));
   await pause();
 
   createTravelSurfaces();

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, starGeometry } from './paper-brush';
 import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
 import { stopX, TRACK_LENGTH } from './route';
+import { cut } from './paper-shapes';
 import { DISTANT_PEAKS_RAMP, FAR_RIDGE_RAMP, NEAR_RIDGE_RAMP, SEASON_BORDERS, seasonCenter } from './seasons';
 
 export interface BackdropContext {
@@ -206,7 +207,11 @@ export async function addPanoramaRidges({ group, cameraX }: BackdropContext, pau
 }
 
 /** Builds soft low-contrast sky clouds, winter moon & stars, summer sun, and distant birds. */
-export async function addSkyDetails(group: THREE.Group, pause: () => Promise<void>): Promise<void> {
+export async function addSkyDetails(
+  group: THREE.Group,
+  pause: () => Promise<void>,
+  addGull: (gull: THREE.Group) => void,
+): Promise<void> {
   const sky = new PaperBatch();
 
   // Low-contrast folded-paper clouds floating in the far sky plane (z = -8.4, 0.42x speed).
@@ -262,11 +267,23 @@ export async function addSkyDetails(group: THREE.Group, pause: () => Promise<voi
   sky.add(ovalGeometry(1.48, 1.48, 0.02), '#b8cab8', { x: seasonCenter('summer') - 0.1, y: 8.65, z: -6.85 });
   sky.add(ovalGeometry(1.02, 1.02, 0.02), '#f5e2b2', { x: seasonCenter('summer') - 0.1, y: 8.65, z: -6.78 });
 
+  for (const [x, y, size] of [[-6.4, 6.2, 0.43], [-5.3, 6.72, 0.35]]) {
+    const gull = new THREE.Group();
+    gull.position.set(stopX(4) + x, y, -7.9);
+    group.add(gull);
+    for (const side of [-1, 1]) {
+      const wing = shapeFrom(s => {
+        s.moveTo(0, -0.16 * size);
+        s.quadraticCurveTo(side * 0.42 * size, 0.12 * size, side * size, -0.12 * size);
+        s.quadraticCurveTo(side * 0.45 * size, 0.36 * size, 0, 0);
+        s.closePath();
+      });
+      cut(gull, wing, '#fff4df', 0, 0, 0, 0.016);
+    }
+    addGull(gull);
+  }
+
   const birdSpots: Array<[number, number, number, string]> = [
-    [stopX(4) - 4.8, 7.6, 0.28, '#e8efe8'],
-    [stopX(4) - 3.6, 8.0, 0.22, '#e8efe8'],
-    [stopX(4) + 2.8, 7.5, 0.25, '#e8efe8'],
-    // Autumn migrating geese V-formation
     [stopX(5) + 4.4, 8.2, 0.24, '#7d5f4c'],
     [stopX(5) + 5.1, 8.45, 0.22, '#7d5f4c'],
     [stopX(5) + 5.8, 8.15, 0.2, '#7d5f4c'],

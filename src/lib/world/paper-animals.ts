@@ -7,8 +7,9 @@ export interface AnimalBuilderContext {
   detail: (name: string, x: number, z?: number, scale?: number, y?: number) => PaperDetail;
   place: (name: string, x: number, z?: number, scale?: number, y?: number) => THREE.Group;
   animate: (
-    mesh: THREE.Mesh,
-    kind: 'sway' | 'wing' | 'fire' | 'float' | 'jump' | 'gate' | 'spin' | 'wave' | 'flutter',
+    mesh: THREE.Object3D,
+    kind: 'still' | 'sway' | 'wing' | 'float' | 'jump' | 'flutter'
+      | 'cat-blink' | 'cat-tail' | 'bunny-ear' | 'deer-ear' | 'crab-step' | 'crab-claw' | 'fish-dive' | 'fish-splash',
     key?: Interaction,
     sparkLift?: number,
   ) => void;
@@ -103,7 +104,7 @@ export function addDeer(ctx: AnimalBuilderContext, x: number, z = -1.08): void {
   deer.cut([[0.15, 0.85], [0.25, 0.85], [0.2, 0.58], [0.09, 0.6]], '#b06156', 0, 0, 0.076, undefined, 0.024);
   deer.rect(0.29, 0.024, '#efd9b3', 0.31, 0.87, 0.092, undefined, 0.01);
 
-  // Animated deer head facing right with gentle muzzle, leaf ears, and antlers.
+  // Deer head facing right with leaf-shaped ears and antlers.
   const headShape = shapeFrom(s => {
     s.moveTo(-0.22, -0.05);
     s.bezierCurveTo(-0.24, 0.17, -0.05, 0.25, 0.14, 0.18);
@@ -133,14 +134,17 @@ export function addDeer(ctx: AnimalBuilderContext, x: number, z = -1.08): void {
     s.quadraticCurveTo(-0.16, 0.4, -0.06, 0.2);
     s.closePath();
   });
-  cut(head, leftEar, '#b88f70', 0, 0, -0.015, 0.028);
+  const ear = new THREE.Group();
+  ear.position.set(-0.14, 0.14, 0);
+  head.add(ear);
+  cut(ear, leftEar, '#b88f70', 0.14, -0.14, -0.015, 0.028);
   const leftEarIn = shapeFrom(s => {
     s.moveTo(-0.14, 0.18);
     s.quadraticCurveTo(-0.29, 0.3, -0.28, 0.36);
     s.quadraticCurveTo(-0.17, 0.34, -0.1, 0.22);
     s.closePath();
   });
-  cut(head, leftEarIn, '#e3bfb0', 0, 0, 0.014, 0.012);
+  cut(ear, leftEarIn, '#e3bfb0', 0.14, -0.14, 0.014, 0.012);
 
   const rightEar = shapeFrom(s => {
     s.moveTo(0.02, 0.18);
@@ -156,7 +160,8 @@ export function addDeer(ctx: AnimalBuilderContext, x: number, z = -1.08): void {
   stroke(head, [[0.03, 0.19], [0.1, 0.47], [0.22, 0.63]], '#7d6756', 0.032, 0.01);
   stroke(head, [[0.09, 0.41], [0.01, 0.57]], '#7d6756', 0.026, 0.01);
 
-  ctx.animate(head, 'sway', 'deer', 0.62);
+  ctx.animate(head, 'still', 'deer', 0.62);
+  ctx.animate(ear, 'deer-ear', 'deer');
 }
 
 /** Plump grounded winter snowman with felt hat, holly sprig, scarf, and waving arm. */
@@ -484,6 +489,7 @@ export function addCrab(ctx: AnimalBuilderContext, x: number, z = -0.88): void {
     s.closePath();
   });
   const body = cut(host, shellShape, '#d26850', 0, 0.24, 0.04, 0.046);
+  ctx.animate(body, 'crab-step', 'crab', 0.36);
 
   // Warm coral-peach belly crescent and shell highlight.
   const highlight = shapeFrom(s => {
@@ -509,7 +515,10 @@ export function addCrab(ctx: AnimalBuilderContext, x: number, z = -0.88): void {
     }
 
     // Articulated pincer arm reaching upward.
-    stroke(body, [[sign * 0.24, 0.08], [sign * 0.44, 0.22], [sign * 0.46, 0.36]], '#c55e48', 0.046, 0.01);
+    const arm = new THREE.Group();
+    arm.position.set(sign * 0.24, 0.08, 0.01);
+    body.add(arm);
+    stroke(arm, [[0, 0], [sign * 0.2, 0.14], [sign * 0.22, 0.28]], '#c55e48', 0.046, 0);
 
     // Classic open paper crab claw.
     const claw = shapeFrom(s => {
@@ -520,7 +529,8 @@ export function addCrab(ctx: AnimalBuilderContext, x: number, z = -0.88): void {
       s.bezierCurveTo(sign * 0.3, 0.52, sign * 0.34, 0.34, sign * 0.46, 0.3);
       s.closePath();
     });
-    cut(body, claw, '#dc7459', 0, 0, 0.022, 0.034);
+    cut(arm, claw, '#dc7459', -arm.position.x, -arm.position.y, 0.012, 0.034);
+    if (sign > 0) ctx.animate(arm, 'crab-claw', 'crab');
 
     // Raised eye stalks with bright cream eyeballs.
     stroke(body, [[sign * 0.12, 0.22], [sign * 0.15, 0.37]], '#bf5c46', 0.034, 0.01);
@@ -530,8 +540,6 @@ export function addCrab(ctx: AnimalBuilderContext, x: number, z = -0.88): void {
   }
 
   stroke(body, [[-0.1, 0.02], [0, -0.035], [0.1, 0.02]], INK, 0.016, 0.062);
-
-  ctx.animate(body, 'jump', 'crab', 0.36);
 }
 
 /** Playful coral-apricot fish leaping cleanly above the summer sea waves. */
@@ -539,9 +547,13 @@ export function addFish(ctx: AnimalBuilderContext, x: number, z = -0.34): void {
   const host = ctx.place('paper-fish', x, z, 0.94);
 
   // Small frothy water-splash arc right below the leaping fish.
-  cut(host, [[-0.3, 0.02], [-0.14, 0.13], [0, 0.06], [0.16, 0.14], [0.3, 0.02]], '#eef4ee', 0, 0.08, 0.08, 0.016);
-  oval(host, 0.065, 0.065, '#f2f7f1', -0.22, 0.22, 0.08, 0.014);
-  oval(host, 0.055, 0.055, '#f2f7f1', 0.24, 0.24, 0.08, 0.014);
+  const splash = new THREE.Group();
+  splash.position.set(-0.22, 0.1, 0.08);
+  splash.visible = false;
+  host.add(splash);
+  cut(splash, [[-0.3, 0.02], [-0.14, 0.13], [0, 0.06], [0.16, 0.14], [0.3, 0.02]], '#eef4ee', 0, 0, 0, 0.016);
+  oval(splash, 0.065, 0.065, '#f2f7f1', -0.22, 0.14, 0, 0.014);
+  oval(splash, 0.055, 0.055, '#f2f7f1', 0.24, 0.16, 0, 0.014);
 
   // Graceful teardrop leaping fish body facing left-upward.
   const fishShape = shapeFrom(s => {
@@ -604,7 +616,8 @@ export function addFish(ctx: AnimalBuilderContext, x: number, z = -0.34): void {
   addSparkleEye(body, -0.19, 0.05, 0.06, 0.032);
   stroke(body, [[-0.29, -0.02], [-0.24, -0.05], [-0.19, -0.03]], INK, 0.012, 0.058);
 
-  ctx.animate(body, 'jump', 'fish', 0.34);
+  ctx.animate(body, 'fish-dive', 'fish', 0.34);
+  ctx.animate(splash, 'fish-splash', 'fish');
 }
 
 /** Cozy seated slate-tuxedo cat with curled S-tail, crisp whiskers, and golden eyes. */
@@ -622,7 +635,6 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
     s.bezierCurveTo(-0.4, 0.32, -0.3, 0.2, -0.16, 0.2);
     s.closePath();
   });
-  cat.shape(tail, '#566470', 0, 0, -0.08, undefined, 0.03);
   const tailTip = shapeFrom(s => {
     s.moveTo(-0.51, 0.79);
     s.lineTo(-0.58, 0.85);
@@ -630,7 +642,11 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
     s.bezierCurveTo(-0.65, 1.02, -0.55, 0.89, -0.51, 0.79);
     s.closePath();
   });
-  cat.shape(tailTip, CREAM, 0, 0, -0.08, undefined, 0.03);
+  const movingTail = new THREE.Group();
+  movingTail.position.set(-0.16, 0.2, -0.08);
+  cat.group.add(movingTail);
+  cut(movingTail, tail, '#566470', 0.16, -0.2, 0, 0.03);
+  cut(movingTail, tailTip, CREAM, 0.16, -0.2, 0, 0.03);
 
   // Seated pear-shaped body with tucked haunch.
   const body = shapeFrom(s => {
@@ -690,8 +706,10 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
   stroke(head, [[-0.075, -0.13], [-0.035, -0.16], [0, -0.11], [0.035, -0.16], [0.075, -0.13]], INK, 0.012, 0.066);
 
   // Warm golden-amber eyes with dark vertical pupils and sparkle.
-  addSparkleEye(head, -0.13, 0.02, 0.052, 0.046, '#e8c474');
-  addSparkleEye(head, 0.13, 0.02, 0.052, 0.046, '#e8c474');
+  const eyes = new THREE.Group();
+  eyes.position.set(0, 0.02, 0.052);
+  head.add(eyes);
+  for (const x of [-0.13, 0.13]) addSparkleEye(eyes, x, 0, 0, 0.046, '#e8c474');
 
   // Three crisp splayed whiskers per side.
   for (const sign of [-1, 1]) {
@@ -700,7 +718,9 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
     stroke(head, [[sign * 0.18, -0.15], [sign * 0.41, -0.19]], '#eee6d4', 0.01, 0.068);
   }
 
-  ctx.animate(head, 'sway', 'cat', 0.42);
+  ctx.animate(head, 'still', 'cat', 0.42);
+  ctx.animate(eyes, 'cat-blink', 'cat');
+  ctx.animate(movingTail, 'cat-tail', 'cat');
 }
 
 /** Plump seated storybook bunny with one upright ear, one tilted ear, and cotton tail. */
@@ -730,7 +750,7 @@ export function addBunny(ctx: AnimalBuilderContext, x: number, z = -0.98): void 
   bunny.oval(0.18, 0.1, '#ebe2cf', -0.18, 0.09, 0.068, undefined, 0.026);
   bunny.oval(0.22, 0.11, '#dfd2be', 0.07, 0.085, 0.066, undefined, 0.026);
 
-  // Animated round rabbit head with plump cheeks.
+  // Round rabbit head with plump cheeks.
   const headShape = shapeFrom(s => {
     s.moveTo(0, 0.24);
     s.bezierCurveTo(0.22, 0.24, 0.3, 0.08, 0.29, -0.08);
@@ -767,5 +787,6 @@ export function addBunny(ctx: AnimalBuilderContext, x: number, z = -0.98): void 
   oval(head, 0.078, 0.056, '#e2968b', -0.01, -0.06, 0.062, 0.016);
   stroke(head, [[-0.07, -0.12], [-0.035, -0.15], [-0.01, -0.1], [0.025, -0.15], [0.06, -0.12]], INK, 0.012, 0.064);
 
-  ctx.animate(head, 'sway', 'bunny', 0.64);
+  ctx.animate(head, 'still', 'bunny', 0.64);
+  ctx.animate(rightEar, 'bunny-ear', 'bunny');
 }
