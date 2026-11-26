@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a problem with the page
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. Please add no personal data.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What did you do before the problem appeared?
+      placeholder: |
+        1. Open the page
+        2. Switch the language to Russian
+        3. Scroll to the Home stop
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What should happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What happens instead?
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and operating system
+      placeholder: Chrome 140 on Windows 11
+    validations:
+      required: true
+  - type: input
+    id: screen
+    attributes:
+      label: Screen size
+      description: A rough value is enough.
+      placeholder: 1440x900
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots and console output
+      description: Paste an image, a link, or the text of a console error.
+    validations:
+      required: false
