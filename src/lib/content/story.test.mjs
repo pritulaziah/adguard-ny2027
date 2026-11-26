@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 import { deepDives } from './story-deep-dive.ts';
 import { figureFacts } from './figure-facts.ts';
 import { storyProducts } from './story-modal.ts';
@@ -8,20 +7,20 @@ const storyIds = ['ios-pqc', 'quest', 'extension', 'windows', 'mini-android', 'h
 const interactionKeys = ['deer', 'snowman', 'gate', 'fox', 'frog', 'fish', 'dragon', 'crab', 'cat', 'bunny', 'mail', 'lighthouse'];
 
 test('every story has a deep dive in both languages', () => {
-  assert.deepEqual(Object.keys(deepDives).sort(), [...storyIds].sort());
+  expect(Object.keys(deepDives).sort()).toEqual([...storyIds].sort());
   for (const id of storyIds) {
     for (const language of ['ru', 'en']) {
       const story = deepDives[id][language];
-      assert.ok(story, `${id} ${language} exists`);
-      assert.ok(story.lead.length > 20, `${id} ${language} lead`);
-      assert.ok(story.afterword.length > 10, `${id} ${language} afterword`);
+      expect(story, `${id} ${language} exists`).toBeTruthy();
+      expect(story.lead.length, `${id} ${language} lead`).toBeGreaterThan(20);
+      expect(story.afterword.length, `${id} ${language} afterword`).toBeGreaterThan(10);
       for (const field of ['from', 'fromLabel', 'to', 'toLabel']) {
-        assert.ok(story.timeline[field].length > 0, `${id} ${language} timeline ${field}`);
+        expect(story.timeline[field].length, `${id} ${language} timeline ${field}`).toBeGreaterThan(0);
       }
-      assert.ok(story.passages.length >= 2, `${id} ${language} has passages`);
+      expect(story.passages.length, `${id} ${language} has passages`).toBeGreaterThanOrEqual(2);
       for (const passage of story.passages) {
-        assert.ok(passage.heading.length > 0, `${id} ${language} passage heading`);
-        assert.ok(passage.body.length > 30, `${id} ${language} passage body`);
+        expect(passage.heading.length, `${id} ${language} passage heading`).toBeGreaterThan(0);
+        expect(passage.body.length, `${id} ${language} passage body`).toBeGreaterThan(30);
       }
     }
   }
@@ -32,33 +31,33 @@ test('only the home story shows screenshots', () => {
     for (const language of ['ru', 'en']) {
       const shots = deepDives[id][language].shots;
       if (id !== 'home') {
-        assert.equal(shots, undefined, `${id} ${language} has no screenshots`);
+        expect(shots, `${id} ${language} has no screenshots`).toBeUndefined();
         continue;
       }
-      assert.equal(shots?.length, 2, 'home has two screenshots');
+      expect(shots?.length, 'home has two screenshots').toBe(2);
       for (const shot of shots ?? []) {
-        assert.ok(shot.image.includes('blog/home/'), 'home screenshots come from the home folder');
-        assert.ok(shot.label.length > 0 && shot.title.length > 0 && shot.alt.length > 0, 'home screenshot copy');
+        expect(shot.image.includes('blog/home/'), 'home screenshots come from the home folder').toBe(true);
+        expect(shot.label.length > 0 && shot.title.length > 0 && shot.alt.length > 0, 'home screenshot copy').toBe(true);
       }
     }
   }
 });
 
 test('every product has a name in both languages', () => {
-  assert.deepEqual(Object.keys(storyProducts).sort(), [...storyIds].sort());
+  expect(Object.keys(storyProducts).sort()).toEqual([...storyIds].sort());
   for (const id of storyIds) {
-    assert.ok(storyProducts[id].en.length > 0, `${id} en product`);
-    assert.ok(storyProducts[id].ru.length > 0, `${id} ru product`);
+    expect(storyProducts[id].en.length, `${id} en product`).toBeGreaterThan(0);
+    expect(storyProducts[id].ru.length, `${id} ru product`).toBeGreaterThan(0);
   }
 });
 
 test('every figure carries its own fact in both languages', () => {
-  assert.deepEqual(Object.keys(figureFacts).sort(), [...interactionKeys].sort());
+  expect(Object.keys(figureFacts).sort()).toEqual([...interactionKeys].sort());
   for (const key of interactionKeys) {
     for (const language of ['ru', 'en']) {
       const fact = figureFacts[key][language];
-      assert.equal(typeof fact, 'string', `${key} ${language} is a string`);
-      assert.ok(fact.length > 20, `${key} ${language} is a sentence`);
+      expect(typeof fact, `${key} ${language} is a string`).toBe('string');
+      expect(fact.length, `${key} ${language} is a sentence`).toBeGreaterThan(20);
     }
   }
 });
@@ -75,7 +74,7 @@ test('facts at one stop differ from each other', () => {
   for (const stop of stops) {
     for (const language of ['ru', 'en']) {
       const texts = stop.map(key => figureFacts[key][language]);
-      assert.equal(new Set(texts).size, texts.length, `${stop.join(', ')} ${language} facts differ`);
+      expect(new Set(texts).size, `${stop.join(', ')} ${language} facts differ`).toBe(texts.length);
     }
   }
 });

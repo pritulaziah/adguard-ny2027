@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 import {
   JourneyMotion,
   STOP_COUNT,
@@ -11,7 +10,7 @@ import {
 } from './route.ts';
 import { SEASON_BORDERS, seasonAt, seasonCenter } from './seasons.ts';
 
-const close = (a, b, tolerance = 1e-6) => assert.ok(Math.abs(a - b) < tolerance, `${a} differs from ${b}`);
+const close = (a, b, tolerance = 1e-6) => expect(Math.abs(a - b), `${a} differs from ${b}`).toBeLessThan(tolerance);
 
 test('the train and carriages follow a straight route without wrapping', () => {
   for (let distance = 0; distance < TRACK_LENGTH * 3; distance += 0.17) {
@@ -26,15 +25,15 @@ test('the train and carriages follow a straight route without wrapping', () => {
 
 test('scrolling moves the target and clamps at both ends of the route', () => {
   const motion = new JourneyMotion();
-  assert.equal(motion.scroll(-5), false, 'cannot scroll before the start');
+  expect(motion.scroll(-5), 'cannot scroll before the start').toBe(false);
   close(motion.target, 0);
 
-  assert.equal(motion.scroll(4), true);
+  expect(motion.scroll(4)).toBe(true);
   close(motion.target, 4);
 
   motion.scroll(TRACK_LENGTH * 2);
   close(motion.target, TRACK_LENGTH);
-  assert.equal(motion.scroll(5), false, 'cannot scroll past the terminus');
+  expect(motion.scroll(5), 'cannot scroll past the terminus').toBe(false);
 
   motion.scroll(-TRACK_LENGTH * 3);
   close(motion.target, 0);
@@ -48,14 +47,14 @@ test('the train eases toward the scroll target and rests where the reader stoppe
   let previous = -1;
   for (let frame = 0; frame < 600; frame++) {
     if (motion.step(1 / 60)) rested++;
-    assert.ok(motion.distance >= previous - 1e-9, 'the train never jumps back');
+    expect(motion.distance, 'the train never jumps back').toBeGreaterThanOrEqual(previous - 1e-9);
     previous = motion.distance;
   }
 
-  assert.equal(rested, 1);
-  assert.equal(motion.moving, false);
+  expect(rested).toBe(1);
+  expect(motion.moving).toBe(false);
   close(motion.distance, 7.3);
-  assert.notEqual(motion.distance, STOP_SPACING, 'the train does not snap to a station');
+  expect(motion.distance, 'the train does not snap to a station').not.toBe(STOP_SPACING);
 });
 
 test('scrolling is frame-rate independent', () => {
@@ -78,11 +77,11 @@ test('reset returns the train to the start', () => {
   motion.reset();
   close(motion.distance, 0);
   close(motion.target, 0);
-  assert.equal(motion.moving, false);
+  expect(motion.moving).toBe(false);
 });
 
 test('the route ends at the finale stop after the stories', () => {
-  assert.equal(STOP_COUNT, 7);
+  expect(STOP_COUNT).toBe(7);
   close(stopX(0), 0);
   close(stopX(7), STORY_END);
   close(STORY_END, 7 * STOP_SPACING);
@@ -101,7 +100,7 @@ test('each stop sits inside its named season', () => {
     'winter-end',
   ];
   expected.forEach((season, index) => {
-    assert.equal(seasonAt(stopX(index)), season, `stop ${index}`);
+    expect(seasonAt(stopX(index)), `stop ${index}`).toBe(season);
   });
 });
 
@@ -115,13 +114,13 @@ test('season borders fall halfway between the stops they separate', () => {
 test('the midpoint between two stops shows no story', () => {
   for (let index = 0; index < STOP_COUNT; index++) {
     const midpoint = (stopX(index) + stopX(index + 1)) / 2;
-    assert.ok(Math.abs(midpoint - stopX(index)) > 4.7, `midpoint ${index} reaches the stop before it`);
-    assert.ok(Math.abs(midpoint - stopX(index + 1)) > 4.7, `midpoint ${index} reaches the stop after it`);
+    expect(Math.abs(midpoint - stopX(index)), `midpoint ${index} reaches the stop before it`).toBeGreaterThan(4.7);
+    expect(Math.abs(midpoint - stopX(index + 1)), `midpoint ${index} reaches the stop after it`).toBeGreaterThan(4.7);
   }
 });
 
 test('season centers land inside their own season', () => {
   for (const id of ['winter-start', 'spring', 'summer', 'autumn', 'winter-end']) {
-    assert.equal(seasonAt(seasonCenter(id)), id, id);
+    expect(seasonAt(seasonCenter(id)), id).toBe(id);
   }
 });
