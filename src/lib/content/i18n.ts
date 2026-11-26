@@ -1,7 +1,7 @@
 import { derived, writable } from 'svelte/store';
 
 export type Language = 'en' | 'ru';
-export type Interaction = 'deer' | 'snowman' | 'gate' | 'fox' | 'frog' | 'fish' | 'dragon' | 'crab' | 'cat' | 'bunny' | 'mail' | 'umbrella';
+export type Interaction = 'deer' | 'snowman' | 'fox' | 'hedgehog' | 'bird' | 'frog' | 'crab' | 'fish' | 'bunny' | 'squirrel' | 'cat' | 'owl';
 
 interface Copy {
   title: string; description: string; scene: string; canvas: string;
@@ -24,17 +24,17 @@ export const translations: Record<Language, Copy> = {
     finalTitle: 'Next stop —\na new year!', finalSummary: 'Thank you for being with us. Here’s to more good things and fewer distractions in 2027.',
     interactions: {
       deer: { label: 'Say hello to the deer' },
-      snowman: { label: 'Hear a fact about AdGuard Home' },
-      gate: { label: 'Open the gate' },
+      snowman: { label: 'Hear a fact about AdGuard for iOS' },
       fox: { label: 'Wake the fox' },
+      hedgehog: { label: 'Say hello to the hedgehog' },
+      bird: { label: 'Listen to the bird' },
       frog: { label: 'Call the frog' },
       fish: { label: 'Nudge the fish' },
-      dragon: { label: 'Say hello to the dragon' },
       crab: { label: 'Call the crab' },
       cat: { label: 'Call the cat' },
       bunny: { label: 'Say hello to the bunny' },
-      mail: { label: 'Send a New Year letter' },
-      umbrella: { label: 'Rest under the summer umbrella' },
+      squirrel: { label: 'Call the squirrel' },
+      owl: { label: 'Say hello to the owl' },
     },
   },
   ru: {
@@ -48,17 +48,17 @@ export const translations: Record<Language, Copy> = {
     finalTitle: 'Следующая остановка —\nновый год!', finalSummary: 'Спасибо, что были с нами. Пусть в 2027 будет больше хорошего и меньше лишнего.',
     interactions: {
       deer: { label: 'Поздороваться с оленем' },
-      snowman: { label: 'Узнать факт об AdGuard Home' },
-      gate: { label: 'Открыть калитку' },
+      snowman: { label: 'Узнать факт об AdGuard для iOS' },
       fox: { label: 'Разбудить лису' },
+      hedgehog: { label: 'Поздороваться с ежом' },
+      bird: { label: 'Послушать птицу' },
       frog: { label: 'Позвать лягушку' },
       fish: { label: 'Потревожить рыбку' },
-      dragon: { label: 'Поздороваться с драконом' },
       crab: { label: 'Позвать краба' },
       cat: { label: 'Позвать кота' },
       bunny: { label: 'Поздороваться с зайцем' },
-      mail: { label: 'Отправить новогоднее письмо' },
-      umbrella: { label: 'Отдохнуть под летним зонтом' },
+      squirrel: { label: 'Позвать белку' },
+      owl: { label: 'Поздороваться с совой' },
     },
   },
 };

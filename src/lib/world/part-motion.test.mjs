@@ -12,21 +12,22 @@ test('a part keeps its rest transform while a motion runs', () => {
   const mesh = new THREE.Group();
   mesh.position.set(1, 2, 3);
   mesh.rotation.set(0.1, 0.2, 0.3);
-  const frame = { time: 0, delta: 1 / 60, reduced: false, distance: 0, gateSwing: 1 };
+  const frame = { time: 0, delta: 1 / 60, reduced: false, distance: 0 };
   const part = {
     mesh,
     position: mesh.position.clone(),
     rotation: mesh.rotation.clone(),
     scale: mesh.scale.clone(),
-    kind: 'gate',
+    kind: 'sway',
     phase: 0,
     worldX: 1,
-    gateSide: -1,
-    apply: motionFor('gate'),
+    apply: motionFor('sway'),
   };
   part.apply(part, frame);
   expect(mesh.position.x).toBe(1);
-  expect(mesh.rotation.y).toBeCloseTo(-1.15);
+  expect(mesh.rotation.y).toBeCloseTo(0.2);
+  expect(part.position.toArray()).toEqual([1, 2, 3]);
+  expect(part.rotation.z).toBeCloseTo(0.3);
 });
 
 test('a still part stays out of the frame loop', () => {

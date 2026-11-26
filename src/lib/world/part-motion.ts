@@ -27,7 +27,6 @@ export const PART_KINDS = [
   'airborne-leaf',
   'spin',
   'wave',
-  'gate',
 ] as const;
 
 export type PartKind = (typeof PART_KINDS)[number];
@@ -42,8 +41,6 @@ export interface PaperPart {
   phase: number;
   /** World x at build time, used to skip parts far from the camera. */
   worldX: number;
-  /** This angle opens the gate; the sign selects the hinge side. */
-  gateSide: number;
   /** Scene time of the last click, if the part reacts to one. */
   startedAt?: number;
   key?: Interaction;
@@ -59,7 +56,6 @@ export interface MotionFrame {
   delta: number;
   reduced: boolean;
   distance: number;
-  gateSwing: number;
   gullArrivalAt?: number;
 }
 
@@ -236,10 +232,6 @@ const wave: PartMotion = (part, frame) => {
   part.mesh.position.y = part.position.y + Math.sin(t * 1.9) * 0.025;
 };
 
-const gate: PartMotion = (part, frame) => {
-  part.mesh.rotation.y = part.gateSide * frame.gateSwing * 1.15;
-};
-
 const motions: Record<PartKind, PartMotion> = {
   still,
   sway,
@@ -260,7 +252,6 @@ const motions: Record<PartKind, PartMotion> = {
   'airborne-leaf': airborneLeaf,
   spin,
   wave,
-  gate,
 };
 
 export function motionFor(kind: PartKind): PartMotion {

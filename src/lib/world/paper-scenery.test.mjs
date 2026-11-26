@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { createPaperScenery } from './paper-scenery.ts';
 import { createScalarUniform } from './paper-materials.ts';
+import { stopX } from './route.ts';
 
 test('every scenery part has a bound motion and merged details keep colors', async () => {
   globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
@@ -25,4 +26,74 @@ test('every scenery part has a bound motion and merged details keep colors', asy
   const details = set.group.getObjectByName('folded-paper-details');
   expect(details).toBeInstanceOf(THREE.Mesh);
   expect(details.geometry.getAttribute('color').count).toBe(details.geometry.getAttribute('position').count);
+
+  // Each story after winter has one fact on either side of its centre.
+  const pairs = [['fox', 'hedgehog'], ['bird', 'frog'], ['crab', 'fish'], ['bunny', 'squirrel'], ['cat', 'owl']];
+  expect([...set.objects.keys()].sort()).toEqual(['deer', 'snowman', ...pairs.flat()].sort());
+  set.group.updateMatrixWorld(true);
+  for (const [index, pair] of pairs.entries()) {
+    const centre = stopX(index + 2);
+    const left = set.objects.get(pair[0]).getWorldPosition(new THREE.Vector3());
+    const right = set.objects.get(pair[1]).getWorldPosition(new THREE.Vector3());
+    expect(left.x, `${pair[0]} is left of its story`).toBeLessThan(centre - 2);
+    expect(right.x, `${pair[1]} is right of its story`).toBeGreaterThan(centre + 2);
+    expect(centre - left.x).toBeLessThan(4.5);
+    expect(right.x - centre).toBeLessThan(4.5);
+  }
+  expect(set.group.getObjectByName('paper-willow')).toBeUndefined();
+  expect(set.group.getObjectsByProperty('name', 'paper-cabin')).toHaveLength(1);
+}, 60000);
+
+test('perched birds keep two small feet attached while reacting', async () => {
+  globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
+  const set = await createPaperScenery(createScalarUniform(0));
+  set.group.updateMatrixWorld(true);
+  for (const key of ['bird', 'owl']) {
+    const anchor = set.objects.get(key);
+    const body = key === 'owl' ? anchor.parent : anchor;
+    const feet = ['left', 'right'].map(side => body.getObjectByName(`${key}-foot-${side}`));
+    for (const foot of feet) {
+      expect(Boolean(foot), `${key} has two feet inside its body group`).toBe(true);
+      const size = new THREE.Box3().setFromObject(foot).getSize(new THREE.Vector3());
+      expect(size.y, `${key} feet stay small`).toBeLessThan(0.13);
+      const branchFace = body.parent.localToWorld(new THREE.Vector3(0, 0, 0.112));
+      expect(new THREE.Box3().setFromObject(foot).max.z, `${key} toes remain visible over the branch`).toBeGreaterThan(branchFace.z);
+    }
+    const before = feet.map(foot => foot.getWorldPosition(new THREE.Vector3()));
+    for (const time of [0.05, 0.2, 0.7]) {
+      for (const part of set.parts.filter(part => part.key === key)) {
+        part.startedAt = 0;
+        part.apply(part, { time, delta: 1 / 60, reduced: false, distance: part.worldX });
+      }
+      set.group.updateMatrixWorld(true);
+      feet.forEach((foot, index) => {
+        expect(foot.getWorldPosition(new THREE.Vector3()).distanceTo(before[index]), `${key} keeps its grip during a reaction`).toBeLessThan(1e-6);
+      });
+    }
+  }
+}, 60000);
+
+test('small animals keep their relative size and pond foliage stays clear', async () => {
+  globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
+  const set = await createPaperScenery(createScalarUniform(0));
+  set.group.updateMatrixWorld(true);
+  for (const [key, width, height] of [
+    ['hedgehog', 0.95, 0.6],
+    ['bird', 0.6, 0.5],
+    ['squirrel', 0.95, 1.1],
+    ['owl', 0.65, 1.0],
+  ]) {
+    const anchor = set.objects.get(key);
+    const figure = key === 'owl' ? anchor.parent : anchor;
+    const size = new THREE.Box3().setFromObject(figure).getSize(new THREE.Vector3());
+    expect(size.x, `${key} width`).toBeLessThanOrEqual(width);
+    expect(size.y, `${key} height`).toBeLessThanOrEqual(height);
+  }
+  const squirrel = set.objects.get('squirrel');
+  const tail = set.parts.find(part => part.key === 'squirrel' && part.mesh !== squirrel).mesh;
+  expect(squirrel.getObjectById(tail.id), 'tail follows the body').toBe(tail);
+  const frogX = stopX(3) + 3.05;
+  for (const flowers of set.group.getObjectsByProperty('name', 'spring-meadow-cluster')) {
+    expect(Math.abs(flowers.position.x - frogX), 'flowers stay outside the pond').toBeGreaterThan(1.5);
+  }
 }, 60000);

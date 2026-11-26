@@ -9,7 +9,6 @@ import { openStoryId } from '../content/story-modal';
 import WallStory from '../ui/WallStory.svelte';
 import type { JourneyStore, JourneyState } from './journey-state';
 import { createScalarUniform, createWeatherField, resetPaperMaterials, seasonalPaperMaterial, type WeatherField } from './paper-materials';
-import { carded } from './paper-mesh';
 import { createPaperScenery, type PaperSet } from './paper-scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './paper-vehicles';
 import type { MotionFrame } from './part-motion';
@@ -94,17 +93,13 @@ export class YearWorld {
   private unsubscribe: () => void;
   private state: JourneyState;
   private observer: ResizeObserver;
-  private mailX = stopX(6) - 2.2;
   private found = new Set<string>();
-  private frame: MotionFrame = { time: 0, delta: 0, reduced: false, distance: 0, gateSwing: 0 };
+  private frame: MotionFrame = { time: 0, delta: 0, reduced: false, distance: 0 };
   private fact: FactPosition | null = null;
   private labels = translations[get(language)].interactions;
   private unsubscribeLanguage: () => void;
   private unsubscribeFact: () => void;
   private gullArrivalAt?: number;
-  private gateOpen = false;
-  private gateSwing = 0;
-  private propUpdates: Array<(time: number, delta: number, reduced: boolean) => void> = [];
   private touchActive = false;
   private touchLastX = 0;
   private touchLastY = 0;
@@ -274,9 +269,6 @@ export class YearWorld {
     this.createInteractions();
     await pause();
 
-    this.createMail();
-    await pause();
-
     this.resize();
     await fonts;
     if (this.disposed) return;
@@ -341,9 +333,6 @@ export class YearWorld {
       this.spark(anchor, key, () => {
         this.discover(key);
         this.wake(key);
-        if (key === 'gate') {
-          this.gateOpen = !this.gateOpen;
-        }
         this.toggleFact(key);
       }, part.sparkLift, part.sparkOffsetX);
     }
@@ -408,78 +397,6 @@ export class YearWorld {
     const next = { key: spark.key, x: (point.x + 1) * width / 2, y: (1 - point.y) * height / 2, width, height };
     const previous = this.fact;
     if (!previous || previous.key !== next.key || Math.abs(previous.x - next.x) > 0.75 || Math.abs(previous.y - next.y) > 0.75 || previous.width !== width || previous.height !== height) objectFact.set(next);
-  }
-
-  private createMail(): void {
-    const box = new THREE.Group();
-    box.name = 'paper-mailbox';
-    box.position.set(this.mailX, 0.34, -1.04);
-
-    // Sturdy wooden post with grounded base block.
-    const base = carded(new THREE.BoxGeometry(0.24, 0.08, 0.14), '#876c5b');
-    base.position.set(0, 0.04, 0);
-    box.add(base);
-    const post = carded(new THREE.BoxGeometry(0.09, 0.86, 0.08), '#9b7f6b');
-    post.position.set(0, 0.45, 0);
-    box.add(post);
-
-    // Rounded-top retro sage mailbox body.
-    const boxShape = new THREE.Shape();
-    boxShape.moveTo(-0.36, -0.18);
-    boxShape.lineTo(0.36, -0.18);
-    boxShape.lineTo(0.36, 0.14);
-    boxShape.quadraticCurveTo(0.36, 0.34, 0.12, 0.34);
-    boxShape.lineTo(-0.12, 0.34);
-    boxShape.quadraticCurveTo(-0.36, 0.34, -0.36, 0.14);
-    boxShape.closePath();
-    const body = carded(new THREE.ExtrudeGeometry(boxShape, { depth: 0.18, bevelEnabled: false, curveSegments: 12 }), '#6d9182');
-    body.position.set(0, 0.96, -0.09);
-    box.add(body);
-
-    // Cream envelope resting in the mail slot (pops gently on click).
-    const letter = new THREE.Group();
-    letter.position.set(0, 1.0, 0.11);
-    const envelope = carded(new THREE.BoxGeometry(0.46, 0.28, 0.025), '#f5ead1');
-    letter.add(envelope);
-    const line = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-0.22, 0.13, 0.02),
-        new THREE.Vector3(0, -0.02, 0.02),
-        new THREE.Vector3(0.22, 0.13, 0.02),
-      ]),
-      new THREE.LineBasicMaterial({ color: '#b4a581' }),
-    );
-    letter.add(line);
-    box.add(letter);
-
-    // Pivoting red mail flag on the right side.
-    const flagPivot = new THREE.Group();
-    flagPivot.position.set(0.37, 0.98, 0.04);
-    const flagStem = carded(new THREE.BoxGeometry(0.032, 0.34, 0.025), '#cf6856');
-    flagStem.position.set(0, 0.15, 0);
-    flagPivot.add(flagStem);
-    const flagTip = carded(new THREE.BoxGeometry(0.14, 0.095, 0.028), '#cf6856');
-    flagTip.position.set(0.06, 0.28, 0);
-    flagPivot.add(flagTip);
-    flagPivot.rotation.z = -Math.PI / 2;
-    box.add(flagPivot);
-
-    let flagRaised = false;
-    let flagAngle = -Math.PI / 2;
-    this.propUpdates.push((_time, delta, reduced) => {
-      const targetAngle = flagRaised ? 0 : -Math.PI / 2;
-      flagAngle = THREE.MathUtils.lerp(flagAngle, targetAngle, reduced ? 1 : 1 - Math.exp(-delta * 9));
-      flagPivot.rotation.z = flagAngle;
-      const lift = flagRaised ? 0.08 : 0;
-      letter.position.y = THREE.MathUtils.lerp(letter.position.y, 1.0 + lift, reduced ? 1 : 1 - Math.exp(-delta * 8));
-    });
-
-    this.scene.add(box);
-    this.spark(body, 'mail', () => {
-      flagRaised = !flagRaised;
-      this.discover('mail');
-      this.toggleFact('mail');
-    }, 0.22);
   }
 
   private resize = (): void => {
@@ -576,7 +493,8 @@ export class YearWorld {
       this.camera.updateProjectionMatrix();
     }
 
-    const wallWidth = this.portrait ? 4.05 : 5.35;
+    // Portrait views include both figures beside the story. Copy stays in screen space.
+    const wallWidth = this.portrait ? 8.4 : 5.35;
     const minDistance = THREE.MathUtils.lerp(8.35, 8.65, shortT);
     const distance = Math.max(
       minDistance,
@@ -599,7 +517,7 @@ export class YearWorld {
     );
     this.desiredLook.set(
       this.motion.distance - this.pointerSmooth.x * (parallaxX * 0.14),
-      3.06 - this.pointerSmooth.y * (parallaxY * 0.14) - peek * 0.16,
+      (this.portrait ? distance * 0.32 : 3.06) - this.pointerSmooth.y * (parallaxY * 0.14) - peek * 0.16,
       STORY_Z + 0.18 + peek * 0.45,
     );
 
@@ -644,6 +562,15 @@ export class YearWorld {
       }
       // Keep the touch target steady while the paper character moves underneath it.
       spark.object.position.copy(spark.position);
+      if (this.portrait) {
+        const view = this.camera.matrixWorldInverse.elements;
+        const point = spark.position;
+        const depth = -(view[2] * point.x + view[6] * point.y + view[10] * point.z + view[14]);
+        const pixel = 2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) / this.renderer.domElement.clientHeight;
+        spark.object.scale.setScalar(Math.max(depth, 0.1) * pixel * 44 / 42);
+      } else {
+        spark.object.scale.setScalar(0.0075);
+      }
       // The marks stay visible while the train moves; only distance hides them.
       const visible = Math.abs(spark.x - this.motion.distance) < 5.6;
       if (spark.object.visible !== visible) {
@@ -669,10 +596,6 @@ export class YearWorld {
     frame.delta = delta;
     frame.reduced = this.reduced;
     frame.distance = this.motion.distance;
-
-    const targetGate = this.gateOpen ? 1 : 0;
-    this.gateSwing = THREE.MathUtils.lerp(this.gateSwing, targetGate, this.reduced ? 1 : 1 - Math.exp(-delta * 6.5));
-    frame.gateSwing = this.gateSwing;
 
     const summerDistance = Math.abs(this.motion.distance - stopX(4));
     if (!this.reduced && summerDistance < 5.5) this.gullArrivalAt ??= this.time;
@@ -707,7 +630,6 @@ export class YearWorld {
       this.fleet?.update(this.motion.distance, step, this.time, this.reduced);
       this.updateCamera(step);
       this.animateParts(step);
-      for (const update of this.propUpdates) update(this.time, step, this.reduced);
 
       if (!this.motion.moving && !this.state.cameraSettled) {
         this.settling += step;

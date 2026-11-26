@@ -13,11 +13,12 @@ export function addPondWithFrog(ctx: AnimalBuilderContext, x: number, z = -1.04)
 
   // Cattail reeds rising gracefully behind the pond.
   const reeds: Array<[number, number, number]> = [
-    [-0.82, 0.92, -0.08], [-0.68, 1.12, 0.05], [0.76, 1.0, -0.06], [0.89, 0.82, 0.1],
+    [-0.88, 0.92, 0.08], [-0.68, 1.12, -0.06], [0.89, 1.0, -0.07],
   ];
   for (const [rx, rh, rot] of reeds) {
-    pond.rect(0.035, rh, '#728f6e', rx, 0.02, -0.32, [0, 0, rot], 0.02);
-    pond.oval(0.095, 0.24, '#8a6650', rx - Math.sin(rot) * rh * 0.78, rh * 0.78, -0.29, [0, 0, rot], 0.024);
+    // The stem ends inside its seed head. The same rotation locates both.
+    pond.stroke([[rx, 0.02], [rx - Math.sin(rot) * (rh - 0.14), 0.02 + Math.cos(rot) * (rh - 0.14)]], '#728f6e', 0.025, -0.32);
+    pond.oval(0.075, 0.22, '#8a6650', rx - Math.sin(rot) * (rh - 0.05), 0.02 + Math.cos(rot) * (rh - 0.05), -0.28, [0, 0, rot], 0.02);
   }
 
   // Two notched lily pads resting on the water surface.

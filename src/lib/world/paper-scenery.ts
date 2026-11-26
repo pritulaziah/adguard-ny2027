@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
 import { TRACK_LENGTH, stopX, STORY_END } from './route';
-import { cut, oval, rect, stroke } from './paper-shapes';
+import { oval } from './paper-shapes';
 import { paperSheet, seasonalPaperMaterial, transparentPaperSheet, type ScalarUniform } from './paper-materials';
 import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
 import { carded } from './paper-mesh';
 import { GROUND_RAMP, SEASON_BORDERS } from './seasons';
-import { addBunny, addCat, addCrab, addDeer, addFish, addFox, addPondWithFrog, addSeaDragon, addSnowman, type AnimalBuilderContext } from './animals';
+import { addBird, addBunny, addCat, addDeer, addCrab, addFish, addFox, addHedgehog, addOwl, addPondWithFrog, addSnowman, addSquirrel, type AnimalBuilderContext } from './animals';
 import { addForegroundFraming, addPanoramaRidges, addSkyDetails } from './paper-backdrop';
 import { createYieldPacer } from './schedule';
 import { isAnimated, motionFor, type PaperPart } from './part-motion';
@@ -81,7 +81,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
       scale: mesh.scale.clone(),
       phase: parts.length * 0.73,
       worldX: mesh.matrixWorld.elements[12],
-      gateSide: mesh.name === 'garden-gate-left' ? -1 : 1,
       key,
       sparkLift,
       sparkOffsetX,
@@ -403,48 +402,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     }
   }
 
-  function garden(x: number): void {
-    const arch = detail('paper-garden-gate', x, -1.55);
-    arch.stroke([[-0.85, 0], [-0.85, 1.82], [-0.55, 2.24], [0.55, 2.24], [0.85, 1.82], [0.85, 0]], colors.cream, 0.09, 0);
-    for (const sign of [-1, 1]) {
-      const gate = rect(arch.group, 0.7, 0.07, '#d9dcc1', sign * 0.82, 0.33, 0.1);
-      gate.name = sign < 0 ? 'garden-gate-left' : 'garden-gate-right';
-      // Slats are children of the hinge, so the whole gate swings open together.
-      for (let i = 0; i < 5; i++) rect(gate, 0.05, 0.93, colors.cream, -sign * (i * 0.15 + 0.04), 0, 0.07);
-      rect(gate, 0.66, 0.06, '#d9dcc1', -sign * 0.34, 0.68, 0.06);
-      animate(gate, 'gate', sign > 0 ? 'gate' : undefined, 2.15, -0.82);
-    }
-    for (let i = 0; i < 10; i++) {
-      const px = i < 5 ? -0.85 : 0.85;
-      const py = 0.4 + (i % 5) * 0.35;
-      arch.leaf(0.2, 0.35, i % 2 ? '#9aaf85' : '#859e7b', px, py, 0.12, [0, 0, i % 2 ? -0.7 : 0.7]);
-    }
-    for (const px of [-0.7, 0, 0.7]) {
-      arch.oval(0.26, 0.26, '#e2b2a4', px, 2.2, 0.15);
-      arch.oval(0.08, 0.08, colors.gold, px, 2.2, 0.21);
-    }
-  }
-
-  function summerUmbrella(x: number): void {
-    const umbrella = detail('striped-summer-umbrella', x + 1.7, -1.9, 0.9);
-    umbrella.rect(0.06, 1.55, '#9d8062');
-    for (let i = 0; i < 6; i++) {
-      const left = -0.95 + i * (1.9 / 6);
-      umbrella.cut([[left, 1.42], [0, 2.05], [left + 1.9 / 6, 1.42]], i % 2 ? '#f0e3c4' : '#cd8572', 0, 0, 0.04);
-    }
-    umbrella.oval(0.09, 0.09, colors.gold, 0, 2.08, 0.1);
-    const anchor = new THREE.Group();
-    anchor.position.y = 2.08;
-    umbrella.group.add(anchor);
-    animate(anchor, 'still', 'umbrella');
-
-    // Subtle beach grass & pastel seashells resting along the summer shore.
-    const shells = detail('summer-beach-details', x - 1.15, -0.82);
-    shells.oval(0.15, 0.11, '#f0d8c4', -0.45, 0.04, 0.02, [0, 0, 0.2], 0.016);
-    shells.star(0.095, '#df937a', 0.18, 0.05, 0.03);
-    shells.oval(0.12, 0.09, '#e7e1cc', 0.62, 0.04, -0.02, [0, 0, -0.3], 0.016);
-  }
-
   function createTransferStations(): void {
     // 1. Winter Rails -> Spring Garden Path
     const winterSpring = detail('transfer-winter-spring', SEASON_BORDERS.spring, -0.62);
@@ -626,7 +583,8 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   // Stop 2 (AdGuard on Meta Quest, spring, x = 25.30): bicycle clamp 20.8 .. 41.95.
   broadTree(stopX(2) - 5.9, 'spring-green', 0.88, -2.35);
   broadTree(stopX(2) - 4.55, 'spring-blossom', 1.08, -2.08);
-  addFox(animalCtx, stopX(2) - 2.45, -1.02);
+  addFox(animalCtx, stopX(2) - 2.75, -1.02);
+  addHedgehog(animalCtx, stopX(2) + 2.85, -1.02);
   broadTree(stopX(2) + 3.5, 'spring-green', 0.96, -2.68);
   await pause();
 
@@ -634,12 +592,12 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   broadTree(stopX(3) - 6.35, 'spring-blossom', 0.94, -2.16);
   broadTree(stopX(3) - 4.15, 'spring-green', 0.9, -3.03);
   broadTree(stopX(3) - 1.95, 'spring-blossom', 0.78, -2.65);
-  garden(stopX(3) + 0.8);
-  addPondWithFrog(animalCtx, stopX(3) + 4.05, -1.04);
+  addBird(animalCtx, stopX(3) - 2.9, -1.45);
+  addPondWithFrog(animalCtx, stopX(3) + 3.05, -1.04);
   await pause();
   const meadowSpots: Array<[number, number]> = [
     [-5.3, -0.78], [-3.8, -1.3], [-1.4, -0.75], [-0.4, -1.45],
-    [0.75, -0.82], [2.85, -0.78], [5.15, -0.85], [5.95, -1.35],
+    [0.75, -0.82], [5.15, -0.85], [5.95, -1.35],
   ];
   meadowSpots.forEach(([dx, dz], idx) =>
     springMeadowCluster((dx < 0 ? stopX(2) : stopX(3)) + dx, dz, 202604 + idx * 17),
@@ -647,25 +605,24 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   await pause();
 
   // Stop 4 (AdGuard for Windows v8.0, summer, x = 50.60): sailboat clamp 46.3 .. 54.9; laptop at -1.95.
-  addSeaDragon(animalCtx, stopX(4) - 4.05, -1.15);
-  addCrab(animalCtx, stopX(4) + 1.65, -1.14);
-  addFish(animalCtx, stopX(4) + 4.15, -0.34);
-  coastalPine(stopX(4) + 3.4, 0.88, -2.22);
+  addCrab(animalCtx, stopX(4) - 2.85, -1.14);
+  addFish(animalCtx, stopX(4) + 3.05, -0.34);
   coastalPine(stopX(4) - 5.1, 0.82, -2.2);
-  summerUmbrella(stopX(4) - 2.6);
   await pause();
 
   // Stop 5 (AdGuard Mini for Android v3.0, autumn, x = 63.25): car clamp 58.95 .. 79.5; lantern at +1.95.
   broadTree(stopX(5) - 6.55, 'autumn-birch', 0.92, -2.95);
   broadTree(stopX(5) - 5.55, 'autumn-maple', 1.12, -2.15);
   broadTree(stopX(5) - 4.4, 'autumn-oak', 0.82, -3.0);
-  addCat(animalCtx, stopX(5) - 2.45, -1.02);
-  addBunny(animalCtx, stopX(5) + 3.55, -0.98);
+  addBunny(animalCtx, stopX(5) - 2.85, -0.98);
+  addSquirrel(animalCtx, stopX(5) + 2.85, -1.02);
   autumnWind(stopX(5) - 5.2);
   await pause();
 
-  // Stop 6 (AdGuard Home 1.0, autumn, x = 75.90): car clamp 58.95 .. 79.5; mailbox at -2.2.
-  broadTree(stopX(6) + 3.4, 'autumn-birch', 0.88, -3.05);
+  // Stop 6 (AdGuard Home 1.0, autumn, x = 75.90): car clamp 58.95 .. 79.5; cat and owl flank the story.
+  addCat(animalCtx, stopX(6) - 2.85, -1.02);
+  addOwl(animalCtx, stopX(6) + 2.85, -1.4);
+  broadTree(stopX(6) + 3.9, 'autumn-birch', 0.88, -3.05);
   broadTree(stopX(6) + 4.6, 'autumn-maple', 1.06, -2.12);
   broadTree(stopX(6) + 5.8, 'autumn-oak', 0.88, -2.84);
   autumnWind(stopX(6) + 2.45);

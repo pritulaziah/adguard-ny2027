@@ -4,7 +4,7 @@ import { figureFacts } from './figure-facts.ts';
 import { storyProducts } from './story-modal.ts';
 
 const storyIds = ['ios-pqc', 'quest', 'extension', 'windows', 'mini-android', 'home'];
-const interactionKeys = ['deer', 'snowman', 'gate', 'fox', 'frog', 'fish', 'dragon', 'crab', 'cat', 'bunny', 'mail', 'umbrella'];
+const interactionKeys = ['deer', 'snowman', 'fox', 'hedgehog', 'bird', 'frog', 'crab', 'fish', 'bunny', 'squirrel', 'cat', 'owl'];
 
 test('every story has a deep dive in both languages', () => {
   expect(Object.keys(deepDives).sort()).toEqual([...storyIds].sort());
@@ -66,10 +66,11 @@ test('facts at one stop differ from each other', () => {
   const stops = [
     ['deer'],
     ['snowman'],
-    ['frog', 'gate'],
-    ['dragon', 'crab', 'fish', 'umbrella'],
-    ['cat', 'bunny'],
-    ['mail'],
+    ['fox', 'hedgehog'],
+    ['bird', 'frog'],
+    ['crab', 'fish'],
+    ['bunny', 'squirrel'],
+    ['cat', 'owl'],
   ];
   for (const stop of stops) {
     for (const language of ['ru', 'en']) {
