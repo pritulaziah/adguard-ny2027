@@ -82,6 +82,20 @@ export function createPaperTrain(scene: THREE.Scene, options: PaperTrainOptions 
       boiler.scale.set(1, 1, 0.31);
       boiler.position.set(0.17, 0.44, 0);
       group.add(boiler);
+      // Small brass steam dome and warm headlamp on the front of the boiler.
+      const dome = carded(new THREE.CylinderGeometry(0.068, 0.075, 0.11, 12), '#d9be7f');
+      dome.scale.set(1, 1, 0.42);
+      dome.position.set(0.03, 0.65, 0);
+      group.add(dome);
+      for (const bx of [-0.04, 0.24]) {
+        const band = carded(new THREE.BoxGeometry(0.024, 0.36, 0.124), '#d8c28a');
+        band.position.set(bx, 0.44, 0);
+        group.add(band);
+      }
+      const headlamp = carded(new THREE.CylinderGeometry(0.055, 0.05, 0.06, 12), '#fae6aa');
+      headlamp.rotation.z = Math.PI / 2;
+      headlamp.position.set(0.55, 0.47, 0.02);
+      group.add(headlamp);
 
       if (festive) {
         const star = starBadge(0.13, '#edd086');

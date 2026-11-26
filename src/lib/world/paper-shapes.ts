@@ -35,12 +35,12 @@ export function cut(
   return place(parent, geometry, color, x, y, z, side);
 }
 
-export function oval(parent: THREE.Object3D, width: number, height: number, color: string, x = 0, y = 0, z = 0): THREE.Mesh {
-  return place(parent, ovalGeometry(width, height), color, x, y, z);
+export function oval(parent: THREE.Object3D, width: number, height: number, color: string, x = 0, y = 0, z = 0, depth = 0.045): THREE.Mesh {
+  return place(parent, ovalGeometry(width, height, depth).clone(), color, x, y, z);
 }
 
-export function rect(parent: THREE.Object3D, width: number, height: number, color: string, x = 0, y = 0, z = 0): THREE.Mesh {
-  return place(parent, rectGeometry(width, height), color, x, y, z);
+export function rect(parent: THREE.Object3D, width: number, height: number, color: string, x = 0, y = 0, z = 0, depth = 0.045): THREE.Mesh {
+  return place(parent, rectGeometry(width, height, depth).clone(), color, x, y, z);
 }
 
 export function stroke(parent: THREE.Object3D, points: Outline, color: string, width = 0.025, z = 0.1): void {
@@ -48,11 +48,11 @@ export function stroke(parent: THREE.Object3D, points: Outline, color: string, w
 }
 
 export function leaf(parent: THREE.Object3D, width: number, height: number, color: string, x: number, y: number, z = 0): THREE.Mesh {
-  const mesh = place(parent, leafGeometry(width, height), color, x, y, z);
+  const mesh = place(parent, leafGeometry(width, height).clone(), color, x, y, z);
   stroke(mesh, [[0, 0.07], [0, height * 0.86]], '#b9b491', 0.012, 0.05);
   return mesh;
 }
 
 export function star(parent: THREE.Object3D, radius: number, color: string, x: number, y: number, z = 0): THREE.Mesh {
-  return place(parent, starGeometry(radius), color, x, y, z);
+  return place(parent, starGeometry(radius).clone(), color, x, y, z);
 }

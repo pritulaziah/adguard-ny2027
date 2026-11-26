@@ -107,6 +107,65 @@ export function leafGeometry(width: number, height: number, depth = FACE_DEPTH):
   });
 }
 
+export function mapleLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
+  return template(`maple:${size}:${depth}`, () => {
+    const s = size;
+    const shape = new THREE.Shape();
+    shape.moveTo(0, -s * 0.56);
+    shape.lineTo(-s * 0.05, -s * 0.32);
+    shape.lineTo(-s * 0.42, -s * 0.38);
+    shape.lineTo(-s * 0.3, -s * 0.14);
+    shape.lineTo(-s * 0.54, s * 0.04);
+    shape.lineTo(-s * 0.24, s * 0.12);
+    shape.lineTo(-s * 0.32, s * 0.42);
+    shape.lineTo(-s * 0.1, s * 0.31);
+    shape.lineTo(0, s * 0.56);
+    shape.lineTo(s * 0.1, s * 0.31);
+    shape.lineTo(s * 0.32, s * 0.42);
+    shape.lineTo(s * 0.24, s * 0.12);
+    shape.lineTo(s * 0.54, s * 0.04);
+    shape.lineTo(s * 0.3, -s * 0.14);
+    shape.lineTo(s * 0.42, -s * 0.38);
+    shape.lineTo(s * 0.05, -s * 0.32);
+    shape.closePath();
+    return extrude(shape, depth);
+  });
+}
+
+export function oakLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
+  return template(`oak:${size}:${depth}`, () => {
+    const s = size;
+    const shape = new THREE.Shape();
+    shape.moveTo(0, -s * 0.55);
+    shape.quadraticCurveTo(-s * 0.26, -s * 0.42, -s * 0.18, -s * 0.22);
+    shape.quadraticCurveTo(-s * 0.38, -s * 0.1, -s * 0.22, s * 0.06);
+    shape.quadraticCurveTo(-s * 0.36, s * 0.22, -s * 0.16, s * 0.34);
+    shape.quadraticCurveTo(-s * 0.14, s * 0.54, 0, s * 0.56);
+    shape.quadraticCurveTo(s * 0.14, s * 0.54, s * 0.16, s * 0.34);
+    shape.quadraticCurveTo(s * 0.36, s * 0.22, s * 0.22, s * 0.06);
+    shape.quadraticCurveTo(s * 0.38, -s * 0.1, s * 0.18, -s * 0.22);
+    shape.quadraticCurveTo(s * 0.26, -s * 0.42, 0, -s * 0.55);
+    shape.closePath();
+    return extrude(shape, depth);
+  });
+}
+
+export function birchLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
+  return template(`birch:${size}:${depth}`, () => {
+    const s = size;
+    const shape = new THREE.Shape();
+    shape.moveTo(0, -s * 0.46);
+    shape.bezierCurveTo(-s * 0.36, -s * 0.26, -s * 0.32, s * 0.16, 0, s * 0.52);
+    shape.bezierCurveTo(s * 0.32, s * 0.16, s * 0.36, -s * 0.26, 0, -s * 0.46);
+    shape.closePath();
+    return extrude(shape, depth);
+  });
+}
+
+export function shapeGeometry(shape: THREE.Shape, depth = FACE_DEPTH): THREE.BufferGeometry {
+  return extrude(shape, depth);
+}
+
 export function starGeometry(radius: number, depth = FACE_DEPTH): THREE.BufferGeometry {
   return template(`star:${radius}:${depth}`, () => {
     const outline: Outline = Array.from({ length: 10 }, (_, i) => {
@@ -235,18 +294,38 @@ export class PaperDetail {
     return this.raw(new THREE.BoxGeometry(width, height, depth), color, x, y, z, rotate);
   }
 
-  cut(outline: Outline, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
-    this.batch.add(cutGeometry(outline), color, this.world({ x, y, z, rotate }));
+  cut(outline: Outline, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+    this.batch.add(cutGeometry(outline, depth), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  oval(width: number, height: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
-    this.batch.add(ovalGeometry(width, height), color, this.world({ x, y, z, rotate }));
+  shape(shape: THREE.Shape, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+    this.batch.add(shapeGeometry(shape, depth), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  rect(width: number, height: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
-    this.batch.add(rectGeometry(width, height), color, this.world({ x, y, z, rotate }));
+  oval(width: number, height: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+    this.batch.add(ovalGeometry(width, height, depth), color, this.world({ x, y, z, rotate }));
+    return this;
+  }
+
+  rect(width: number, height: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+    this.batch.add(rectGeometry(width, height, depth), color, this.world({ x, y, z, rotate }));
+    return this;
+  }
+
+  mapleLeaf(size: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+    this.batch.add(mapleLeafGeometry(size), color, this.world({ x, y, z, rotate }));
+    return this;
+  }
+
+  oakLeaf(size: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+    this.batch.add(oakLeafGeometry(size), color, this.world({ x, y, z, rotate }));
+    return this;
+  }
+
+  birchLeaf(size: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+    this.batch.add(birchLeafGeometry(size), color, this.world({ x, y, z, rotate }));
     return this;
   }
 

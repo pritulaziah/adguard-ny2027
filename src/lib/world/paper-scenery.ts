@@ -1,19 +1,24 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
 import { TRACK_LENGTH, STOP_SPACING, STORY_END } from './route';
-import { cut, oval, rect, stroke, leaf, star } from './paper-shapes';
-import { paperSheet, seasonalPaperMaterial } from './paper-materials';
+import { cut, oval, rect, stroke } from './paper-shapes';
+import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
 import { PaperBatch, PaperDetail, cutGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
 import { carded } from './paper-mesh';
-import { FAR_RIDGE_RAMP, GROUND_RAMP, NEAR_RIDGE_RAMP, SEASON_BORDERS } from './seasons';
+import { GROUND_RAMP, SEASON_BORDERS } from './seasons';
+import { addBunny, addCat, addCrab, addDeer, addFish, addFox, addPondWithFrog, addSeaDragon, addSnowman, type AnimalBuilderContext } from './paper-animals';
+import { addForegroundFraming, addPanoramaRidges, addSkyDetails } from './paper-backdrop';
 
 export interface PaperPart {
   mesh: THREE.Mesh;
   position: THREE.Vector3;
   rotation: THREE.Euler;
   scale: THREE.Vector3;
-  kind: 'sway' | 'wing' | 'fire' | 'float' | 'jump' | 'gate' | 'spin' | 'wave';
+  kind: 'sway' | 'wing' | 'fire' | 'float' | 'jump' | 'gate' | 'spin' | 'wave' | 'flutter';
   phase: number;
+  key?: Interaction;
+  sparkLift?: number;
+  sparkOffsetX?: number;
 }
 
 export interface PaperSet {
@@ -24,8 +29,23 @@ export interface PaperSet {
 
 const colors = { cream: '#f4ead5', snow: '#eeeae0', wood: '#967665', ink: '#4d5551', green: '#759486', gold: '#e4c07c' };
 
+function shapeFrom(draw: (shape: THREE.Shape) => void): THREE.Shape {
+  const shape = new THREE.Shape();
+  draw(shape);
+  return shape;
+}
+
+/** Deterministic PRNG so leaf drifts and flower beds stay stable across reloads. */
+function seeded(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
 /** Original paper scenery. Every shape is made here, directly along the route. */
-export function createPaperScenery(): PaperSet {
+export function createPaperScenery(cameraX: ScalarUniform): PaperSet {
   const group = new THREE.Group();
   group.name = 'adguard-paper-scenery';
   const parts: PaperPart[] = [];
@@ -38,16 +58,22 @@ export function createPaperScenery(): PaperSet {
     return new PaperDetail(sheets, group, name, x, y, z, scale);
   }
 
-  function place(name: string, x: number, z = -1.1, scale = 1): THREE.Group {
+  function place(name: string, x: number, z = -1.1, scale = 1, y = 0.34): THREE.Group {
     const object = new THREE.Group();
     object.name = name;
-    object.position.set(x, 0.34, z);
+    object.position.set(x, y, z);
     object.scale.setScalar(scale);
     group.add(object);
     return object;
   }
 
-  function animate(mesh: THREE.Mesh, kind: PaperPart['kind'], key?: Interaction): void {
+  function animate(
+    mesh: THREE.Mesh,
+    kind: PaperPart['kind'],
+    key?: Interaction,
+    sparkLift?: number,
+    sparkOffsetX?: number,
+  ): void {
     parts.push({
       mesh,
       kind,
@@ -55,25 +81,14 @@ export function createPaperScenery(): PaperSet {
       rotation: mesh.rotation.clone(),
       scale: mesh.scale.clone(),
       phase: parts.length * 0.73,
+      key,
+      sparkLift,
+      sparkOffsetX,
     });
     if (key && !objects.has(key)) {
       mesh.name = key;
       objects.set(key, mesh);
     }
-  }
-
-  function eyes(parent: THREE.Object3D, width: number, y: number, z = 0.11): void {
-    for (const x of [-width / 2, width / 2]) oval(parent, 0.045, 0.07, colors.ink, x, y, z);
-  }
-
-  function eyesOn(parent: PaperDetail, width: number, y: number, z = 0.11): void {
-    for (const x of [-width / 2, width / 2]) parent.oval(0.045, 0.07, colors.ink, x, y, z);
-  }
-
-  function shield(parent: THREE.Object3D, x: number, y: number, scale = 1): void {
-    const badge = cut(parent, [[0, 0.35], [0.29, 0.24], [0.25, -0.08], [0, -0.31], [-0.25, -0.08], [-0.29, 0.24]], colors.green, x, y, 0.15);
-    badge.scale.setScalar(scale);
-    stroke(badge, [[-0.13, 0.03], [-0.025, -0.07], [0.15, 0.13]], colors.cream, 0.04);
   }
 
   function shieldOn(parent: PaperDetail, x: number, y: number, scale = 1): void {
@@ -82,283 +97,384 @@ export function createPaperScenery(): PaperSet {
     badge.stroke([[-0.13, 0.03], [-0.025, -0.07], [0.15, 0.13]], colors.cream, 0.04);
   }
 
-  function fir(x: number, height: number, snowy = false, festive = false): void {
+  function fir(x: number, height: number, snowy = false, festive = false, z = -2.05): void {
     const scale = height / 3;
     const at = (lx: number, ly: number, lz = 0): Placement => ({
       x: x + lx * scale,
       y: 0.34 + ly * scale,
-      z: -1.95 + lz * scale,
+      z: z + lz * scale,
       scale: [scale, scale, scale],
     });
 
-    firs.add(rectGeometry(0.14, 0.85), colors.wood, at(0, -0.05, -0.055));
+    firs.add(rectGeometry(0.16, 0.88), colors.wood, at(0, -0.05, -0.06));
     for (let tier = 0; tier < 4; tier++) {
-      const bottom = 0.4 + tier * 0.5;
-      const width = 1.65 - tier * 0.32;
+      const bottom = 0.38 + tier * 0.5;
+      const width = 1.7 - tier * 0.33;
       firs.add(
-        cutGeometry([[-width / 2, bottom], [0, bottom + 1.15], [width / 2, bottom], [0.02, bottom + 0.13]]),
-        tier % 2 ? '#809b8b' : '#688578',
+        cutGeometry([[-width / 2, bottom], [0, bottom + 1.18], [width / 2, bottom], [0.02, bottom + 0.14]]),
+        tier % 2 ? '#7b9888' : '#658376',
         at(0, 0, tier * 0.035),
       );
       firs.add(
-        cutGeometry([[0, bottom + 1.15], [width / 2, bottom], [0.02, bottom + 0.13]]),
-        '#59776c',
-        at(0, 0, tier * 0.035 + 0.05),
+        cutGeometry([[0, bottom + 1.18], [width / 2, bottom], [0.02, bottom + 0.14]]),
+        '#567469',
+        at(0, 0, tier * 0.035 + 0.048),
       );
       if (snowy) {
         firs.add(
           cutGeometry([
-            [-width * 0.34, bottom + 0.24],
-            [0, bottom + 1.15],
-            [width * 0.25, bottom + 0.34],
-            [0.07, bottom + 0.48],
-            [-0.04, bottom + 0.33],
+            [-width * 0.35, bottom + 0.26],
+            [0, bottom + 1.18],
+            [width * 0.26, bottom + 0.36],
+            [0.08, bottom + 0.5],
+            [-0.04, bottom + 0.34],
           ]),
           colors.snow,
           at(0, 0, tier * 0.035 + 0.07),
         );
       }
       if (festive && tier < 3) {
-        firs.add(ovalGeometry(0.13, 0.16), tier % 2 ? '#ca8f7b' : colors.gold, at(-0.15 + tier * 0.1, bottom + 0.28, 0.25));
+        firs.add(ovalGeometry(0.14, 0.16), tier % 2 ? '#cf8572' : colors.gold, at(-0.18 + tier * 0.14, bottom + 0.28, 0.22));
+        firs.add(ovalGeometry(0.12, 0.14), tier % 2 ? colors.gold : '#cf8572', at(0.24 - tier * 0.09, bottom + 0.44, 0.22));
       }
     }
-    if (festive) firs.add(starGeometry(0.22), colors.gold, at(0, 3.1, 0.2));
+    if (festive) firs.add(starGeometry(0.24), colors.gold, at(0, 3.12, 0.2));
   }
 
   function cabin(x: number, final = false): void {
-    const house = detail('paper-cabin', x, -1.7);
-    house.cut([[-0.95, 0], [0.95, 0], [0.95, 1.42], [0, 2.17], [-0.95, 1.42]], '#b18d79');
-    house.cut([[0.95, 0], [1.42, 0.2], [1.42, 1.57], [0.95, 1.42]], '#8e7060', 0, 0, -0.01);
-    house.cut([[-0.02, 2.35], [0.45, 2.52], [1.62, 1.59], [1.17, 1.4]], '#d7d4c8', 0, 0, 0.02);
-    for (let i = 0; i < 6; i++) house.stroke([[-0.94, 0.14 + i * 0.22], [0.94, 0.14 + i * 0.22]], '#987361', 0.025, 0.06);
-    house.cut([[-1.16, 1.38], [-0.02, 2.35], [1.17, 1.4], [0.86, 1.42], [-0.02, 2.08], [-0.85, 1.38]], '#8a7165', 0, 0, 0.1);
-    house.cut([[-1.15, 1.5], [-0.02, 2.39], [1.14, 1.5], [0.83, 1.57], [0.46, 1.8], [0.14, 2.04], [-0.1, 2.08], [-0.69, 1.63]], colors.snow, 0, 0, 0.16);
-    house.rect(0.46, 0.94, '#6f8377', 0.25, 0.03, 0.08);
-    house.oval(0.055, 0.055, colors.gold, 0.38, 0.45, 0.15);
-    house.rect(0.57, 0.58, '#705f53', -0.48, 0.58, 0.08);
-    house.rect(0.45, 0.46, '#efd19b', -0.48, 0.64, 0.14);
-    house.stroke([[-0.48, 0.64], [-0.48, 1.1]], '#a08463', 0.035, 0.2);
-    house.stroke([[-0.7, 0.87], [-0.25, 0.87]], '#a08463', 0.035, 0.2);
-    house.rect(0.25, 0.65, '#9d8170', 0.52, 1.91, -0.12);
+    const house = detail('paper-cabin', x, -1.85);
+    house.cut([[-0.98, 0], [0.98, 0], [0.98, 1.44], [0, 2.2], [-0.98, 1.44]], '#b18d79');
+    house.cut([[0.98, 0], [1.46, 0.2], [1.46, 1.59], [0.98, 1.44]], '#8e7060', 0, 0, -0.01);
+    house.cut([[-0.02, 2.38], [0.46, 2.55], [1.66, 1.61], [1.18, 1.42]], '#d7d4c8', 0, 0, 0.02);
+    // Cozy stone base grounding the cabin on snow.
+    house.rect(1.98, 0.16, '#87837c', 0, 0, 0.055, undefined, 0.03);
+    for (let i = 0; i < 6; i++) house.stroke([[-0.96, 0.22 + i * 0.21], [0.96, 0.22 + i * 0.21]], '#987361', 0.024, 0.06);
+    house.cut([[-1.18, 1.4], [-0.02, 2.38], [1.19, 1.42], [0.87, 1.44], [-0.02, 2.1], [-0.86, 1.4]], '#8a7165', 0, 0, 0.1);
+    house.cut([[-1.17, 1.52], [-0.02, 2.42], [1.16, 1.52], [0.84, 1.59], [0.46, 1.82], [0.14, 2.06], [-0.1, 2.1], [-0.7, 1.65]], colors.snow, 0, 0, 0.16);
+    house.rect(0.46, 0.94, '#6f8377', 0.26, 0.06, 0.08);
+    house.oval(0.055, 0.055, colors.gold, 0.39, 0.48, 0.15);
+    house.rect(0.58, 0.58, '#705f53', -0.47, 0.6, 0.08);
+    house.rect(0.46, 0.46, '#f4d69d', -0.47, 0.66, 0.14);
+    house.stroke([[-0.47, 0.66], [-0.47, 1.12]], '#a08463', 0.034, 0.2);
+    house.stroke([[-0.7, 0.89], [-0.24, 0.89]], '#a08463', 0.034, 0.2);
+    house.rect(0.25, 0.65, '#9d8170', 0.52, 1.94, -0.12);
     for (let i = 0; i < 3; i++) {
-      const puff = oval(house.group, 0.25 + i * 0.06, 0.14, '#d8d7cf', 0.51 - i * 0.1, 2.68 + i * 0.16, -0.2);
+      const puff = oval(house.group, 0.24 + i * 0.07, 0.14 + i * 0.02, '#e2e2da', 0.51 - i * 0.11, 2.7 + i * 0.18, -0.2);
       animate(puff, 'float');
     }
-    shieldOn(house, 0, 1.58, 0.65);
-    if (final) for (let i = 0; i < 5; i++) house.star(0.085, colors.gold, -0.82 + i * 0.4, 1.31, 0.24);
-  }
-
-  function deer(x: number): void {
-    const animal = detail('paper-deer', x, -1.05);
-    animal.oval(0.9, 0.58, '#bf9c81', 0, 0.62);
-    for (const px of [-0.26, 0.25]) animal.rect(0.12, 0.48, '#ad8972', px, 0.02, -0.05);
-    const head = oval(animal.group, 0.52, 0.68, '#c9a88a', 0.27, 1.16, 0.1);
-    cut(head, [[-0.15, 0.19], [-0.38, 0.46], [-0.32, 0.13]], '#b78e75', 0, 0, 0.05);
-    cut(head, [[0.15, 0.19], [0.38, 0.46], [0.32, 0.13]], '#b78e75', 0, 0, 0.05);
-    for (const side of [-1, 1]) {
-      stroke(head, [[side * 0.12, 0.3], [side * 0.19, 0.63], [side * 0.12, 0.78]], '#816d5d', 0.035);
-      stroke(head, [[side * 0.17, 0.55], [side * 0.36, 0.67], [side * 0.39, 0.82]], '#816d5d', 0.03);
+    shieldOn(house, 0, 1.6, 0.65);
+    if (final) {
+      for (let i = 0; i < 5; i++) house.star(0.09, colors.gold, -0.84 + i * 0.42, 1.33, 0.24);
     }
-    eyes(head, 0.2, 0.06);
-    oval(head, 0.11, 0.08, '#a4675a', 0, -0.12, 0.13);
-    rect(head, 0.52, 0.12, '#bb786e', 0, -0.29, 0.14);
-    for (const px of [-0.18, -0.02, 0.12]) animal.oval(0.06, 0.09, colors.cream, px, 0.7, 0.1);
-    animate(head, 'sway', 'deer');
-  }
-
-  function snowman(x: number, interactive = true): void {
-    const man = detail('paper-snowman', x, -1.05);
-    man.oval(0.94, 1.06, colors.snow, 0, 0.54);
-    const head = man.child('paper-snowman-head', 0, 1.3, 0.08);
-    head.oval(0.67, 0.64, '#f6f0e1');
-    eyesOn(head, 0.22, 0.08);
-    head.cut([[0.04, -0.04], [0.39, -0.1], [0.04, -0.15]], '#cf9a6d', 0, 0, 0.14);
-    man.rect(0.75, 0.12, '#7d8f82', 0, 1.62, 0.12);
-    man.rect(0.45, 0.37, '#687e74', -0.03, 1.74, 0.1);
-    man.rect(0.72, 0.16, '#b87d70', 0, 0.98, 0.17);
-    man.rect(0.14, 0.4, '#b87d70', 0.15, 0.69, 0.18);
-    for (const y of [0.38, 0.63, 0.84]) man.oval(0.06, 0.07, colors.ink, 0, y, 0.14);
-    const arm = cut(man.group, [[0, 0], [0.45, 0.28], [0.47, 0.65], [0.51, 0.65], [0.51, 0.29], [0.73, 0.46], [0.76, 0.42], [0.03, -0.07]], colors.wood, 0.3, 0.8, 0.04);
-    animate(arm, 'wing', interactive ? 'snowman' : undefined);
-    man.stroke([[-0.35, 0.84], [-0.67, 1.07], [-0.75, 1.32]], colors.wood, 0.045, 0.05);
   }
 
   function fire(x: number): void {
-    const camp = detail('paper-campfire', x, -0.85);
-    for (const a of [-0.3, 0.3]) camp.rect(1, 0.13, '#9d7d66', 0, 0.03, a > 0 ? 0.05 : 0, [0, 0, a]);
-    const flame = cut(camp.group, [[-0.32, 0], [-0.38, 0.3], [-0.2, 0.57], [-0.16, 0.37], [0.05, 0.95], [0.2, 0.5], [0.3, 0.62], [0.4, 0.25], [0.3, 0]], '#d49b70', 0, 0.12, 0.12);
-    cut(flame, [[-0.18, 0], [-0.2, 0.25], [0, 0.6], [0.18, 0.19], [0.14, 0]], '#eed397', 0, 0, 0.06);
-    animate(flame, 'fire', 'fire');
+    const camp = detail('paper-campfire', x, -0.88);
+    // Warm river-stone hearth ring.
+    const stones: Array<[number, number, number, string]> = [
+      [-0.46, 0.06, 0.18, '#8d877f'], [-0.22, 0.04, 0.2, '#9d968d'], [0.04, 0.03, 0.22, '#88827a'],
+      [0.29, 0.05, 0.19, '#999289'], [0.49, 0.07, 0.17, '#857f78'],
+    ];
+    for (const [sx, sy, sw, col] of stones) camp.oval(sw, 0.12, col, sx, sy, 0.09, undefined, 0.026);
+
+    for (const a of [-0.28, 0.28]) camp.rect(0.96, 0.13, '#8e6d57', 0, 0.04, a > 0 ? 0.04 : -0.01, [0, 0, a]);
+    const outerFlame = shapeFrom(s => {
+      s.moveTo(-0.3, 0);
+      s.bezierCurveTo(-0.4, 0.26, -0.24, 0.52, -0.18, 0.58);
+      s.quadraticCurveTo(-0.14, 0.42, -0.08, 0.44);
+      s.bezierCurveTo(-0.04, 0.68, 0.02, 0.88, 0.04, 0.98);
+      s.bezierCurveTo(0.14, 0.78, 0.18, 0.56, 0.24, 0.62);
+      s.bezierCurveTo(0.38, 0.44, 0.4, 0.18, 0.28, 0);
+      s.closePath();
+    });
+    const flame = cut(camp.group, outerFlame, '#dc8653', 0, 0.12, 0.11, 0.036);
+    const innerFlame = shapeFrom(s => {
+      s.moveTo(-0.16, 0);
+      s.bezierCurveTo(-0.22, 0.22, -0.06, 0.48, 0.01, 0.62);
+      s.bezierCurveTo(0.14, 0.42, 0.2, 0.18, 0.14, 0);
+      s.closePath();
+    });
+    cut(flame, innerFlame, '#f5d88f', 0, 0, 0.042, 0.022);
+    animate(flame, 'fire', 'fire', 0.22);
   }
 
-  function broadTree(x: number, autumn = false): void {
-    const tree = detail('layered-paper-tree', x, -2.05, 1.05);
-    tree.cut([[-0.16, 0], [0.17, 0], [0.1, 1.7], [0.35, 2.3], [0.22, 2.38], [0, 1.95], [-0.3, 2.28], [-0.42, 2.18], [-0.09, 1.6]], colors.wood);
-    const shades = autumn ? ['#bd8373', '#d1a16f', '#ac7367'] : ['#9fb394', '#b9c4a0', '#8fa78c'];
-    for (let i = 0; i < 7; i++) {
-      const a = i / 7 * Math.PI * 2;
-      tree.oval(1.1, 1.2, shades[i % 3], Math.cos(a) * 0.65, 2.2 + Math.sin(a) * 0.53, -0.18 + i * 0.012);
+  type TreeVariant = 'spring-green' | 'spring-blossom' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
+
+  /** Organic multi-layered broadleaf tree with tapered bark trunk nested between foliage planes. */
+  function broadTree(x: number, variant: TreeVariant, scale = 1.0, z = -2.1): void {
+    const tree = detail(`layered-paper-tree-${variant}`, x, z, scale);
+
+    const palettes: Record<TreeVariant, { bark: string; barkMark?: string; back: string; mid: string; front: string; accent?: string }> = {
+      'spring-green': { bark: '#896c59', back: '#729273', mid: '#8aa881', front: '#a3bc91' },
+      'spring-blossom': { bark: '#856758', back: '#c98e8b', mid: '#e2ada6', front: '#f2cec6', accent: '#9bb388' },
+      'autumn-maple': { bark: '#7d6050', back: '#9e5144', mid: '#c66849', front: '#df9451', accent: '#ebbc67' },
+      'autumn-birch': { bark: '#dfd5c3', barkMark: '#7d7367', back: '#c5954d', mid: '#dbb15c', front: '#ebd07b' },
+      'autumn-oak': { bark: '#785d4d', back: '#985c43', mid: '#bc754b', front: '#d79b59', accent: '#c96249' },
+    };
+    const p = palettes[variant];
+
+    // Back canopy silhouette (deepest layer, gives fullness behind the trunk and branches).
+    const backClusters: Array<[number, number, number, number]> = [
+      [-0.78, 2.15, 1.05, 0.96],
+      [0.74, 2.18, 1.08, 0.98],
+      [-0.35, 2.75, 1.15, 1.02],
+      [0.42, 2.72, 1.1, 0.96],
+      [0.02, 3.05, 1.02, 0.88],
+    ];
+    for (let i = 0; i < backClusters.length; i++) {
+      const [cx, cy, cw, ch] = backClusters[i];
+      tree.oval(cw, ch, p.back, cx, cy, -0.16 + i * 0.008, undefined, 0.036);
     }
-    tree.oval(1.24, 1.32, shades[0], 0, 2.26, -0.02);
-    tree.stroke([[0, 0.5], [0.02, 2.55]], '#af9477', 0.04, 0.08);
-    for (let i = 0; i < 5; i++) tree.stroke([[0, 1.5 + i * 0.2], [(i % 2 ? 1 : -1) * 0.42, 1.85 + i * 0.2]], '#af9477', 0.026, 0.08);
+
+    // Tapered organic trunk with gentle root flare and forked upper branches.
+    const trunk = shapeFrom(s => {
+      s.moveTo(-0.24, 0);
+      s.quadraticCurveTo(-0.14, 0.35, -0.11, 1.38);
+      s.lineTo(-0.56, 2.15);
+      s.lineTo(-0.43, 2.22);
+      s.lineTo(-0.04, 1.66);
+      s.lineTo(0.05, 2.36);
+      s.lineTo(0.16, 2.34);
+      s.lineTo(0.11, 1.72);
+      s.lineTo(0.54, 2.14);
+      s.lineTo(0.62, 2.03);
+      s.lineTo(0.12, 1.44);
+      s.quadraticCurveTo(0.14, 0.38, 0.25, 0);
+      s.closePath();
+    });
+    tree.shape(trunk, p.bark, 0, 0, -0.04, undefined, 0.044);
+
+    if (p.barkMark) {
+      // Horizontal paper dashes on birch trunks.
+      for (const [bx, by, bw] of [[-0.06, 0.32, 0.14], [0.05, 0.62, 0.12], [-0.04, 0.94, 0.13], [0.04, 1.26, 0.11]]) {
+        tree.rect(bw, 0.028, p.barkMark, bx, by, 0.012, undefined, 0.012);
+      }
+    }
+
+    // Mid canopy layer wrapping gently over the branch tips.
+    const midClusters: Array<[number, number, number, number]> = [
+      [-0.64, 2.38, 1.02, 0.9],
+      [0.64, 2.34, 0.98, 0.88],
+      [-0.08, 2.66, 1.18, 1.04],
+      [0.24, 2.2, 0.96, 0.84],
+      [-0.36, 2.04, 0.88, 0.78],
+    ];
+    for (let i = 0; i < midClusters.length; i++) {
+      const [cx, cy, cw, ch] = midClusters[i];
+      tree.oval(cw, ch, p.mid, cx, cy, 0.02 + i * 0.008, undefined, 0.036);
+    }
+
+    // Front sunlit foliage puffs for crisp folded-paper depth.
+    const frontClusters: Array<[number, number, number, number]> = [
+      [-0.42, 2.58, 0.78, 0.68],
+      [0.38, 2.64, 0.82, 0.7],
+      [0.02, 2.32, 0.76, 0.66],
+    ];
+    for (let i = 0; i < frontClusters.length; i++) {
+      const [cx, cy, cw, ch] = frontClusters[i];
+      tree.oval(cw, ch, p.front, cx, cy, 0.085 + i * 0.008, undefined, 0.03);
+    }
+
+    // Seasonal botanical leaf or blossom accents perched harmoniously along the canopy edge.
+    if (variant === 'autumn-maple' || variant === 'autumn-oak') {
+      const accents: Array<[number, number, number, string]> = [
+        [-0.86, 2.04, 0.45, p.mid],
+        [-0.22, 3.06, -0.22, p.front],
+        [0.84, 2.38, -0.52, p.mid],
+        [0.34, 1.92, 0.35, p.back],
+      ];
+      for (let i = 0; i < accents.length; i++) {
+        const [ax, ay, rot, col] = accents[i];
+        if (variant === 'autumn-maple') tree.mapleLeaf(0.24, col, ax, ay, 0.125 + i * 0.004, [0, 0, rot]);
+        else tree.oakLeaf(0.24, col, ax, ay, 0.125 + i * 0.004, [0, 0, rot]);
+      }
+    } else if (variant === 'spring-blossom') {
+      const blooms: Array<[number, number]> = [[-0.68, 2.24], [0.06, 2.9], [0.62, 2.32], [-0.2, 2.08]];
+      for (let b = 0; b < blooms.length; b++) {
+        const [bx, by] = blooms[b];
+        for (let pt = 0; pt < 5; pt++) {
+          const a = (pt / 5) * Math.PI * 2 + b * 0.3;
+          tree.oval(0.065, 0.085, '#fceee8', bx + Math.cos(a) * 0.055, by + Math.sin(a) * 0.055, 0.13, [0, 0, a], 0.014);
+        }
+        tree.oval(0.048, 0.048, '#e8c477', bx, by, 0.146, undefined, 0.012);
+      }
+    }
   }
 
-  function flower(x: number, z: number, color: string, height = 0.4): void {
-    const bloom = detail('paper-flower', x, z);
-    bloom.rect(0.025, height, '#7c9475');
-    bloom.leaf(0.12, 0.22, '#9aa880', -0.04, height * 0.25, 0.04, [0, 0, 0.65]);
-    const center = oval(bloom.group, 0.12, 0.12, colors.gold, 0, height, 0.13);
-    for (let i = 0; i < 5; i++) {
-      const a = i * Math.PI * 2 / 5;
-      bloom.oval(0.16, 0.23, color, Math.cos(a) * 0.12, height + Math.sin(a) * 0.12, 0.06, [0, 0, a - Math.PI / 2]);
+  /** Wind-sculpted coastal umbrella pine for the sunny summer shore. */
+  function coastalPine(x: number, scale = 1.0, z = -2.2): void {
+    const pine = detail('coastal-umbrella-pine', x, z, scale);
+    const trunk = shapeFrom(s => {
+      s.moveTo(-0.18, 0);
+      s.bezierCurveTo(-0.14, 0.72, -0.26, 1.48, -0.06, 2.18);
+      s.lineTo(-0.56, 2.52);
+      s.lineTo(-0.46, 2.6);
+      s.lineTo(-0.02, 2.32);
+      s.lineTo(0.48, 2.58);
+      s.lineTo(0.56, 2.48);
+      s.lineTo(0.1, 2.15);
+      s.bezierCurveTo(-0.06, 1.45, 0.08, 0.68, 0.18, 0);
+      s.closePath();
+    });
+    pine.shape(trunk, '#8f725e', 0, 0, -0.03, undefined, 0.044);
+
+    // Layered flat-topped coastal pine canopy pads.
+    pine.oval(1.65, 0.62, '#4f7a6c', 0.02, 2.62, -0.08, undefined, 0.036);
+    pine.oval(1.22, 0.5, '#5e8b7a', -0.58, 2.54, 0.01, undefined, 0.036);
+    pine.oval(1.28, 0.52, '#5e8b7a', 0.62, 2.56, 0.02, undefined, 0.036);
+    pine.oval(1.36, 0.54, '#739f89', 0.04, 2.86, 0.06, undefined, 0.034);
+    pine.oval(0.86, 0.38, '#87b097', -0.28, 2.94, 0.1, undefined, 0.028);
+    pine.oval(0.82, 0.36, '#87b097', 0.38, 2.92, 0.11, undefined, 0.028);
+  }
+
+  /** Natural clustered spring wildflowers (daisies, tulips, and grass blades). */
+  function springMeadowCluster(x: number, z: number, seedVal: number): void {
+    const rng = seeded(seedVal);
+    const cluster = detail('spring-meadow-cluster', x, z);
+    const palette = ['#f3ded2', '#e7b9b2', '#efd69d', '#d3c2dc', '#f6efe0'];
+
+    // Soft grass tufts grounding the cluster.
+    for (let g = 0; g < 4; g++) {
+      const gx = (rng() - 0.5) * 0.55;
+      const gh = 0.2 + rng() * 0.16;
+      const lean = (rng() - 0.5) * 0.12;
+      cluster.cut([[gx - 0.02, 0], [gx + lean, gh], [gx + 0.02, 0]], g % 2 ? '#84a374' : '#739468', 0, 0, -0.02 + g * 0.006, undefined, 0.016);
     }
-    animate(center, 'sway');
+
+    const stems = 2 + Math.floor(rng() * 2);
+    for (let i = 0; i < stems; i++) {
+      const fx = (rng() - 0.5) * 0.48;
+      const fh = 0.24 + rng() * 0.24;
+      const col = palette[Math.floor(rng() * palette.length)];
+      const fz = 0.01 + i * 0.032;
+      cluster.rect(0.022, fh, '#6f9066', fx, 0, fz, undefined, 0.016);
+      cluster.oval(0.09, 0.045, '#89a778', fx - 0.045, fh * 0.38, fz + 0.01, [0, 0, 0.55], 0.014);
+      if (i % 2 === 0) {
+        // Layered 5-petal daisy blossom.
+        for (let p = 0; p < 5; p++) {
+          const a = (p / 5) * Math.PI * 2;
+          cluster.oval(0.075, 0.11, col, fx + Math.cos(a) * 0.06, fh + Math.sin(a) * 0.06, fz + 0.016, [0, 0, a - Math.PI / 2], 0.014);
+        }
+        cluster.oval(0.065, 0.065, colors.gold, fx, fh, fz + 0.032, undefined, 0.014);
+      } else {
+        // Cupped paper tulip bud.
+        const tulip = shapeFrom(s => {
+          s.moveTo(0, -0.02);
+          s.bezierCurveTo(-0.1, 0.02, -0.09, 0.14, -0.05, 0.18);
+          s.lineTo(0, 0.13);
+          s.lineTo(0.05, 0.18);
+          s.bezierCurveTo(0.09, 0.14, 0.1, 0.02, 0, -0.02);
+          s.closePath();
+        });
+        cluster.shape(tulip, col, fx, fh - 0.03, fz + 0.018, undefined, 0.018);
+      }
+    }
+  }
+
+  /** Rich organic autumn leaf drifts lying flat and natural on the ground. */
+  function autumnLeafDrifts(): void {
+    const rng = seeded(202610);
+    const leafPalette = ['#c65e44', '#da8b49', '#e4b75e', '#ad5246', '#cf784d', '#d8a758'];
+
+    // Natural drift zones around tree bases, road verges, and animal resting spots.
+    const zones: Array<{ cx: number; spreadX: number; cz: number; spreadZ: number; count: number }> = [
+      { cx: spacing * 4 - 4.3, spreadX: 2.3, cz: -1.35, spreadZ: 0.75, count: 14 },
+      { cx: spacing * 4 - 1.4, spreadX: 2.0, cz: -0.95, spreadZ: 0.55, count: 9 },
+      { cx: spacing * 4 + 2.5, spreadX: 2.2, cz: -1.05, spreadZ: 0.65, count: 12 },
+      { cx: spacing * 4 + 4.4, spreadX: 2.1, cz: -1.45, spreadZ: 0.7, count: 12 },
+      { cx: spacing * 5 - 4.4, spreadX: 2.2, cz: -1.4, spreadZ: 0.7, count: 13 },
+      { cx: spacing * 5 - 2.1, spreadX: 1.9, cz: -0.9, spreadZ: 0.5, count: 10 },
+      { cx: spacing * 5 + 2.6, spreadX: 2.4, cz: -1.15, spreadZ: 0.65, count: 12 },
+      { cx: spacing * 5 + 4.7, spreadX: 2.0, cz: -1.45, spreadZ: 0.68, count: 11 },
+    ];
+
+    for (const zone of zones) {
+      for (let i = 0; i < zone.count; i++) {
+        // Triangular distribution clusters leaves thicker near the zone center.
+        const ox = ((rng() + rng()) - 1) * zone.spreadX;
+        const oz = ((rng() + rng()) - 1) * zone.spreadZ;
+        const x = zone.cx + ox;
+        const z = THREE.MathUtils.clamp(zone.cz + oz, -2.2, -0.52);
+        const y = 0.275 + rng() * 0.035;
+        const size = 0.16 + rng() * 0.14;
+        const col = leafPalette[Math.floor(rng() * leafPalette.length)];
+        // Mostly flat on the autumn earth with subtle natural curl tilt.
+        const tiltX = -Math.PI / 2 + 0.16 + rng() * 0.34;
+        const tiltY = (rng() - 0.5) * 0.28;
+        const yaw = rng() * Math.PI * 2;
+        const rot: [number, number, number] = [tiltX, tiltY, yaw];
+
+        const leafDetail = detail('fallen-paper-leaf', x, z, 1, y);
+        const kind = i % 3;
+        if (kind === 0) leafDetail.mapleLeaf(size, col, 0, 0, 0, rot);
+        else if (kind === 1) leafDetail.oakLeaf(size * 1.05, col, 0, 0, 0, rot);
+        else leafDetail.birchLeaf(size * 0.95, col, 0, 0, 0, rot);
+      }
+    }
   }
 
   function garden(x: number): void {
     const arch = detail('paper-garden-gate', x, -1.55);
-    arch.stroke([[-0.85, 0], [-0.85, 1.8], [-0.55, 2.22], [0.55, 2.22], [0.85, 1.8], [0.85, 0]], colors.cream, 0.09, 0);
+    arch.stroke([[-0.85, 0], [-0.85, 1.82], [-0.55, 2.24], [0.55, 2.24], [0.85, 1.82], [0.85, 0]], colors.cream, 0.09, 0);
     for (const sign of [-1, 1]) {
       const gate = rect(arch.group, 0.7, 0.07, '#d9dcc1', sign * 0.82, 0.33, 0.1);
       gate.name = sign < 0 ? 'garden-gate-left' : 'garden-gate-right';
-      // Slats are children of the hinge, so the whole gate opens together.
+      // Slats are children of the hinge, so the whole gate swings open together.
       for (let i = 0; i < 5; i++) rect(gate, 0.05, 0.93, colors.cream, -sign * (i * 0.15 + 0.04), 0, 0.07);
       rect(gate, 0.66, 0.06, '#d9dcc1', -sign * 0.34, 0.68, 0.06);
-      animate(gate, 'gate', sign > 0 ? 'gate' : undefined);
+      animate(gate, 'gate', sign > 0 ? 'gate' : undefined, 2.15, -0.82);
     }
     for (let i = 0; i < 10; i++) {
       const px = i < 5 ? -0.85 : 0.85;
-      const py = 0.4 + i % 5 * 0.35;
+      const py = 0.4 + (i % 5) * 0.35;
       arch.leaf(0.2, 0.35, i % 2 ? '#9aaf85' : '#859e7b', px, py, 0.12, [0, 0, i % 2 ? -0.7 : 0.7]);
     }
     for (const px of [-0.7, 0, 0.7]) {
-      arch.oval(0.25, 0.25, '#d8ae9d', px, 2.18, 0.15);
-      arch.oval(0.08, 0.08, colors.gold, px, 2.18, 0.21);
+      arch.oval(0.26, 0.26, '#e2b2a4', px, 2.2, 0.15);
+      arch.oval(0.08, 0.08, colors.gold, px, 2.2, 0.21);
     }
-  }
-
-  function woodlandAnimal(x: number, kind: 'fox' | 'cat' | 'bunny'): void {
-    const animal = detail(`paper-${kind}`, x, -0.95);
-    const fur = kind === 'fox' ? '#c79770' : kind === 'cat' ? '#8a9292' : '#cabaaa';
-    animal.oval(0.58, 0.7, fur, 0, 0.38);
-    animal.leaf(0.32, 0.9, fur, -0.27, 0.19, -0.1, [0, 0, 0.9]);
-    const head = oval(animal.group, 0.64, 0.58, fur, 0, 0.92, 0.09);
-    if (kind === 'bunny') {
-      for (const px of [-0.17, 0.17]) {
-        oval(head, 0.18, 0.67, fur, px, 0.5);
-        oval(head, 0.07, 0.47, '#dab7a7', px, 0.5, 0.06);
-      }
-    } else {
-      for (const sign of [-1, 1]) {
-        cut(head, [[sign * 0.08, 0.2], [sign * 0.31, 0.5], [sign * 0.34, 0.1]], fur, 0, 0, 0.05);
-        cut(head, [[sign * 0.15, 0.23], [sign * 0.28, 0.39], [sign * 0.29, 0.17]], '#d6b7a6', 0, 0, 0.08);
-      }
-    }
-    oval(head, 0.45, 0.23, '#efe4ce', 0, -0.1, 0.06);
-    eyes(head, 0.25, 0.04, 0.14);
-    oval(head, 0.07, 0.05, colors.ink, 0, -0.06, 0.16);
-    for (const sign of [-1, 1]) stroke(head, [[sign * 0.15, -0.1], [sign * 0.37, -0.05]], colors.ink, 0.012, 0.16);
-    animal.rect(0.52, 0.1, '#a8b6a0', 0, 0.65, 0.18);
-    animate(head, 'sway', kind);
-  }
-
-  function pond(x: number): void {
-    const water = detail('paper-pond', x, -1.05);
-    water.oval(2, 0.85, '#8aa9a6', 0, 0.03, 0, [-Math.PI / 2, 0, 0]);
-    water.oval(0.7, 0.32, '#9faf86', -0.25, 0.08, 0.2, [-Math.PI / 2, 0, 0]);
-    const frog = oval(water.group, 0.55, 0.36, '#a7b58a', -0.23, 0.3, 0.3);
-    for (const sign of [-1, 1]) {
-      oval(frog, 0.2, 0.2, '#b6c198', sign * 0.16, 0.16, 0.03);
-      oval(frog, 0.045, 0.065, colors.ink, sign * 0.16, 0.16, 0.1);
-    }
-    stroke(frog, [[-0.12, 0], [0, -0.045], [0.12, 0]], colors.ink, 0.014, 0.12);
-    animate(frog, 'jump', 'frog');
   }
 
   function lighthouse(x: number): void {
     const tower = detail('paper-lighthouse', x, -1.95);
-    tower.cut([[-0.78, 0], [-0.4, 0.42], [0.55, 0.35], [0.85, 0]], '#bda98c', 0, 0, -0.06);
-    tower.cut([[-0.38, 0.24], [0.38, 0.24], [0.24, 2.1], [-0.24, 2.1]], colors.cream, 0, 0, 0);
-    tower.cut([[-0.33, 0.72], [0.33, 0.72], [0.29, 1.12], [-0.29, 1.12]], '#c88977', 0, 0, 0.05);
-    tower.cut([[-0.27, 1.52], [0.27, 1.52], [0.25, 1.84], [-0.25, 1.84]], '#c88977', 0, 0, 0.05);
-    tower.rect(0.62, 0.09, '#7a8f88', 0, 2.08, 0.07);
-    tower.rect(0.4, 0.36, '#f6dfa4', 0, 2.17, 0.04);
-    tower.cut([[-0.28, 2.53], [0, 2.86], [0.28, 2.53]], '#c88977', 0, 0, 0.08);
-    tower.rect(0.18, 0.32, '#7d695b', 0, 0.32, 0.06);
-  }
+    // Coastal rocky headland base.
+    tower.cut([[-0.92, 0], [-0.54, 0.46], [0.62, 0.38], [0.98, 0]], '#b8a589', 0, 0, -0.06);
+    tower.cut([[-0.56, 0], [-0.24, 0.3], [0.34, 0.28], [0.65, 0]], '#a49279', 0, 0, -0.01);
+    // Tapered whitewashed tower with crisp terracotta bands.
+    tower.cut([[-0.38, 0.24], [0.38, 0.24], [0.24, 2.12], [-0.24, 2.12]], colors.cream, 0, 0, 0);
+    tower.cut([[-0.33, 0.72], [0.33, 0.72], [0.29, 1.12], [-0.29, 1.12]], '#c97865', 0, 0, 0.05);
+    tower.cut([[-0.27, 1.52], [0.27, 1.52], [0.25, 1.84], [-0.25, 1.84]], '#c97865', 0, 0, 0.05);
+    // Gallery deck + warm glowing lantern room + cupola roof.
+    tower.rect(0.66, 0.09, '#6d837d', 0, 2.09, 0.07);
+    tower.rect(0.42, 0.36, '#f8e2a3', 0, 2.18, 0.04);
+    tower.stroke([[-0.21, 2.18], [-0.21, 2.54]], '#6d837d', 0.022, 0.1);
+    tower.stroke([[0, 2.18], [0, 2.54]], '#6d837d', 0.022, 0.1);
+    tower.stroke([[0.21, 2.18], [0.21, 2.54]], '#6d837d', 0.022, 0.1);
+    tower.cut([[-0.29, 2.54], [0, 2.88], [0.29, 2.54]], '#c97865', 0, 0, 0.08);
+    tower.oval(0.08, 0.08, colors.gold, 0, 2.91, 0.09);
+    // Small coastal door and round porthole window.
+    tower.rect(0.18, 0.34, '#7a6558', 0, 0.3, 0.06);
+    tower.oval(0.13, 0.13, '#6d837d', 0, 1.32, 0.06);
+    tower.oval(0.08, 0.08, '#f5dea0', 0, 1.32, 0.09);
 
-  function seaCreature(x: number, kind: 'fish' | 'crab' | 'dragon'): void {
-    const z = kind === 'dragon' ? -1.05 : kind === 'crab' ? -0.9 : -0.75;
-    const animal = place(`paper-${kind}`, x, z);
-    const body = oval(
-      animal,
-      kind === 'dragon' ? 0.68 : 0.62,
-      kind === 'dragon' ? 1.05 : 0.38,
-      kind === 'crab' ? '#cc9b80' : '#94b5af',
-      0,
-      kind === 'dragon' ? 0.85 : 0.28,
-      0.1,
-    );
-    eyes(body, 0.22, 0.07);
-    if (kind === 'fish') {
-      cut(body, [[0.26, 0], [0.57, 0.25], [0.57, -0.25]], '#c2cba9');
-      stroke(body, [[-0.12, -0.12], [-0.12, 0.15]], '#6d9994', 0.025, 0.12);
-    }
-    if (kind === 'crab') {
-      for (const sign of [-1, 1]) {
-        stroke(body, [[sign * 0.25, 0], [sign * 0.52, 0.2], [sign * 0.52, 0.39]], '#c58e75', 0.06);
-        cut(body, [[sign * 0.52, 0.29], [sign * 0.73, 0.53], [sign * 0.52, 0.43], [sign * 0.38, 0.56]], '#d7ad8a', 0, 0, 0.08);
-        for (let i = 0; i < 3; i++) stroke(body, [[sign * 0.2, -0.04 - i * 0.06], [sign * 0.49, -0.12 - i * 0.09]], '#bd8c77', 0.035);
-      }
-    }
-    if (kind === 'dragon') {
-      for (const sign of [-1, 1]) cut(body, [[sign * 0.2, 0.1], [sign * 0.7, 0.5], [sign * 0.6, -0.08], [sign * 0.4, 0.02]], '#b5c5b6', 0, 0, -0.07);
-      for (let i = 0; i < 3; i++) cut(body, [[-0.1, 0.47 + i * 0.15], [0.02, 0.7 + i * 0.15], [0.14, 0.47 + i * 0.15]], colors.gold, 0, 0, 0.05);
-      oval(body, 0.32, 0.55, '#d7d9bc', 0, -0.17, 0.06);
-    }
-    animate(body, kind === 'fish' ? 'jump' : 'float', kind);
-  }
-
-  function buildContinuousRidge(
-    name: string,
-    z: number,
-    yBase: number,
-    material: THREE.Material,
-    heights: (x: number) => number,
-  ): void {
-    const startX = -26;
-    const endX = TRACK_LENGTH + 26;
-    const step = 1.6;
-    const shape = new THREE.Shape();
-    shape.moveTo(startX, 0);
-    for (let x = startX; x <= endX; x += step) {
-      shape.lineTo(x, heights(x));
-    }
-    shape.lineTo(endX, heights(endX));
-    shape.lineTo(endX, 0);
-    shape.closePath();
-    const mesh = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(shape, { depth: 0.04, bevelEnabled: false }),
-      material,
-    );
-    mesh.name = name;
-    mesh.position.set(0, yBase, z);
-    group.add(mesh);
+    // Subtle beach grass & pastel seashells resting along the summer shore.
+    const shells = detail('summer-beach-details', x - 1.15, -0.82);
+    shells.oval(0.15, 0.11, '#f0d8c4', -0.45, 0.04, 0.02, [0, 0, 0.2], 0.016);
+    shells.star(0.095, '#df937a', 0.18, 0.05, 0.03);
+    shells.oval(0.12, 0.09, '#e7e1cc', 0.62, 0.04, -0.02, [0, 0, -0.3], 0.016);
   }
 
   function createTransferStations(): void {
-    // 1. Winter Rails -> Spring Garden Path at x = 16.5
-    const winterSpring = detail('transfer-winter-spring', SEASON_BORDERS.spring, -0.58);
+    // 1. Winter Rails -> Spring Garden Path
+    const winterSpring = detail('transfer-winter-spring', SEASON_BORDERS.spring, -0.62);
     winterSpring.rect(0.11, 1.35, colors.wood);
     winterSpring.cut([[-0.65, 0.92], [0.05, 0.92], [0.22, 1.07], [0.05, 1.22], [-0.65, 1.22]], colors.snow, 0, 0, 0.06);
     winterSpring.cut([[-0.08, 0.64], [0.64, 0.64], [0.8, 0.79], [0.64, 0.94], [-0.08, 0.94]], '#9ab288', 0, 0, 0.09);
-    // Rail buffer stop at the end of the winter tracks.
     const buffer = detail('rail-buffer-spring', SEASON_BORDERS.spring - 0.18, 0);
     buffer.rect(0.12, 0.42, '#8b7361', 0, -0.02, 0.06);
     buffer.rect(0.28, 0.12, '#c88c79', 0, 0.28, 0.1);
 
-    // 2. Spring Garden Path -> Summer Sea Pier at x = 27.5
+    // 2. Spring Garden Path -> Summer Sea Pier
     const pierLeft = detail('transfer-spring-summer', SEASON_BORDERS.summer, -0.04);
     pierLeft.box(0.95, 0.09, 0.92, '#b69374', -0.18, 0.05, 0);
     for (const px of [-0.52, 0.18]) {
@@ -366,19 +482,19 @@ export function createPaperScenery(): PaperSet {
       pierLeft.oval(0.14, 0.07, '#dfd1b4', px, 0.46, -0.4);
     }
 
-    // 3. Summer Sea -> Autumn Road Landing Pier at x = 38.5
+    // 3. Summer Sea -> Autumn Road Landing Pier
     const pierRight = detail('transfer-summer-autumn', SEASON_BORDERS.autumn, -0.04);
     pierRight.box(0.95, 0.09, 0.92, '#b69374', 0.18, 0.05, 0);
     for (const px of [-0.18, 0.52]) {
       pierRight.rect(0.12, 0.48, '#8d7059', px, -0.04, -0.44);
       pierRight.oval(0.14, 0.07, '#dfd1b4', px, 0.46, -0.4);
     }
-    const milestone = detail('autumn-milestone', SEASON_BORDERS.autumn + 0.55, -0.58);
+    const milestone = detail('autumn-milestone', SEASON_BORDERS.autumn + 0.55, -0.62);
     milestone.cut([[-0.22, 0], [0.22, 0], [0.2, 0.56], [0, 0.72], [-0.2, 0.56]], '#d5c6ab', 0, 0, 0);
     milestone.oval(0.16, 0.16, '#c28567', 0, 0.42, 0.06);
 
-    // 4. Autumn Road -> Winter Finale Halt at x = 59.9
-    const halt = detail('transfer-autumn-winter', SEASON_BORDERS.winterEnd + 0.1, -0.58);
+    // 4. Autumn Road -> Winter Finale Halt
+    const halt = detail('transfer-autumn-winter', SEASON_BORDERS.winterEnd + 0.1, -0.62);
     halt.rect(0.1, 1.55, '#7f7265', 0, 0);
     halt.rect(0.52, 0.08, '#7f7265', 0.22, 1.45, 0.02);
     halt.oval(0.22, 0.26, '#f6dfa4', 0.42, 1.28, 0.06);
@@ -386,7 +502,7 @@ export function createPaperScenery(): PaperSet {
   }
 
   function createTravelSurfaces(): void {
-    // Winter paper railways: start (-10 .. 16.35) and finale (59.8 .. TRACK_LENGTH + 10)
+    // Winter paper railways: start and finale.
     const addPaperRailway = (startX: number, endX: number): void => {
       const span = endX - startX;
       const center = (startX + endX) / 2;
@@ -419,7 +535,7 @@ export function createPaperScenery(): PaperSet {
     addPaperRailway(-10, SEASON_BORDERS.spring - 0.15);
     addPaperRailway(SEASON_BORDERS.winterEnd, TRACK_LENGTH + 10);
 
-    // Spring garden path: x = 16.5 .. 27.5
+    // Spring garden path.
     const springLen = SEASON_BORDERS.summer - SEASON_BORDERS.spring;
     const springCenter = (SEASON_BORDERS.spring + SEASON_BORDERS.summer) / 2;
     const path = detail('paper-garden-path', springCenter, 0, 1, 0);
@@ -447,16 +563,16 @@ export function createPaperScenery(): PaperSet {
       );
     }
 
-    // Summer sea waves: x = 27.5 .. 38.5
+    // Summer sea waves.
     const summerLen = SEASON_BORDERS.autumn - SEASON_BORDERS.summer;
     const summerCenter = (SEASON_BORDERS.summer + SEASON_BORDERS.autumn) / 2;
     const sea = detail('paper-sea', summerCenter, 0, 1, 0);
-    sea.box(summerLen + 0.1, 0.06, 1.38, '#78a6a9', 0, 0.29, -0.08);
+    sea.box(summerLen + 0.1, 0.06, 1.44, '#78a6a9', 0, 0.29, -0.08);
 
     const waveSpecs: Array<{ z: number; y: number; color: string; amp: number; freq: number }> = [
-      { z: -0.48, y: 0.31, color: '#6b9aa0', amp: 0.13, freq: 1.45 },
+      { z: -0.5, y: 0.31, color: '#6b9aa0', amp: 0.13, freq: 1.45 },
       { z: -0.08, y: 0.31, color: '#87b4b3', amp: 0.14, freq: 1.75 },
-      { z: 0.34, y: 0.3, color: '#a2c9c2', amp: 0.12, freq: 2.0 },
+      { z: 0.35, y: 0.3, color: '#a2c9c2', amp: 0.12, freq: 2.0 },
     ];
     waveSpecs.forEach((spec, idx) => {
       const shape = new THREE.Shape();
@@ -473,7 +589,7 @@ export function createPaperScenery(): PaperSet {
       animate(ribbon, 'wave');
     });
 
-    // Autumn country road: x = 38.5 .. 59.8
+    // Autumn country road.
     const autumnLen = SEASON_BORDERS.winterEnd - SEASON_BORDERS.autumn;
     const autumnCenter = (SEASON_BORDERS.autumn + SEASON_BORDERS.winterEnd) / 2;
     const road = detail('paper-road', autumnCenter, 0, 1, 0);
@@ -486,81 +602,83 @@ export function createPaperScenery(): PaperSet {
     }
   }
 
-  // Seamless panoramic ground and layered torn-paper horizon ridges.
+  // Seamless panoramic ground extending back behind the near ridge (-3.35 .. +12.65).
   const ground = new THREE.Mesh(
-    new THREE.BoxGeometry(TRACK_LENGTH + 76, 0.18, 16),
+    new THREE.BoxGeometry(TRACK_LENGTH + 90, 0.18, 16),
     seasonalPaperMaterial(GROUND_RAMP),
   );
   ground.name = 'seasonal-paper-ground';
-  ground.position.set(TRACK_LENGTH / 2, 0.17, 4.2);
+  ground.position.set(TRACK_LENGTH / 2, 0.17, 4.65);
   group.add(ground);
 
-  buildContinuousRidge(
-    'torn-paper-far-ridge',
-    -2.76,
-    0.26,
-    seasonalPaperMaterial(FAR_RIDGE_RAMP, { grainStrength: 0.065 }),
-    x => 0.72 + Math.sin(x * 0.23 + 0.6) * 0.26 + Math.sin(x * 0.59) * 0.16,
-  );
-  buildContinuousRidge(
-    'torn-paper-near-ridge',
-    -2.55,
-    0.26,
-    seasonalPaperMaterial(NEAR_RIDGE_RAMP, { grainStrength: 0.075 }),
-    x => 0.44 + Math.sin(x * 0.34 + 1.8) * 0.17 + Math.cos(x * 0.77) * 0.09,
-  );
+  // Multi-plane parallax backdrop: distant peaks, far rolling hills, near ridge, sky details.
+  addPanoramaRidges({ group, cameraX });
+  addSkyDetails(group);
 
   createTravelSurfaces();
   createTransferStations();
 
-  // Stop 0 (Winter start, x = 0): Train covers [-3.66, +0.76], props stay cleanly to the right.
-  fir(-4.4, 3.7, true);
-  deer(1.75);
-  cabin(3.1);
-  fire(3.95);
-  fir(6.5, 2.9, true);
-  fir(8.5, 3.2, true);
+  const animalCtx: AnimalBuilderContext = { detail, place, animate };
 
-  // Stop 1 (Winter AdGuard Home, x = 11): Train covers [7.34, 11.76], props stand ahead on the right.
-  snowman(spacing + 1.85, true);
-  fir(spacing + 4.85, 3.3, true);
+  // Stop 0 (Winter start, x = 0): Train covers [-3.66, +0.76].
+  fir(-5.2, 3.7, true, false, -2.1);
+  fir(-3.6, 2.7, true, false, -2.35);
+  addDeer(animalCtx, 2.05, -1.08);
+  cabin(3.85);
+  fire(5.25);
+  fir(7.3, 3.0, true, false, -2.15);
+  fir(9.1, 3.5, true, false, -1.98);
 
-  // Stop 2 (Spring AdGuard Mini Android, x = 22): Bicycle covers [21.3, 22.7].
-  broadTree(spacing * 2 - 4.4);
-  woodlandAnimal(spacing * 2 - 2.25, 'fox');
-  garden(spacing * 2 + 1.95);
-  pond(spacing * 2 + 3.85);
-  for (let i = 0; i < 24; i++) {
-    flower(spacing * 2 - 5.6 + i * 0.47, -0.6 - (i % 3) * 0.45, i % 2 ? '#e3c7b5' : '#d8b7b1', 0.24 + (i % 4) * 0.09);
-  }
+  // Stop 1 (Winter AdGuard Home, x = 12.65): Train covers [8.99, 13.41].
+  fir(spacing - 4.4, 3.1, true, false, -2.2);
+  addSnowman(animalCtx, spacing + 2.35, true, -1.04);
+  fir(spacing + 4.45, 3.5, true, false, -2.0);
+  fir(spacing + 5.7, 2.6, true, false, -2.32);
 
-  // Stop 3 (Summer AdGuard Mini Mac, x = 33): Sailboat covers [32.05, 33.95]; laptop is at 31.15.
-  seaCreature(spacing * 3 - 3.6, 'dragon');
-  seaCreature(spacing * 3 + 1.85, 'crab');
-  seaCreature(spacing * 3 + 3.65, 'fish');
-  lighthouse(spacing * 3 + 2.8);
+  // Stop 2 (Spring AdGuard Mini Android, x = 25.3): Bicycle covers [24.5, 26.1].
+  broadTree(spacing * 2 - 5.9, 'spring-green', 0.88, -2.35);
+  broadTree(spacing * 2 - 4.55, 'spring-blossom', 1.08, -2.08);
+  addFox(animalCtx, spacing * 2 - 2.45, -1.02);
+  garden(spacing * 2 + 1.9);
+  addPondWithFrog(animalCtx, spacing * 2 + 4.05, -1.04);
+  broadTree(spacing * 2 + 5.6, 'spring-green', 0.96, -2.2);
+  const meadowSpots: Array<[number, number]> = [
+    [-5.3, -0.78], [-3.8, -1.3], [-1.4, -0.75], [-0.4, -1.45],
+    [0.75, -0.82], [2.85, -0.78], [5.15, -0.85], [5.95, -1.35],
+  ];
+  meadowSpots.forEach(([dx, dz], idx) => springMeadowCluster(spacing * 2 + dx, dz, 202604 + idx * 17));
 
-  // Stop 4 (Autumn AdGuard Mail, x = 44): Mail van covers [43.05, 44.95]; mailbox is at 46.15.
-  broadTree(spacing * 4 - 3.6, true);
-  broadTree(spacing * 4 + 4.0, true);
+  // Stop 3 (Summer AdGuard Mini Mac, x = 37.95): Sailboat covers [36.95, 38.95]; laptop is at -1.95.
+  addSeaDragon(animalCtx, spacing * 3 - 4.05, -1.15);
+  addCrab(animalCtx, spacing * 3 + 1.65, -1.14);
+  lighthouse(spacing * 3 + 3.2);
+  coastalPine(spacing * 3 + 4.55, 0.88, -2.22);
+  addFish(animalCtx, spacing * 3 + 4.15, -0.34);
 
-  // Stop 5 (Autumn eMudhra, x = 55): Mail van covers [54.05, 55.95]; lantern is at 56.85.
-  broadTree(spacing * 5 - 4.1, true);
-  broadTree(spacing * 5 + 4.2, true);
-  woodlandAnimal(spacing * 5 - 2.35, 'cat');
-  woodlandAnimal(spacing * 5 + 3.35, 'bunny');
-  for (let i = 0; i < 26; i++) {
-    const fallen = detail('fallen-paper-leaf', spacing * 4 - 5.1 + i * 0.87, -0.58 - (i % 3) * 0.42);
-    fallen.leaf(0.16, 0.3, i % 2 ? '#c49370' : '#d7bb8a', 0, 0.02, 0, [0, 0, i * 0.7]);
-  }
+  // Stop 4 (Autumn AdGuard Mail, x = 50.6): Car covers [49.65, 51.55]; mailbox is at +2.2.
+  broadTree(spacing * 4 - 4.3, 'autumn-maple', 1.08, -2.08);
+  broadTree(spacing * 4 - 2.6, 'autumn-birch', 0.88, -2.32);
+  broadTree(spacing * 4 + 4.1, 'autumn-oak', 1.05, -2.05);
 
-  // Stop 6 (Winter New Year finale, x = 66). The road runs on past the story.
-  fir(STORY_END - 6.2, 3.6, true, true);
-  snowman(STORY_END + 2.2, false);
-  cabin(STORY_END + 4.2, true);
-  fir(STORY_END + 9.5, 3.1, true, true);
+  // Stop 5 (Autumn eMudhra, x = 63.25): Car covers [62.3, 64.2]; lantern is at +1.95.
+  broadTree(spacing * 5 - 4.55, 'autumn-birch', 1.06, -2.12);
+  addCat(animalCtx, spacing * 5 - 2.45, -1.02);
+  addBunny(animalCtx, spacing * 5 + 3.55, -0.98);
+  broadTree(spacing * 5 + 4.6, 'autumn-maple', 1.04, -2.15);
+  autumnLeafDrifts();
 
-  // All firs share one buffer and one material, so the eight trees cost one draw call.
+  // Stop 6 (Winter New Year finale, x = 75.9). The road runs on past the story.
+  fir(STORY_END - 5.9, 3.7, true, true, -2.05);
+  fir(STORY_END - 4.4, 2.5, true, false, -2.35);
+  addSnowman(animalCtx, STORY_END + 2.15, false, -1.04);
+  cabin(STORY_END + 4.45, true);
+  fir(STORY_END + 7.4, 3.2, true, true, -2.1);
+  fir(STORY_END + 10.1, 3.6, true, true, -2.0);
+
+  // Close foreground framing elements (bottom-edge foliage and snowbanks).
+  addForegroundFraming(group, sheets);
+
+  // All firs share one buffer and one material, so every fir costs one draw call.
   const firSheet = firs.build();
   if (firSheet) {
     const mesh = new THREE.Mesh(firSheet, paperSheet());
@@ -568,7 +686,7 @@ export function createPaperScenery(): PaperSet {
     group.add(mesh);
   }
 
-  // Every static shape of the ported details lands in one buffer as well.
+  // Every static detail shape merges into one buffer as well.
   const sheet = sheets.build();
   if (sheet) {
     const mesh = new THREE.Mesh(sheet, paperSheet());

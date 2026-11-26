@@ -79,31 +79,44 @@ export function paperSheet(grainStrength = 0.085): MeshBasicNodeMaterial {
   return material;
 }
 
+export function createScalarUniform(initial = 0) {
+  return uniform(initial);
+}
+
+export type ScalarUniform = ReturnType<typeof createScalarUniform>;
+
 export interface SeasonalPaperOptions {
   verticalWash?: number;
   grainStrength?: number;
+  grainScale?: number;
+  cameraX?: ScalarUniform;
+  colorSpread?: number;
 }
 
 // Continuous world-space color blend across season borders with shared paper grain.
 export function seasonalPaperMaterial(ramp: SeasonalRamp, options: SeasonalPaperOptions = {}): MeshBasicNodeMaterial {
-  const { verticalWash = 0, grainStrength = 0.085 } = options;
+  const { verticalWash = 0, grainStrength = 0.085, grainScale = 0.55, cameraX, colorSpread = 1 } = options;
   const material = new MeshBasicNodeMaterial({ side: DoubleSide, toneMapped: false });
+
+  const sampleX = cameraX && colorSpread < 1
+    ? mix(cameraX, positionWorld.x, float(colorSpread))
+    : positionWorld.x;
 
   const toColorNode = (hex: ColorRepresentation) => color(new Color(hex));
   let blended = mix(toColorNode(ramp.base), toColorNode(ramp.base), float(0));
   for (const stop of ramp.stops) {
-    const factor = smoothstep(float(stop.from), float(stop.to), positionWorld.x);
+    const factor = smoothstep(float(stop.from), float(stop.to), sampleX);
     blended = mix(blended, toColorNode(stop.color), factor);
   }
 
   if (verticalWash !== 0) {
-    const heightT = smoothstep(float(0.5), float(7.5), positionWorld.y);
+    const heightT = smoothstep(float(0.5), float(9.5), positionWorld.y);
     const shade = mix(float(1 + verticalWash), float(1 - verticalWash), heightT);
     blended = blended.mul(shade);
   }
 
   const paperUV = vec2(positionWorld.x.add(positionWorld.z.mul(0.37)), positionWorld.y.add(positionWorld.z.mul(0.61)));
-  const grain = texture(paperGrain(), paperUV.mul(0.55)).r.sub(0.5).mul(grainStrength);
+  const grain = texture(paperGrain(), paperUV.mul(grainScale)).r.sub(0.5).mul(grainStrength);
   material.colorNode = blended.add(grain);
   return material;
 }
@@ -130,6 +143,7 @@ export interface WeatherFieldOptions {
   opacity: number;
   minY?: number;
   spanY?: number;
+  soft?: boolean;
 }
 
 // WebGPU draws point primitives at one pixel, so atmospheric particles use
@@ -150,13 +164,17 @@ export function createWeatherField(
   const height = mod(base.y.sub(minY).sub(fall), spanY).add(minY);
   const drift = sin(seconds.mul(options.driftFreq).add(seed.mul(6.283))).mul(options.driftAmp);
 
+  const disc = options.soft
+    ? smoothstep(float(0.5), float(0.14), length(uv().sub(vec2(0.5, 0.5))))
+    : float(shapeCircle() as unknown as FloatNode);
+
   const material = new PointsNodeMaterial({
     color: options.color,
     size: options.size,
     sizeAttenuation: false,
     transparent: true,
     depthWrite: false,
-    opacityNode: float(shapeCircle() as unknown as FloatNode).mul(options.opacity),
+    opacityNode: disc.mul(options.opacity),
   });
   material.positionNode = vec3(base.x.add(drift), height, base.z);
 

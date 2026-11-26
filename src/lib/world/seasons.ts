@@ -51,6 +51,17 @@ export const GROUND_RAMP: SeasonalRamp = scale({
   ],
 });
 
+export const DISTANT_PEAKS_RAMP: SeasonalRamp = scale({
+  base: '#9ba8be',
+  stops: [
+    { from: 13.0, to: 20.0, color: '#849c77' },
+    { from: 24.0, to: 31.0, color: '#729aa6' },
+    { from: 35.0, to: 42.0, color: '#b38c5b' },
+    { from: 46.5, to: 52.5, color: '#ae7c77' },
+    { from: 56.6, to: 63.0, color: '#94a4bd' },
+  ],
+});
+
 export const FAR_RIDGE_RAMP: SeasonalRamp = scale({
   base: '#c5cdd6',
   stops: [

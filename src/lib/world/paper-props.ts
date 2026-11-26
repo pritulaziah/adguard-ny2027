@@ -11,7 +11,12 @@ function box(parent: THREE.Object3D, width: number, height: number, depth: numbe
 
 export function paperLaptop() {
   const group = new THREE.Group();
-  box(group, 2.15, 0.075, 1.05, '#d6cdb7', 0, 0.04, 0.42);
+  // Woven coastal blanket grounding the laptop cleanly on dry beach sand.
+  box(group, 2.58, 0.02, 1.18, '#e8dbc2', 0, 0.005, 0.28);
+  for (const sz of [-0.14, 0.28, 0.7]) {
+    box(group, 2.6, 0.024, 0.09, '#c89b7e', 0, 0.007, sz);
+  }
+  box(group, 2.15, 0.075, 1.05, '#d6cdb7', 0, 0.05, 0.42);
   for (let y = 0; y < 3; y++) {
     for (let x = 0; x < 9; x++) {
       box(group, 0.14, 0.012, 0.1, '#829b8a', -0.76 + x * 0.19, 0.087, 0.15 + y * 0.15);
@@ -56,16 +61,27 @@ export function paperLaptop() {
 
 export function paperLantern() {
   const group = new THREE.Group();
-  box(group, 0.055, 1.2, 0.04, '#dfcdb1', 0, 1.7);
+  // Curved wooden garden lantern stand rooted on the autumn ground.
+  box(group, 0.11, 2.25, 0.09, '#7f6759', 0.44, 1.12, -0.06);
+  box(group, 0.34, 0.1, 0.16, '#967c6a', 0.44, 0.05, -0.06);
+  box(group, 0.56, 0.085, 0.08, '#7f6759', 0.2, 2.22, -0.06);
+  // Diagonal wooden brace under the lantern bracket.
+  const brace = carded(new THREE.BoxGeometry(0.42, 0.055, 0.06), '#8d7263');
+  brace.position.set(0.3, 2.04, -0.06);
+  brace.rotation.z = Math.PI / 4;
+  group.add(brace);
+  // Thin hanging cord down to the lantern cap.
+  box(group, 0.032, 0.42, 0.03, '#dfcdb1', 0, 2.0, -0.02);
+
   const lamp = new THREE.Group();
-  lamp.position.y = 0.7;
+  lamp.position.y = 1.24;
   group.add(lamp);
   const { body: bodyMaterial, glow, lit } = lanternMaterials();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.46, 8, 5), bodyMaterial);
-  body.scale.set(0.88, 1.2, 0.25);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.46, 18, 12), bodyMaterial);
+  body.scale.set(0.88, 1.18, 0.25);
   lamp.add(body);
   // A TSL radial gradient makes the glow. Additive blending keeps the paper edge.
-  const halo = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 2.9), glow);
+  const halo = new THREE.Mesh(new THREE.PlaneGeometry(3.1, 3.1), glow);
   halo.position.z = 0.09;
   lamp.add(halo);
   box(lamp, 0.45, 0.08, 0.12, '#a76b5d', 0, 0.53);

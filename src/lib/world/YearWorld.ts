@@ -8,16 +8,18 @@ import { homeStoryOpen } from '../content/home-story';
 import { snowmanFact } from '../content/snowman-fact';
 import WallStory from '../ui/WallStory.svelte';
 import type { JourneyStore, JourneyState } from './journey-state';
-import { createWeatherField, resetPaperMaterials, seasonalPaperMaterial, type WeatherField } from './paper-materials';
+import { createScalarUniform, createWeatherField, resetPaperMaterials, seasonalPaperMaterial, type WeatherField } from './paper-materials';
 import { carded } from './paper-mesh';
 import { createPaperScenery, type PaperSet } from './paper-scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './paper-vehicles';
 import { paperLaptop, paperLantern } from './paper-props';
-import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, WALL_Z, STORY_Z, stopIndexAt } from './route';
+import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, STORY_Z, stopIndexAt } from './route';
 import { FLOOR_RAMP, SEASON_BORDERS, WALL_RAMP, sampleRampColor } from './seasons';
 
 // One wheel notch or drag event moves at most a fraction of a station.
 const STEP_LIMIT = 1.6;
+// Push the sky wall deep behind the three ridge layers for strong travel parallax.
+const SKY_WALL_Z = -9.6;
 
 interface Story {
   element: HTMLDivElement;
@@ -61,6 +63,7 @@ export class YearWorld {
   private paper: PaperSet | null = null;
   private fleet: SeasonalFleet | null = null;
   private weatherFields: WeatherField[] = [];
+  private cameraX = createScalarUniform(0);
   private stories: Story[] = [];
   private layer: HTMLDivElement;
   private sparks: Spark[] = [];
@@ -80,8 +83,11 @@ export class YearWorld {
   private unsubscribe: () => void;
   private state: JourneyState;
   private observer: ResizeObserver;
-  private mailX = STOP_SPACING * 4 + 2.15;
+  private mailX = STOP_SPACING * 4 + 2.25;
   private found = new Set<string>();
+  private wakeTimes = new Map<Interaction, number>();
+  private gateOpen = false;
+  private gateSwing = 0;
   private propUpdates: Array<(time: number, delta: number, reduced: boolean) => void> = [];
   private touchActive = false;
   private touchLastX = 0;
@@ -124,36 +130,47 @@ export class YearWorld {
   }
 
   private createWalls(): void {
-    // Tall panoramic wall guarantees no exposed sky gap on any viewport ratio.
+    // Deep panoramic sky wall guarantees no exposed gap on any viewport ratio and
+    // shifts slowly behind the distant peaks, rolling hills, and foreground planes.
     const wall = new THREE.Mesh(
-      new THREE.PlaneGeometry(TRACK_LENGTH + 76, 20),
-      seasonalPaperMaterial(WALL_RAMP, { verticalWash: 0.045, grainStrength: 0.085 }),
+      new THREE.PlaneGeometry(TRACK_LENGTH + 115, 28),
+      seasonalPaperMaterial(WALL_RAMP, {
+        verticalWash: 0.055,
+        grainStrength: 0.075,
+        grainScale: 0.35,
+        cameraX: this.cameraX,
+        colorSpread: 0.45,
+      }),
     );
     wall.name = 'seasonal-paper-wall';
-    wall.position.set(TRACK_LENGTH / 2, 7.0, WALL_Z);
+    wall.position.set(TRACK_LENGTH / 2, 8.5, SKY_WALL_Z);
     this.scene.add(wall);
 
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(TRACK_LENGTH + 76, 18),
+      new THREE.PlaneGeometry(TRACK_LENGTH + 115, 26),
       seasonalPaperMaterial(FLOOR_RAMP, { grainStrength: 0.07 }),
     );
     floor.name = 'seasonal-paper-floor';
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(TRACK_LENGTH / 2, -1.22, 4);
+    floor.position.set(TRACK_LENGTH / 2, -1.22, 2);
     this.scene.add(floor);
   }
 
   private addWeatherZone(
     count: number,
     sampleX: (index: number) => number,
+    zMin: number,
+    zMax: number,
     options: Parameters<typeof createWeatherField>[2],
   ): void {
+    const minY = options.minY ?? 0.35;
+    const spanY = options.spanY ?? 7.4;
     const positions = new Float32Array(count * 3);
     const seeds = new Float32Array(count);
     for (let i = 0; i < count; i++) {
       positions[i * 3] = sampleX(i);
-      positions[i * 3 + 1] = 0.4 + Math.random() * 7.1;
-      positions[i * 3 + 2] = -2.1 + Math.random() * 2.9;
+      positions[i * 3 + 1] = minY + Math.random() * spanY;
+      positions[i * 3 + 2] = zMin + Math.random() * (zMax - zMin);
       seeds[i] = Math.random();
     }
     const field = createWeatherField(positions, seeds, options);
@@ -163,39 +180,62 @@ export class YearWorld {
   }
 
   private createWeather(): void {
-    // Winter snow at both ends of the calendar year.
-    this.addWeatherZone(
-      170,
-      i => (i % 2 === 0
-        ? -8 + Math.random() * (SEASON_BORDERS.spring + 8)
-        : SEASON_BORDERS.winterEnd - 0.5 + Math.random() * (TRACK_LENGTH - SEASON_BORDERS.winterEnd + 11)),
-      { color: '#fff9e9', size: 2.5, fallMin: 0.11, fallRange: 0.25, driftAmp: 0.22, driftFreq: 0.7, opacity: 0.76 },
-    );
+    const sampleWinterX = (i: number): number =>
+      i % 2 === 0
+        ? -14 + Math.random() * (SEASON_BORDERS.spring + 14)
+        : SEASON_BORDERS.winterEnd - 1.5 + Math.random() * (TRACK_LENGTH - SEASON_BORDERS.winterEnd + 16);
+    const sampleSpringX = (): number =>
+      SEASON_BORDERS.spring - 0.5 + Math.random() * (SEASON_BORDERS.summer - SEASON_BORDERS.spring + 1.0);
+    const sampleSummerX = (): number =>
+      SEASON_BORDERS.summer - 0.5 + Math.random() * (SEASON_BORDERS.autumn - SEASON_BORDERS.summer + 1.0);
+    const sampleAutumnX = (): number =>
+      SEASON_BORDERS.autumn - 0.5 + Math.random() * (SEASON_BORDERS.winterEnd - SEASON_BORDERS.autumn + 1.0);
 
-    // Spring blossom petals.
-    this.addWeatherZone(
-      75,
-      () => SEASON_BORDERS.spring + Math.random() * (SEASON_BORDERS.summer - SEASON_BORDERS.spring),
-      { color: '#f7d8d0', size: 3.0, fallMin: 0.06, fallRange: 0.15, driftAmp: 0.34, driftFreq: 0.55, opacity: 0.72 },
-    );
+    // 1. Far sky stratum (slow parallax behind hills and trees).
+    this.addWeatherZone(140, sampleWinterX, -6.2, -2.8, {
+      color: '#f5f2e8', size: 2.2, fallMin: 0.06, fallRange: 0.14, driftAmp: 0.14, driftFreq: 0.5, opacity: 0.5, spanY: 9.0,
+    });
+    this.addWeatherZone(55, sampleSpringX, -5.8, -2.6, {
+      color: '#f5dbd4', size: 2.4, fallMin: 0.04, fallRange: 0.1, driftAmp: 0.22, driftFreq: 0.45, opacity: 0.48, spanY: 8.6,
+    });
+    this.addWeatherZone(50, sampleSummerX, -5.8, -2.6, {
+      color: '#fff3c9', size: 2.0, fallMin: -0.03, fallRange: 0.06, driftAmp: 0.2, driftFreq: 0.4, opacity: 0.42, spanY: 8.6,
+    });
+    this.addWeatherZone(80, sampleAutumnX, -5.8, -2.6, {
+      color: '#e5b374', size: 2.5, fallMin: 0.06, fallRange: 0.12, driftAmp: 0.24, driftFreq: 0.5, opacity: 0.5, spanY: 8.6,
+    });
 
-    // Summer warm sunlit coastal motes.
-    this.addWeatherZone(
-      65,
-      () => SEASON_BORDERS.summer + Math.random() * (SEASON_BORDERS.autumn - SEASON_BORDERS.summer),
-      { color: '#fff2c4', size: 2.2, fallMin: -0.05, fallRange: 0.09, driftAmp: 0.28, driftFreq: 0.45, opacity: 0.56 },
-    );
+    // 2. Midground action stratum around the vehicles and animals.
+    this.addWeatherZone(150, sampleWinterX, -1.9, 0.8, {
+      color: '#fff9e9', size: 4.0, fallMin: 0.11, fallRange: 0.24, driftAmp: 0.24, driftFreq: 0.72, opacity: 0.76,
+    });
+    this.addWeatherZone(65, sampleSpringX, -1.9, 0.8, {
+      color: '#f8dcd4', size: 4.5, fallMin: 0.06, fallRange: 0.15, driftAmp: 0.34, driftFreq: 0.55, opacity: 0.74,
+    });
+    this.addWeatherZone(55, sampleSummerX, -1.9, 0.8, {
+      color: '#fff2c4', size: 3.6, fallMin: -0.05, fallRange: 0.09, driftAmp: 0.28, driftFreq: 0.45, opacity: 0.58,
+    });
+    this.addWeatherZone(95, sampleAutumnX, -1.9, 0.8, {
+      color: '#eab570', size: 4.8, fallMin: 0.09, fallRange: 0.2, driftAmp: 0.36, driftFreq: 0.65, opacity: 0.76,
+    });
 
-    // Autumn drifting leaf specks.
-    this.addWeatherZone(
-      110,
-      () => SEASON_BORDERS.autumn + Math.random() * (SEASON_BORDERS.winterEnd - SEASON_BORDERS.autumn),
-      { color: '#eab875', size: 3.1, fallMin: 0.09, fallRange: 0.2, driftAmp: 0.36, driftFreq: 0.65, opacity: 0.74 },
-    );
+    // 3. Close foreground bokeh stratum (moves 1.7x-2.3x faster than track on scroll and mouse move).
+    this.addWeatherZone(90, sampleWinterX, 2.05, 3.35, {
+      color: '#fffdf4', size: 17.5, fallMin: 0.18, fallRange: 0.32, driftAmp: 0.32, driftFreq: 0.82, opacity: 0.36, minY: 0.55, spanY: 4.8, soft: true,
+    });
+    this.addWeatherZone(40, sampleSpringX, 2.05, 3.35, {
+      color: '#fbdcd4', size: 18.0, fallMin: 0.1, fallRange: 0.2, driftAmp: 0.4, driftFreq: 0.68, opacity: 0.34, minY: 0.55, spanY: 4.8, soft: true,
+    });
+    this.addWeatherZone(34, sampleSummerX, 2.05, 3.35, {
+      color: '#fff4cb', size: 15.5, fallMin: -0.07, fallRange: 0.12, driftAmp: 0.34, driftFreq: 0.55, opacity: 0.3, minY: 0.55, spanY: 4.8, soft: true,
+    });
+    this.addWeatherZone(58, sampleAutumnX, 2.05, 3.35, {
+      color: '#e8a25d', size: 18.5, fallMin: 0.14, fallRange: 0.26, driftAmp: 0.42, driftFreq: 0.76, opacity: 0.36, minY: 0.55, spanY: 4.8, soft: true,
+    });
   }
 
   private async load(): Promise<void> {
-    const paper = createPaperScenery();
+    const paper = createPaperScenery(this.cameraX);
     this.paper = paper;
     this.scene.add(paper.group);
     this.fleet = createSeasonalFleet(this.scene);
@@ -245,7 +285,8 @@ export class YearWorld {
       const element = document.createElement('div');
       element.className = 'wall-copy';
       const component = mount(WallStory, { target: element, props: { index } });
-      // Stories live in screen space, so every viewport centres them the same way.
+      // Stories live in screen space, so every viewport centres them the same way
+      // and keeps text steady while the 3D planes shift behind and in front.
       this.layer.append(element);
       this.stories.push({ element, component, x });
     }
@@ -258,6 +299,10 @@ export class YearWorld {
       if (!part) continue;
       this.spark(anchor, key, () => {
         this.discover(key);
+        this.wakeTimes.set(key, this.time);
+        if (key === 'gate') {
+          this.gateOpen = !this.gateOpen;
+        }
         if (key === 'snowman') {
           if (get(snowmanFact)) snowmanFact.set(null);
           else {
@@ -265,11 +310,11 @@ export class YearWorld {
             if (spark) this.positionSnowmanFact(spark);
           }
         }
-      });
+      }, part.sparkLift, part.sparkOffsetX);
     }
   }
 
-  private spark(anchor: THREE.Object3D, key: Interaction, onclick: () => void): void {
+  private spark(anchor: THREE.Object3D, key: Interaction, onclick: () => void, lift = 0.16, offsetX = 0): void {
     const label = translations[get(language)].interactions[key].label;
     const button = document.createElement('button');
     button.className = 'object-spark';
@@ -284,11 +329,12 @@ export class YearWorld {
     });
     const sprite = new CSS3DSprite(button);
     sprite.scale.setScalar(0.0075);
-    let local = new THREE.Vector3(0, 0.5, 0);
+    let local = new THREE.Vector3(offsetX, 0.5, 0);
     if (anchor instanceof THREE.Mesh) {
       anchor.geometry.computeBoundingBox();
       local = anchor.geometry.boundingBox!.getCenter(new THREE.Vector3());
-      local.y = anchor.geometry.boundingBox!.max.y + 0.16;
+      local.x += offsetX;
+      local.y = anchor.geometry.boundingBox!.max.y + lift;
     }
     anchor.updateWorldMatrix(true, false);
     const world = local.clone().applyMatrix4(anchor.matrixWorld);
@@ -312,42 +358,94 @@ export class YearWorld {
 
   private createMail(): void {
     const box = new THREE.Group();
-    box.position.set(this.mailX, 0.35, -1.1);
-    const body = carded(new THREE.BoxGeometry(0.7, 0.5, 0.18), '#78988a');
-    body.position.y = 0.9;
-    box.add(body);
-    const post = carded(new THREE.BoxGeometry(0.06, 0.8, 0.06), '#ae9d79');
-    post.position.y = 0.4;
+    box.name = 'paper-mailbox';
+    box.position.set(this.mailX, 0.34, -1.04);
+
+    // Sturdy wooden post with grounded base block.
+    const base = carded(new THREE.BoxGeometry(0.24, 0.08, 0.14), '#876c5b');
+    base.position.set(0, 0.04, 0);
+    box.add(base);
+    const post = carded(new THREE.BoxGeometry(0.09, 0.86, 0.08), '#9b7f6b');
+    post.position.set(0, 0.45, 0);
     box.add(post);
-    const flap = carded(new THREE.PlaneGeometry(0.51, 0.27), '#f5ead1');
-    flap.position.set(0, 0.91, 0.1);
-    box.add(flap);
+
+    // Rounded-top retro sage mailbox body.
+    const boxShape = new THREE.Shape();
+    boxShape.moveTo(-0.36, -0.18);
+    boxShape.lineTo(0.36, -0.18);
+    boxShape.lineTo(0.36, 0.14);
+    boxShape.quadraticCurveTo(0.36, 0.34, 0.12, 0.34);
+    boxShape.lineTo(-0.12, 0.34);
+    boxShape.quadraticCurveTo(-0.36, 0.34, -0.36, 0.14);
+    boxShape.closePath();
+    const body = carded(new THREE.ExtrudeGeometry(boxShape, { depth: 0.18, bevelEnabled: false, curveSegments: 12 }), '#6d9182');
+    body.position.set(0, 0.96, -0.09);
+    box.add(body);
+
+    // Cream envelope resting in the mail slot (pops gently on click).
+    const letter = new THREE.Group();
+    letter.position.set(0, 1.0, 0.11);
+    const envelope = carded(new THREE.BoxGeometry(0.46, 0.28, 0.025), '#f5ead1');
+    letter.add(envelope);
     const line = new THREE.Line(
       new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-0.25, 1.035, 0.105),
-        new THREE.Vector3(0, 0.87, 0.105),
-        new THREE.Vector3(0.25, 1.035, 0.105),
+        new THREE.Vector3(-0.22, 0.13, 0.02),
+        new THREE.Vector3(0, -0.02, 0.02),
+        new THREE.Vector3(0.22, 0.13, 0.02),
       ]),
       new THREE.LineBasicMaterial({ color: '#b4a581' }),
     );
-    box.add(line);
+    letter.add(line);
+    box.add(letter);
+
+    // Pivoting red mail flag on the right side.
+    const flagPivot = new THREE.Group();
+    flagPivot.position.set(0.37, 0.98, 0.04);
+    const flagStem = carded(new THREE.BoxGeometry(0.032, 0.34, 0.025), '#cf6856');
+    flagStem.position.set(0, 0.15, 0);
+    flagPivot.add(flagStem);
+    const flagTip = carded(new THREE.BoxGeometry(0.14, 0.095, 0.028), '#cf6856');
+    flagTip.position.set(0.06, 0.28, 0);
+    flagPivot.add(flagTip);
+    flagPivot.rotation.z = -Math.PI / 2;
+    box.add(flagPivot);
+
+    let flagRaised = false;
+    let flagAngle = -Math.PI / 2;
+    this.propUpdates.push((_time, delta, reduced) => {
+      const targetAngle = flagRaised ? 0 : -Math.PI / 2;
+      flagAngle = THREE.MathUtils.lerp(flagAngle, targetAngle, reduced ? 1 : 1 - Math.exp(-delta * 9));
+      flagPivot.rotation.z = flagAngle;
+      const lift = flagRaised ? 0.08 : 0;
+      letter.position.y = THREE.MathUtils.lerp(letter.position.y, 1.0 + lift, reduced ? 1 : 1 - Math.exp(-delta * 8));
+    });
+
     this.scene.add(box);
-    this.spark(body, 'mail', () => this.discover('mail'));
+    this.spark(body, 'mail', () => {
+      flagRaised = !flagRaised;
+      this.discover('mail');
+    }, 0.22);
   }
 
   private createProps(): void {
     const laptop = paperLaptop();
-    laptop.group.position.set(STOP_SPACING * 3 - 1.85, 0.34, -1.35);
-    laptop.group.scale.setScalar(0.85);
+    laptop.group.position.set(STOP_SPACING * 3 - 1.95, 0.35, -1.48);
+    laptop.group.scale.setScalar(0.84);
     this.scene.add(laptop.group);
     this.propUpdates.push(laptop.update);
-    this.spark(laptop.screen, 'laptop', () => this.discover('laptop'));
+    this.spark(laptop.screen, 'laptop', () => {
+      laptop.toggle();
+      this.discover('laptop');
+    }, 0.24);
 
     const lantern = paperLantern();
-    lantern.group.position.set(STOP_SPACING * 5 + 1.85, 0.8, -1.65);
+    lantern.group.position.set(STOP_SPACING * 5 + 1.95, 0.34, -1.42);
     this.scene.add(lantern.group);
     this.propUpdates.push(lantern.update);
-    this.spark(lantern.body, 'lantern', () => this.discover('lantern'));
+    this.spark(lantern.body, 'lantern', () => {
+      lantern.toggle(this.time);
+      this.discover('lantern');
+    }, 0.62);
   }
 
   private resize = (): void => {
@@ -451,20 +549,23 @@ export class YearWorld {
       wallWidth / (2 * Math.tan(THREE.MathUtils.degToRad(desiredFov / 2)) * aspect * 0.87),
     );
 
-    this.pointerSmooth.lerp(this.pointer, 1 - Math.exp(-delta * 3));
-    const parallax = this.portrait || this.reduced ? 0 : 0.12;
+    this.pointerSmooth.lerp(this.pointer, 1 - Math.exp(-delta * 3.8));
+    const parallaxX = this.portrait || this.reduced ? 0 : 0.58;
+    const parallaxY = this.portrait || this.reduced ? 0 : 0.26;
     const fraction = (((this.motion.distance % STOP_SPACING) + STOP_SPACING) % STOP_SPACING) / STOP_SPACING;
     const speedFactor = THREE.MathUtils.clamp(Math.abs(this.motion.speed) / 2.2, 0, 1);
     const peek = this.reduced ? 0 : Math.sin(fraction * Math.PI) * speedFactor;
 
+    // Pivot gently around the animal plane (z ~ -1.05) so clickable sparks stay steady
+    // while close foreground planes and deep hills/sky glide smoothly in opposite parallax.
     this.desiredPosition.set(
-      this.motion.distance + this.pointerSmooth.x * parallax,
-      2.55 + this.pointerSmooth.y * parallax + peek * 0.14,
+      this.motion.distance + this.pointerSmooth.x * parallaxX,
+      2.55 + this.pointerSmooth.y * parallaxY + peek * 0.14,
       STORY_Z + distance,
     );
     this.desiredLook.set(
-      this.motion.distance,
-      3.06 - peek * 0.16,
+      this.motion.distance - this.pointerSmooth.x * (parallaxX * 0.14),
+      3.06 - this.pointerSmooth.y * (parallaxY * 0.14) - peek * 0.16,
       STORY_Z + 0.18 + peek * 0.45,
     );
 
@@ -474,6 +575,7 @@ export class YearWorld {
     this.camera.lookAt(this.look);
     this.camera.updateMatrixWorld();
 
+    this.cameraX.value = this.camera.position.x;
     sampleRampColor(WALL_RAMP, this.camera.position.x, this.bgColor);
   }
 
@@ -518,17 +620,55 @@ export class YearWorld {
     }
   }
 
+  private wakeBoost(key?: Interaction): number {
+    if (!key) return 0;
+    const started = this.wakeTimes.get(key);
+    if (started === undefined) return 0;
+    const elapsed = this.time - started;
+    if (elapsed < 0 || elapsed > 1.35) return 0;
+    const fade = 1 - elapsed / 1.35;
+    return fade * fade;
+  }
+
   private animateParts(delta: number): void {
-    if (!this.paper || this.reduced) return;
+    if (!this.paper) return;
+    const targetGate = this.gateOpen ? 1 : 0;
+    this.gateSwing = THREE.MathUtils.lerp(this.gateSwing, targetGate, this.reduced ? 1 : 1 - Math.exp(-delta * 6.5));
+
     for (const part of this.paper.parts) {
       const mesh = part.mesh;
       const t = this.time + part.phase;
-      if (part.kind === 'sway') mesh.rotation.z = part.rotation.z + Math.sin(t * 1.2) * 0.055;
-      if (part.kind === 'wing') mesh.rotation.z = part.rotation.z + Math.sin(t * 3.2) * 0.12;
-      if (part.kind === 'float') mesh.position.y = part.position.y + Math.sin(t * 1.5) * 0.055;
-      if (part.kind === 'jump') mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.3)) * 0.035;
-      if (part.kind === 'spin') mesh.rotation.z = part.rotation.z + this.time * 0.3;
-      if (part.kind === 'wave') {
+      const boost = this.reduced ? 0 : this.wakeBoost(part.key);
+
+      if (part.kind === 'gate') {
+        const sign = mesh.name === 'garden-gate-left' ? -1 : 1;
+        mesh.rotation.y = sign * this.gateSwing * 1.15;
+        continue;
+      }
+      if (this.reduced) continue;
+
+      if (part.kind === 'sway') {
+        mesh.rotation.z = part.rotation.z + Math.sin(t * 1.25) * 0.055 + Math.sin(t * 9.5) * 0.14 * boost;
+        mesh.position.y = part.position.y + Math.abs(Math.sin(t * 7)) * 0.08 * boost;
+      } else if (part.kind === 'wing') {
+        mesh.rotation.z = part.rotation.z + Math.sin(t * 3.1) * 0.11 + Math.sin(t * 10) * 0.24 * boost;
+      } else if (part.kind === 'flutter') {
+        mesh.rotation.z = part.rotation.z + Math.sin(t * 4.2) * 0.18;
+      } else if (part.kind === 'fire') {
+        const flicker = Math.sin(t * 7.5) * 0.05 + Math.sin(t * 13) * 0.03;
+        mesh.scale.set(
+          part.scale.x * (1 + flicker * 0.5 + boost * 0.12),
+          part.scale.y * (1 + flicker + boost * 0.28),
+          part.scale.z,
+        );
+      } else if (part.kind === 'float') {
+        mesh.position.y = part.position.y + Math.sin(t * 1.5) * 0.055 + Math.sin(t * 6) * 0.14 * boost;
+        mesh.rotation.z = part.rotation.z + Math.sin(t * 1.1) * 0.035;
+      } else if (part.kind === 'jump') {
+        mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
+      } else if (part.kind === 'spin') {
+        mesh.rotation.z = part.rotation.z + this.time * 0.3;
+      } else if (part.kind === 'wave') {
         mesh.position.x = part.position.x + Math.sin(t * 1.1) * 0.14;
         mesh.position.y = part.position.y + Math.sin(t * 1.9) * 0.025;
       }
