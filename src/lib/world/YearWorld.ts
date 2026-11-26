@@ -14,6 +14,7 @@ import { createPaperScenery, type PaperSet } from './paper-scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './paper-vehicles';
 import { paperLaptop, paperLantern } from './paper-props';
 import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, STORY_Z, stopIndexAt } from './route';
+import { createYieldPacer } from './schedule';
 import { FLOOR_RAMP, SEASON_BORDERS, WALL_RAMP, sampleRampColor } from './seasons';
 
 // One wheel notch or drag event moves at most a fraction of a station.
@@ -55,6 +56,9 @@ export class YearWorld {
   readonly scene: THREE.Scene;
   readonly camera: THREE.PerspectiveCamera;
   readonly motion = new JourneyMotion();
+  /** Resolves once the world is built and the first frame is drawn. */
+  readonly loaded: Promise<void>;
+  private resolveLoaded!: () => void;
   private renderer: WebGPURenderer;
   private cssRenderer: CSS3DRenderer;
   private cssScene = new THREE.Scene();
@@ -99,6 +103,7 @@ export class YearWorld {
     this.renderer = host.renderer;
     this.journey = host.journey;
     this.onerror = host.onerror;
+    this.loaded = new Promise<void>(resolve => { this.resolveLoaded = resolve; });
     this.state = get(host.journey);
     this.unsubscribe = host.journey.subscribe(state => { this.state = state; });
     this.cssRenderer = new CSS3DRenderer();
@@ -235,24 +240,47 @@ export class YearWorld {
   }
 
   private async load(): Promise<void> {
-    const paper = createPaperScenery(this.cameraX);
-    this.paper = paper;
-    this.scene.add(paper.group);
+    // Fonts and world geometry load side by side.
+    const fonts = document.fonts.ready;
+    const pause = createYieldPacer();
+
+    // The build runs in slices, so the loading screen keeps animating.
+    this.paper = await createPaperScenery(this.cameraX);
+    if (this.disposed) return;
+    this.scene.add(this.paper.group);
+    await pause();
+
     this.fleet = createSeasonalFleet(this.scene);
     this.fleet.update(0, 1 / 60, 0, this.reduced);
+    await pause();
+
     this.createStories();
+    await pause();
+
     this.createInteractions();
+    await pause();
+
     this.createMail();
+    await pause();
+
     this.createProps();
+    await pause();
+
     this.resize();
-    await document.fonts.ready;
+    await fonts;
+    if (this.disposed) return;
     await this.precompileRoute();
     if (this.disposed) return;
+
     this.ready = true;
     this.updateCamera(1, true);
     this.updateLayers();
     this.cssRenderer.render(this.cssScene, this.camera);
+    // Draw the first frame behind the loading screen. Pipeline and buffer setup
+    // happens here, so the reveal shows a finished frame instead of a stall.
+    this.renderer.render(this.scene, this.camera);
     this.journey.update(s => ({ ...s, ready: true, cameraSettled: true }));
+    this.resolveLoaded();
   }
 
   // compileAsync only builds pipelines for objects inside the current view.
@@ -712,6 +740,7 @@ export class YearWorld {
   destroy(): void {
     snowmanFact.set(null);
     this.disposed = true;
+    this.resolveLoaded();
     this.observer.disconnect();
     this.unsubscribe();
     window.removeEventListener('pointermove', this.movePointer);

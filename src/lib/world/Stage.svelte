@@ -38,6 +38,7 @@
     let world: YearWorld | null = null;
     let stopped = false;
     let last = performance.now();
+    let loaded = false;
 
     const size = (): void => {
       const width = host.clientWidth;
@@ -63,7 +64,7 @@
     const onVisibility = (): void => {
       if (document.hidden) {
         renderer.setAnimationLoop(null);
-      } else {
+      } else if (loaded) {
         last = performance.now();
         renderer.setAnimationLoop(frame);
       }
@@ -76,8 +77,18 @@
         if (stopped) return;
         const backend = (renderer as unknown as { backend?: { isWebGPUBackend?: boolean } }).backend;
         document.documentElement.dataset.renderer = backend?.isWebGPUBackend ? 'webgpu' : 'webgl';
-        world = new YearWorld({ renderer, scene, camera, layer, journey, onerror: () => onerror('loadError') });
-        renderer.setAnimationLoop(frame);
+        const created = new YearWorld({ renderer, scene, camera, layer, journey, onerror: () => onerror('loadError') });
+        world = created;
+        // Render only after the world is fully built and its shaders are ready.
+        // Drawing during the build would compile every pipeline on a half-built
+        // scene and stall the loading screen.
+        void created.loaded.then(() => {
+          if (stopped || world !== created) return;
+          loaded = true;
+          if (document.hidden) return;
+          last = performance.now();
+          renderer.setAnimationLoop(frame);
+        });
       } catch (cause) {
         console.error(cause);
         renderer.setAnimationLoop(null);

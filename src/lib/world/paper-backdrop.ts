@@ -68,7 +68,7 @@ function buildRidge(
 }
 
 /** Builds three staggered torn-paper mountain and hill planes plus miniature hill trees. */
-export function addPanoramaRidges({ group, cameraX }: BackdropContext): void {
+export async function addPanoramaRidges({ group, cameraX }: BackdropContext, pause: () => Promise<void>): Promise<void> {
   // Plane 2: distant alpine & coastal mountain range (slow 0.45x parallax).
   buildRidge(
     group,
@@ -88,6 +88,7 @@ export function addPanoramaRidges({ group, cameraX }: BackdropContext): void {
       return Math.max(1.05, wave - coastDip);
     },
   );
+  await pause();
 
   // Plane 3: far rolling hills (0.54x parallax).
   const farHeight = (x: number): number =>
@@ -106,6 +107,7 @@ export function addPanoramaRidges({ group, cameraX }: BackdropContext): void {
     }),
     farHeight,
   );
+  await pause();
 
   // Plane 4: near rolling hills framing the back of the stage (0.66x parallax).
   buildRidge(
@@ -121,6 +123,7 @@ export function addPanoramaRidges({ group, cameraX }: BackdropContext): void {
     }),
     x => 0.62 + Math.sin(x * 0.32 + 1.8) * 0.2 + Math.cos(x * 0.73) * 0.1,
   );
+  await pause();
 
   // Miniature distant tree silhouettes perched along the far hill crest for clear depth scale.
   const ridgeTrees = new PaperBatch();
@@ -150,6 +153,7 @@ export function addPanoramaRidges({ group, cameraX }: BackdropContext): void {
     { x: 82.0, kind: 'fir', color: '#697f90', scale: 0.82 },
   ];
 
+  let placed = 0;
   for (const item of distantTreeStops) {
     const baseY = -0.08 + farHeight(item.x) - 0.2;
     if (item.kind === 'fir') {
@@ -186,6 +190,8 @@ export function addPanoramaRidges({ group, cameraX }: BackdropContext): void {
         { x: item.x - 0.23 * item.scale, y: baseY + 0.34 * item.scale, z: -5.03, scale: [item.scale, item.scale, 1] },
       );
     }
+    placed++;
+    if (placed % 6 === 0) await pause();
   }
 
   const ridgeTreeMesh = ridgeTrees.build();
@@ -197,7 +203,7 @@ export function addPanoramaRidges({ group, cameraX }: BackdropContext): void {
 }
 
 /** Builds soft low-contrast sky clouds, winter moon & stars, summer sun, and distant birds. */
-export function addSkyDetails(group: THREE.Group): void {
+export async function addSkyDetails(group: THREE.Group, pause: () => Promise<void>): Promise<void> {
   const sky = new PaperBatch();
   const S = STOP_SPACING;
 
@@ -219,6 +225,7 @@ export function addSkyDetails(group: THREE.Group): void {
   for (const [cx, cy, scale, tint, shadow] of clouds) {
     addCloud(sky, cx, cy, -8.4, scale, tint, shadow);
   }
+  await pause();
 
   // Winter crescent moons built cleanly from two matching Bezier arcs (no horn pinch).
   for (const [mx, my] of [[-6.8, 8.9], [S * 6 + 6.4, 8.8]] as Array<[number, number]>) {
@@ -244,6 +251,7 @@ export function addSkyDetails(group: THREE.Group): void {
   for (const [sx, sy, sr] of starSpots) {
     sky.add(starGeometry(sr, 0.02), '#f2e5be', { x: sx, y: sy, z: -8.15 });
   }
+  await pause();
 
   // Warm soft paper sun framed cleanly inside the summer stop (clear of Spring, Autumn, and title).
   sky.add(ovalGeometry(1.48, 1.48, 0.02), '#b8cab8', { x: S * 3 - 0.1, y: 8.65, z: -6.85 });
@@ -275,6 +283,7 @@ export function addSkyDetails(group: THREE.Group): void {
       z: -7.9,
     });
   }
+  await pause();
 
   const skyMesh = sky.build();
   if (skyMesh) {
@@ -285,7 +294,7 @@ export function addSkyDetails(group: THREE.Group): void {
 }
 
 /** Adds grounded foreground bottom-edge foliage/snowbanks (z = +1.15, 1.24x speed). */
-export function addForegroundFraming(group: THREE.Group, batch: PaperBatch): void {
+export async function addForegroundFraming(group: THREE.Group, batch: PaperBatch, pause: () => Promise<void>): Promise<void> {
   const fg = (name: string, x: number, y: number, z: number, scale = 1) =>
     new PaperDetail(batch, group, name, x, y, z, scale);
 
@@ -307,6 +316,7 @@ export function addForegroundFraming(group: THREE.Group, batch: PaperBatch): voi
       bank.cut([[-0.16, 0.08], [0, 0.36], [0.16, 0.08]], '#6e8d7f', -0.18, 0, 0.035, undefined, 0.02);
     }
   }
+  await pause();
 
   // Spring foreground meadow grass tufts & tiny daisies.
   for (let x = SEASON_BORDERS.spring + 0.8; x < SEASON_BORDERS.summer - 0.6; x += 2.35) {
@@ -326,6 +336,7 @@ export function addForegroundFraming(group: THREE.Group, batch: PaperBatch): voi
     tuft.oval(0.09, 0.09, '#f6e7d4', 0.12, 0.34, 0.03, undefined, 0.014);
     tuft.oval(0.04, 0.04, '#e6be6c', 0.12, 0.34, 0.045, undefined, 0.012);
   }
+  await pause();
 
   // Summer coastal foreground dune reeds & lapping sea-foam scallops.
   for (let x = SEASON_BORDERS.summer + 0.9; x < SEASON_BORDERS.autumn - 0.6; x += 2.6) {
@@ -349,6 +360,7 @@ export function addForegroundFraming(group: THREE.Group, batch: PaperBatch): voi
       );
     }
   }
+  await pause();
 
   // Autumn foreground fallen-leaf mounds (authentic maple/oak silhouettes!).
   const autumnColors = ['#c96a4a', '#da9b4e', '#b75a4b', '#e2b666', '#a85a45'];

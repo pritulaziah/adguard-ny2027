@@ -8,6 +8,7 @@ import { carded } from './paper-mesh';
 import { GROUND_RAMP, SEASON_BORDERS } from './seasons';
 import { addBunny, addCat, addCrab, addDeer, addFish, addFox, addPondWithFrog, addSeaDragon, addSnowman, type AnimalBuilderContext } from './paper-animals';
 import { addForegroundFraming, addPanoramaRidges, addSkyDetails } from './paper-backdrop';
+import { createYieldPacer } from './schedule';
 
 export interface PaperPart {
   mesh: THREE.Mesh;
@@ -45,7 +46,10 @@ function seeded(seed: number): () => number {
 }
 
 /** Original paper scenery. Every shape is made here, directly along the route. */
-export function createPaperScenery(cameraX: ScalarUniform): PaperSet {
+export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperSet> {
+  // Long stretches of shape building are split into frames, so the loading
+  // screen keeps animating on slow devices.
+  const pause = createYieldPacer();
   const group = new THREE.Group();
   group.name = 'adguard-paper-scenery';
   const parts: PaperPart[] = [];
@@ -610,43 +614,55 @@ export function createPaperScenery(cameraX: ScalarUniform): PaperSet {
   ground.name = 'seasonal-paper-ground';
   ground.position.set(TRACK_LENGTH / 2, 0.17, 4.65);
   group.add(ground);
+  await pause();
 
   // Multi-plane parallax backdrop: distant peaks, far rolling hills, near ridge, sky details.
-  addPanoramaRidges({ group, cameraX });
-  addSkyDetails(group);
+  await addPanoramaRidges({ group, cameraX }, pause);
+  await pause();
+  await addSkyDetails(group, pause);
+  await pause();
 
   createTravelSurfaces();
+  await pause();
   createTransferStations();
+  await pause();
 
   const animalCtx: AnimalBuilderContext = { detail, place, animate };
 
   // Stop 0 (Winter start, x = 0): Train covers [-3.66, +0.76].
   fir(-5.2, 3.7, true, false, -2.1);
   fir(-3.6, 2.7, true, false, -2.35);
+  await pause();
   addDeer(animalCtx, 2.05, -1.08);
   cabin(3.85);
   fire(5.25);
+  await pause();
   fir(7.3, 3.0, true, false, -2.15);
   fir(9.1, 3.5, true, false, -1.98);
+  await pause();
 
   // Stop 1 (Winter AdGuard Home, x = 12.65): Train covers [8.99, 13.41].
   fir(spacing - 4.4, 3.1, true, false, -2.2);
   addSnowman(animalCtx, spacing + 2.35, true, -1.04);
   fir(spacing + 4.45, 3.5, true, false, -2.0);
   fir(spacing + 5.7, 2.6, true, false, -2.32);
+  await pause();
 
   // Stop 2 (Spring AdGuard Mini Android, x = 25.3): Bicycle covers [24.5, 26.1].
   broadTree(spacing * 2 - 5.9, 'spring-green', 0.88, -2.35);
   broadTree(spacing * 2 - 4.55, 'spring-blossom', 1.08, -2.08);
   addFox(animalCtx, spacing * 2 - 2.45, -1.02);
+  await pause();
   garden(spacing * 2 + 1.9);
   addPondWithFrog(animalCtx, spacing * 2 + 4.05, -1.04);
   broadTree(spacing * 2 + 5.6, 'spring-green', 0.96, -2.2);
+  await pause();
   const meadowSpots: Array<[number, number]> = [
     [-5.3, -0.78], [-3.8, -1.3], [-1.4, -0.75], [-0.4, -1.45],
     [0.75, -0.82], [2.85, -0.78], [5.15, -0.85], [5.95, -1.35],
   ];
   meadowSpots.forEach(([dx, dz], idx) => springMeadowCluster(spacing * 2 + dx, dz, 202604 + idx * 17));
+  await pause();
 
   // Stop 3 (Summer AdGuard Mini Mac, x = 37.95): Sailboat covers [36.95, 38.95]; laptop is at -1.95.
   addSeaDragon(animalCtx, spacing * 3 - 4.05, -1.15);
@@ -654,18 +670,23 @@ export function createPaperScenery(cameraX: ScalarUniform): PaperSet {
   lighthouse(spacing * 3 + 3.2);
   coastalPine(spacing * 3 + 4.55, 0.88, -2.22);
   addFish(animalCtx, spacing * 3 + 4.15, -0.34);
+  await pause();
 
   // Stop 4 (Autumn AdGuard Mail, x = 50.6): Car covers [49.65, 51.55]; mailbox is at +2.2.
   broadTree(spacing * 4 - 4.3, 'autumn-maple', 1.08, -2.08);
   broadTree(spacing * 4 - 2.6, 'autumn-birch', 0.88, -2.32);
   broadTree(spacing * 4 + 4.1, 'autumn-oak', 1.05, -2.05);
+  await pause();
 
   // Stop 5 (Autumn eMudhra, x = 63.25): Car covers [62.3, 64.2]; lantern is at +1.95.
   broadTree(spacing * 5 - 4.55, 'autumn-birch', 1.06, -2.12);
   addCat(animalCtx, spacing * 5 - 2.45, -1.02);
+  await pause();
   addBunny(animalCtx, spacing * 5 + 3.55, -0.98);
   broadTree(spacing * 5 + 4.6, 'autumn-maple', 1.04, -2.15);
+  await pause();
   autumnLeafDrifts();
+  await pause();
 
   // Stop 6 (Winter New Year finale, x = 75.9). The road runs on past the story.
   fir(STORY_END - 5.9, 3.7, true, true, -2.05);
@@ -674,9 +695,11 @@ export function createPaperScenery(cameraX: ScalarUniform): PaperSet {
   cabin(STORY_END + 4.45, true);
   fir(STORY_END + 7.4, 3.2, true, true, -2.1);
   fir(STORY_END + 10.1, 3.6, true, true, -2.0);
+  await pause();
 
   // Close foreground framing elements (bottom-edge foliage and snowbanks).
-  addForegroundFraming(group, sheets);
+  await addForegroundFraming(group, sheets, pause);
+  await pause();
 
   // All firs share one buffer and one material, so every fir costs one draw call.
   const firSheet = firs.build();
