@@ -1,6 +1,7 @@
 import { stopX } from '../route';
 import { SEASON_BORDERS } from '../seasons';
 import type { SceneryContext } from '../scene-context';
+import { addAutumnFloor } from './autumn-plants';
 import { shapeFrom } from './palette';
 
 /** Grounded foreground bottom-edge foliage/snowbanks (z = +1.15, 1.24x speed). */
@@ -73,5 +74,17 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
       );
     }
   }
+  await pause();
+
+  // Small plants frame the autumn road without covering the wheels.
+  const autumnSpots = [
+    [-1.7, 202631],
+    [8.1, 202688],
+    [17.7, 202745],
+  ];
+  autumnSpots.forEach(([dx, seed], index) => {
+    const x = stopX(5) + dx;
+    addAutumnFloor(ctx, x, 1.16 + (index % 2) * 0.1, seed, 0.78);
+  });
   await pause();
 }

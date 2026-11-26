@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { createPaperScenery } from './scenery/index.ts';
 import { createScalarUniform } from './paper-materials.ts';
 import { stopX } from './route.ts';
+import { SEASON_BORDERS } from './seasons.ts';
 
 test('every scenery object has its own mesh and keeps colors', async () => {
   globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
@@ -181,3 +182,30 @@ test('river tree canopies stay clear of the autumn trees and the central story',
     geometry.dispose();
   }
 });
+
+test('autumn undergrowth stays inside its season and leaves the road and figures clear', async () => {
+  globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
+  const set = await createPaperScenery(createScalarUniform(0));
+  set.group.updateMatrixWorld(true);
+  const shrubs = set.group.getObjectsByProperty('name', 'autumn-berry-shrub');
+  const floor = set.group.getObjectsByProperty('name', 'autumn-forest-floor');
+  expect(shrubs.length).toBeGreaterThan(0);
+  expect(floor.some(plant => plant.position.z > 1)).toBe(true);
+  expect(floor.some(plant => plant.position.z < -0.5)).toBe(true);
+
+  const figures = ['paper-bunny', 'paper-squirrel', 'paper-cat'].map(name => ({
+    name, box: new THREE.Box3().setFromObject(set.group.getObjectByName(name)),
+  }));
+  for (const plant of [...shrubs, ...floor]) {
+    const box = new THREE.Box3().setFromObject(plant);
+    expect(box.min.x, 'plants start after the river').toBeGreaterThan(SEASON_BORDERS.autumn);
+    expect(box.max.x, 'plants end before winter').toBeLessThan(SEASON_BORDERS.winterEnd);
+    expect(box.max.y, 'plants stay below the story').toBeLessThan(1.4);
+    expect(box.min.z > 0.5 || box.max.z < -0.5, 'plants stay outside the road').toBe(true);
+    if (!floor.includes(plant)) continue;
+    for (const figure of figures) {
+      expect(box.max.x < figure.box.min.x - 0.05 || box.min.x > figure.box.max.x + 0.05,
+        `${plant.name} at ${plant.position.x}, z ${plant.position.z}, bounds ${box.min.x}..${box.max.x} leaves space around ${figure.name} ${figure.box.min.x}..${figure.box.max.x}`).toBe(true);
+    }
+  }
+}, 60000);

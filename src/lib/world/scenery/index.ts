@@ -20,6 +20,7 @@ import {
 import { createYieldPacer } from '../schedule';
 import { isAnimated, motionFor, type PaperPart } from '../part-motion';
 import type { SceneryContext } from '../scene-context';
+import { addAutumnUndergrowth } from './autumn';
 import { addBroadTree } from './broad-tree';
 import { addCabin } from './cabin';
 import { addFir } from './fir';
@@ -186,6 +187,8 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addBroadTree(ctx, stopX(6) + 3.9, 'autumn-birch', 0.88, -3.05);
   addBroadTree(ctx, stopX(6) + 4.6, 'autumn-maple', 1.06, -2.12);
   addBroadTree(ctx, stopX(6) + 5.8, 'autumn-oak', 0.88, -2.84);
+  await pause();
+  addAutumnUndergrowth(ctx);
   await pause();
 
   // Stop 7 (Finale, x = 88.55): finale train clamp 86.2 .. 102.55; the road runs on past the story.
