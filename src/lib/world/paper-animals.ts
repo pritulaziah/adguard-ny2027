@@ -390,14 +390,13 @@ export function addPondWithFrog(ctx: AnimalBuilderContext, x: number, z = -1.04)
   }
   oval(frog, 0.3, 0.17, '#e2e5c2', 0, -0.05, 0.044, 0.016);
 
-  // Raised dome eyes, rosy cheeks, and friendly curved smile.
+  // Raised eyes and soft cheeks keep the face simple.
   for (const sign of [-1, 1]) {
     oval(frog, 0.17, 0.17, '#8db37c', sign * 0.14, 0.17, 0.018, 0.036);
     oval(frog, 0.11, 0.11, '#fbf7ea', sign * 0.14, 0.17, 0.048, 0.016);
     addSparkleEye(frog, sign * 0.14, 0.17, 0.064, 0.034);
     oval(frog, 0.08, 0.05, BLUSH, sign * 0.17, 0.03, 0.048, 0.012);
   }
-  stroke(frog, [[-0.12, 0.02], [-0.04, -0.03], [0.04, -0.03], [0.12, 0.02]], INK, 0.015, 0.064);
 
   ctx.animate(frog, 'jump', 'frog', 0.34);
 }
@@ -539,7 +538,14 @@ export function addCrab(ctx: AnimalBuilderContext, x: number, z = -0.88): void {
     oval(body, 0.08, 0.05, '#ef9c88', sign * 0.18, 0.02, 0.048, 0.012);
   }
 
-  stroke(body, [[-0.1, 0.02], [0, -0.035], [0.1, 0.02]], INK, 0.016, 0.062);
+  // A small curved smile stays close to the shell colour.
+  const smile = shapeFrom(s => {
+    s.moveTo(-0.07, 0.015);
+    s.quadraticCurveTo(0, -0.045, 0.07, 0.015);
+    s.quadraticCurveTo(0, -0.016, -0.07, 0.015);
+    s.closePath();
+  });
+  cut(body, smile, '#aa604c', 0, 0, 0.072, 0.008);
 }
 
 /** Playful coral-apricot fish leaping cleanly above the summer sea waves. */
@@ -611,10 +617,9 @@ export function addFish(ctx: AnimalBuilderContext, x: number, z = -0.34): void {
   });
   cut(body, pec, '#e8a872', 0, 0, 0.052, 0.018);
 
-  // Friendly eye and curved gill line.
+  // One bright eye keeps the face readable without extra lines.
   oval(body, 0.11, 0.11, '#fffaf0', -0.19, 0.05, 0.044, 0.016);
   addSparkleEye(body, -0.19, 0.05, 0.06, 0.032);
-  stroke(body, [[-0.29, -0.02], [-0.24, -0.05], [-0.19, -0.03]], INK, 0.012, 0.058);
 
   ctx.animate(body, 'fish-dive', 'fish', 0.34);
   ctx.animate(splash, 'fish-splash', 'fish');
