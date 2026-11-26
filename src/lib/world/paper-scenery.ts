@@ -2,29 +2,23 @@ import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
 import { TRACK_LENGTH, stopX, STORY_END } from './route';
 import { cut, oval, rect, stroke } from './paper-shapes';
-import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
+import { paperSheet, seasonalPaperMaterial, transparentPaperSheet, type ScalarUniform } from './paper-materials';
 import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
 import { carded } from './paper-mesh';
 import { GROUND_RAMP, SEASON_BORDERS } from './seasons';
 import { addBunny, addCat, addCrab, addDeer, addFish, addFox, addPondWithFrog, addSeaDragon, addSnowman, type AnimalBuilderContext } from './paper-animals';
 import { addForegroundFraming, addPanoramaRidges, addSkyDetails } from './paper-backdrop';
 import { createYieldPacer } from './schedule';
+import { isAnimated, motionFor, type PaperPart } from './part-motion';
 
-export interface PaperPart {
-  mesh: THREE.Object3D;
-  position: THREE.Vector3;
-  rotation: THREE.Euler;
-  scale: THREE.Vector3;
-  kind: Parameters<AnimalBuilderContext['animate']>[1] | 'fire' | 'gate' | 'spin' | 'wave' | 'gull' | 'airborne-leaf';
-  phase: number;
-  key?: Interaction;
-  sparkLift?: number;
-  sparkOffsetX?: number;
-}
+export type { PaperPart } from './part-motion';
 
 export interface PaperSet {
   group: THREE.Group;
+  /** Every registered part, including anchors that do not move. */
   parts: PaperPart[];
+  /** Parts that need a motion call on each frame. */
+  animated: PaperPart[];
   objects: Map<Interaction, THREE.Object3D>;
 }
 
@@ -53,6 +47,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   const group = new THREE.Group();
   group.name = 'adguard-paper-scenery';
   const parts: PaperPart[] = [];
+  const animated: PaperPart[] = [];
   const objects = new Map<Interaction, THREE.Object3D>();
   const firs = new PaperBatch();
   const sheets = new PaperBatch();
@@ -77,17 +72,24 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     sparkLift?: number,
     sparkOffsetX?: number,
   ): void {
-    parts.push({
+    mesh.updateWorldMatrix(true, false);
+    const part: PaperPart = {
       mesh,
       kind,
       position: mesh.position.clone(),
       rotation: mesh.rotation.clone(),
       scale: mesh.scale.clone(),
       phase: parts.length * 0.73,
+      worldX: mesh.matrixWorld.elements[12],
+      gateSide: mesh.name === 'garden-gate-left' ? -1 : 1,
       key,
       sparkLift,
       sparkOffsetX,
-    });
+      // The motion binds here, once. The frame loop never selects a case.
+      apply: motionFor(kind),
+    };
+    parts.push(part);
+    if (isAnimated(part)) animated.push(part);
     if (key && !objects.has(key)) {
       mesh.name = key;
       objects.set(key, mesh);
@@ -393,10 +395,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
       const outline = index % 2 === 0 ? mapleLeafGeometry(size) : oakLeafGeometry(size);
       const leaf = carded(outline.clone(), color);
       leaf.name = 'paper-airborne-leaf';
-      const material = paperSheet().clone();
-      material.transparent = true;
-      material.depthWrite = false;
-      leaf.material = material;
+      leaf.material = transparentPaperSheet();
       leaf.position.set(x - index * 0.32, 3.05 + Math.sin(index * 2) * 0.33, -1.9 - index * 0.12);
       leaf.visible = false;
       group.add(leaf);
@@ -724,7 +723,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     group.add(mesh);
   }
 
-  return { group, parts, objects };
+  return { group, parts, animated, objects };
 }
 
 

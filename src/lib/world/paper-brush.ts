@@ -194,47 +194,101 @@ export function strokeGeometry(points: Outline, width: number, depth = STROKE_DE
   return merged ?? segments[0];
 }
 
-function matrixOf(at: Placement): THREE.Matrix4 | null {
+// Build-time scratch objects. `PaperBatch.add` consumes them immediately, so one
+// set serves every shape and the build stops allocating temporary vectors.
+const scratchPosition = new THREE.Vector3();
+const scratchQuaternion = new THREE.Quaternion();
+const scratchEuler = new THREE.Euler();
+const scratchScale = new THREE.Vector3();
+const scratchMatrix = new THREE.Matrix4();
+const scratchWorld = new THREE.Matrix4();
+const scratchVertex = new THREE.Vector3();
+
+/**
+ * Writes a placement into the shared matrix. Returns null for an identity
+ * placement, so the caller can skip the matrix multiply.
+ */
+function matrixOf(at: Placement, target: THREE.Matrix4 = scratchMatrix): THREE.Matrix4 | null {
   const { x = 0, y = 0, z = 0, rotate, scale } = at;
   if (!rotate && !scale && !x && !y && !z) return null;
-  const position = new THREE.Vector3(x, y, z);
-  const quaternion = new THREE.Quaternion();
-  if (rotate) quaternion.setFromEuler(new THREE.Euler(rotate[0], rotate[1], rotate[2]));
-  const size = scale ? new THREE.Vector3(scale[0], scale[1], scale[2]) : new THREE.Vector3(1, 1, 1);
-  return new THREE.Matrix4().compose(position, quaternion, size);
+  scratchPosition.set(x, y, z);
+  if (rotate) scratchQuaternion.setFromEuler(scratchEuler.set(rotate[0], rotate[1], rotate[2]));
+  else scratchQuaternion.identity();
+  if (scale) scratchScale.set(scale[0], scale[1], scale[2]);
+  else scratchScale.set(1, 1, 1);
+  return target.compose(scratchPosition, scratchQuaternion, scratchScale);
 }
 
-/** Collects painted shapes and merges them into one buffer, so a detail costs one draw call. */
+/**
+ * Collects painted shapes and writes their transformed vertices straight into
+ * growable position and color arrays. One buffer per batch means one draw call,
+ * and no per-shape geometry clone, paint pass, or merge pass at build time.
+ */
 export class PaperBatch {
-  private parts: THREE.BufferGeometry[] = [];
+  private positions: number[] = [];
+  private colors: number[] = [];
+  private parts = 0;
 
   get size(): number {
-    return this.parts.length;
+    return this.parts;
   }
 
   add(
     geometry: THREE.BufferGeometry,
     color: THREE.ColorRepresentation,
     at: Placement | THREE.Matrix4 = {},
+    side?: THREE.ColorRepresentation,
   ): this {
-    let part = geometry.clone();
     const matrix = at instanceof THREE.Matrix4 ? at : matrixOf(at);
-    if (matrix) part.applyMatrix4(matrix);
-    // Merging needs one attribute layout and no mixed indexing: extrusions are
-    // non-indexed, boxes are indexed.
-    if (part.index) part = part.toNonIndexed();
+    const position = geometry.getAttribute('position') as THREE.BufferAttribute;
+    const index = geometry.getIndex();
+    const vertexCount = position.count;
+    const total = index ? index.count : vertexCount;
+
     // An extrusion has exactly two groups: lid and folded side walls.
-    this.parts.push(paint(part, color, part.groups.length === 2 ? 1 : undefined));
+    // Box and cylinder groups stay flat, as `paint` did before.
+    const foldIndex = geometry.groups.length === 2 ? 1 : -1;
+    let folded: Uint8Array | null = null;
+    if (foldIndex >= 0) {
+      folded = new Uint8Array(vertexCount);
+      for (const group of geometry.groups) {
+        if (group.materialIndex !== foldIndex) continue;
+        const end = Math.min(group.start + group.count, total);
+        for (let i = group.start; i < end; i++) folded[index ? index.getX(i) : i] = 1;
+      }
+    }
+
+    const base = new THREE.Color(color);
+    const edge = folded
+      ? side === undefined
+        ? base.clone().multiplyScalar(FOLD)
+        : new THREE.Color(side)
+      : base;
+    const positions = this.positions;
+    const colors = this.colors;
+    for (let i = 0; i < total; i++) {
+      const vertex = index ? index.getX(i) : i;
+      scratchVertex.fromBufferAttribute(position, vertex);
+      if (matrix) scratchVertex.applyMatrix4(matrix);
+      positions.push(scratchVertex.x, scratchVertex.y, scratchVertex.z);
+      const shade = folded && folded[vertex] ? edge : base;
+      colors.push(shade.r, shade.g, shade.b);
+    }
+
+    this.parts++;
     return this;
   }
 
   build(): THREE.BufferGeometry | null {
-    if (this.parts.length === 0) return null;
-    if (this.parts.length === 1) return this.parts[0];
-    const merged = mergeGeometries(this.parts, false);
-    for (const part of this.parts) part.dispose();
-    this.parts = merged ? [merged] : [];
-    return merged;
+    if (this.parts === 0) return null;
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.positions), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(this.colors), 3));
+    geometry.computeBoundingSphere();
+    this.positions = [];
+    this.colors = [];
+    this.parts = 0;
+    return geometry;
   }
 }
 
@@ -273,12 +327,17 @@ export class PaperDetail {
       this.group.quaternion,
       this.group.scale,
     );
-    this.matrix = parentMatrix ? parentMatrix.clone().multiply(local) : local;
+    this.matrix = parentMatrix ? new THREE.Matrix4().multiplyMatrices(parentMatrix, local) : local;
+    // A detail never moves. Keep its local matrix fixed so the scene graph does
+    // not recompute it on every frame.
+    this.group.matrixAutoUpdate = false;
+    this.group.updateMatrix();
   }
 
   private world(local: Placement): THREE.Matrix4 {
-    const matrix = matrixOf(local) ?? new THREE.Matrix4();
-    return this.matrix.clone().multiply(matrix);
+    const matrix = matrixOf(local);
+    if (!matrix) return this.matrix;
+    return scratchWorld.copy(this.matrix).multiply(matrix);
   }
 
   child(name: string, x: number, y: number, z: number, scale = 1): PaperDetail {

@@ -4,7 +4,7 @@ import { CSS3DSprite, CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer
 import { mount, unmount } from 'svelte';
 import { get } from 'svelte/store';
 import { language, translations, type Interaction } from '../content/i18n';
-import { objectFact } from '../content/object-fact';
+import { objectFact, type FactPosition } from '../content/object-fact';
 import { openStoryId } from '../content/story-modal';
 import WallStory from '../ui/WallStory.svelte';
 import type { JourneyStore, JourneyState } from './journey-state';
@@ -12,6 +12,7 @@ import { createScalarUniform, createWeatherField, resetPaperMaterials, seasonalP
 import { carded } from './paper-mesh';
 import { createPaperScenery, type PaperSet } from './paper-scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './paper-vehicles';
+import type { MotionFrame } from './part-motion';
 import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, STORY_Z, stopIndexAt, stopX } from './route';
 import { createYieldPacer } from './schedule';
 import { FLOOR_RAMP, SEASON_BORDERS, WALL_RAMP, sampleRampColor } from './seasons';
@@ -20,11 +21,17 @@ import { FLOOR_RAMP, SEASON_BORDERS, WALL_RAMP, sampleRampColor } from './season
 const STEP_LIMIT = 1.6;
 // Push the sky wall deep behind the three ridge layers for strong travel parallax.
 const SKY_WALL_Z = -9.6;
+// Moving parts farther than this from the camera cannot be seen; skip their math.
+const MOTION_SPAN = 13;
 
 interface Story {
   element: HTMLDivElement;
   component: ReturnType<typeof mount>;
   x: number;
+  /** Last states written to the DOM, so a still frame does no style work. */
+  shown: boolean;
+  active: boolean;
+  opacity: number;
 }
 
 interface Spark {
@@ -35,6 +42,7 @@ interface Spark {
   local: THREE.Vector3;
   x: number;
   position: THREE.Vector3;
+  expanded: boolean;
 }
 
 export interface WorldHost {
@@ -49,11 +57,6 @@ export interface WorldHost {
 function smoothstep(edge0: number, edge1: number, x: number): number {
   const t = THREE.MathUtils.clamp((x - edge0) / (edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);
-}
-
-function motionPulse(time: number, start: number, duration: number): number {
-  const progress = THREE.MathUtils.clamp((time - start) / duration, 0, 1);
-  return Math.sin(progress * Math.PI);
 }
 
 export class YearWorld {
@@ -93,7 +96,11 @@ export class YearWorld {
   private observer: ResizeObserver;
   private mailX = stopX(6) - 2.2;
   private found = new Set<string>();
-  private wakeTimes = new Map<Interaction, number>();
+  private frame: MotionFrame = { time: 0, delta: 0, reduced: false, distance: 0, gateSwing: 0 };
+  private fact: FactPosition | null = null;
+  private labels = translations[get(language)].interactions;
+  private unsubscribeLanguage: () => void;
+  private unsubscribeFact: () => void;
   private gullArrivalAt?: number;
   private gateOpen = false;
   private gateSwing = 0;
@@ -111,6 +118,8 @@ export class YearWorld {
     this.loaded = new Promise<void>(resolve => { this.resolveLoaded = resolve; });
     this.state = get(host.journey);
     this.unsubscribe = host.journey.subscribe(state => { this.state = state; });
+    this.unsubscribeLanguage = language.subscribe(value => { this.labels = translations[value].interactions; });
+    this.unsubscribeFact = objectFact.subscribe(value => { this.fact = value; });
     this.cssRenderer = new CSS3DRenderer();
     this.cssRenderer.domElement.style.pointerEvents = 'none';
     // Focus must not scroll the layer away from its WebGL geometry.
@@ -318,7 +327,9 @@ export class YearWorld {
       // Stories live in screen space, so every viewport centres them the same way
       // and keeps text steady while the 3D planes shift behind and in front.
       this.layer.append(element);
-      this.stories.push({ element, component, x });
+      // The copy stays click-through; the story button opts back into pointer events.
+      element.style.pointerEvents = 'none';
+      this.stories.push({ element, component, x, shown: true, active: false, opacity: 1 });
     }
   }
 
@@ -329,7 +340,7 @@ export class YearWorld {
       if (!part) continue;
       this.spark(anchor, key, () => {
         this.discover(key);
-        this.wakeTimes.set(key, this.time);
+        this.wake(key);
         if (key === 'gate') {
           this.gateOpen = !this.gateOpen;
         }
@@ -339,13 +350,15 @@ export class YearWorld {
   }
 
   private spark(anchor: THREE.Object3D, key: Interaction, onclick: () => void, lift = 0.16, offsetX = 0): void {
-    const label = translations[get(language)].interactions[key].label;
+    const label = this.labels[key].label;
     const button = document.createElement('button');
     button.className = 'object-spark';
     button.dataset.interaction = key;
     button.type = 'button';
     button.title = label;
     button.setAttribute('aria-label', label);
+    button.setAttribute('aria-controls', 'object-fact');
+    button.setAttribute('aria-expanded', 'false');
     button.textContent = '✦';
     button.addEventListener('click', event => {
       event.stopPropagation();
@@ -363,7 +376,7 @@ export class YearWorld {
     anchor.updateWorldMatrix(true, false);
     const world = local.clone().applyMatrix4(anchor.matrixWorld);
     this.cssScene.add(sprite);
-    this.sparks.push({ key, object: sprite, button, anchor, local, x: world.x, position: world });
+    this.sparks.push({ key, object: sprite, button, anchor, local, x: world.x, position: world, expanded: false });
   }
 
   private discover(id: Interaction): void {
@@ -371,8 +384,16 @@ export class YearWorld {
     this.journey.update(s => ({ ...s, discoveries: this.found.size }));
   }
 
+  /** Stamps the click time on every part that reacts to this figure. */
+  private wake(key: Interaction): void {
+    if (!this.paper) return;
+    for (const part of this.paper.animated) {
+      if (part.key === key) part.startedAt = this.time;
+    }
+  }
+
   private toggleFact(key: Interaction): void {
-    if (get(objectFact)?.key === key) {
+    if (this.fact?.key === key) {
       objectFact.set(null);
       return;
     }
@@ -385,7 +406,7 @@ export class YearWorld {
     const width = this.renderer.domElement.clientWidth;
     const height = this.renderer.domElement.clientHeight;
     const next = { key: spark.key, x: (point.x + 1) * width / 2, y: (1 - point.y) * height / 2, width, height };
-    const previous = get(objectFact);
+    const previous = this.fact;
     if (!previous || previous.key !== next.key || Math.abs(previous.x - next.x) > 0.75 || Math.abs(previous.y - next.y) > 0.75 || previous.width !== width || previous.height !== height) objectFact.set(next);
   }
 
@@ -593,23 +614,28 @@ export class YearWorld {
   }
 
   private updateLayers(): void {
-    for (let i = 0; i < this.stories.length; i++) {
-      const story = this.stories[i];
+    for (const story of this.stories) {
       const absDiff = Math.abs(story.x - this.motion.distance);
       const opacity = 1 - smoothstep(1.5, 4.7, absDiff);
-      const visible = opacity > 0.004;
-      story.element.style.display = visible ? '' : 'none';
-      if (visible) story.element.style.opacity = opacity.toFixed(3);
-      const active = visible && opacity > 0.85;
-      story.element.inert = !active;
-      story.element.setAttribute('aria-hidden', String(!active));
-      // Every story now has a button, so the copy must stay click-through:
-      // the figures behind it keep their own targets, and the button in
-      // app.css opts back into pointer events.
-      story.element.style.pointerEvents = 'none';
+      const shown = opacity > 0.004;
+      const active = shown && opacity > 0.85;
+      if (shown !== story.shown) {
+        story.shown = shown;
+        story.element.style.display = shown ? '' : 'none';
+      }
+      if (shown && Math.abs(story.opacity - opacity) > 0.002) {
+        story.opacity = opacity;
+        story.element.style.opacity = opacity.toFixed(3);
+      }
+      // Touch the DOM only when the state really changes.
+      if (active !== story.active) {
+        story.active = active;
+        story.element.inert = !active;
+        story.element.setAttribute('aria-hidden', String(!active));
+      }
     }
 
-    const labels = translations[get(language)].interactions;
+    const labels = this.labels;
     for (const spark of this.sparks) {
       const label = labels[spark.key].label;
       if (spark.button.title !== label) {
@@ -618,15 +644,17 @@ export class YearWorld {
       }
       // Keep the touch target steady while the paper character moves underneath it.
       spark.object.position.copy(spark.position);
-      const difference = Math.abs(spark.x - this.motion.distance);
       // The marks stay visible while the train moves; only distance hides them.
-      const visible = difference < 5.6;
-      spark.object.visible = visible;
-      spark.button.inert = !visible;
-      const factOpen = get(objectFact)?.key === spark.key;
-      const expanded = String(factOpen);
-      if (spark.button.getAttribute('aria-expanded') !== expanded) spark.button.setAttribute('aria-expanded', expanded);
-      if (!spark.button.hasAttribute('aria-controls')) spark.button.setAttribute('aria-controls', 'object-fact');
+      const visible = Math.abs(spark.x - this.motion.distance) < 5.6;
+      if (spark.object.visible !== visible) {
+        spark.object.visible = visible;
+        spark.button.inert = !visible;
+      }
+      const factOpen = this.fact?.key === spark.key;
+      if (factOpen !== spark.expanded) {
+        spark.expanded = factOpen;
+        spark.button.setAttribute('aria-expanded', String(factOpen));
+      }
       if (factOpen) {
         if (visible) this.positionFact(spark);
         else objectFact.set(null);
@@ -634,174 +662,28 @@ export class YearWorld {
     }
   }
 
-  private wakeBoost(started: number | undefined): number {
-    if (started === undefined) return 0;
-    const elapsed = this.time - started;
-    if (elapsed < 0 || elapsed > 1.35) return 0;
-    const fade = 1 - elapsed / 1.35;
-    return fade * fade;
-  }
-
   private animateParts(delta: number): void {
     if (!this.paper) return;
+    const frame = this.frame;
+    frame.time = this.time;
+    frame.delta = delta;
+    frame.reduced = this.reduced;
+    frame.distance = this.motion.distance;
+
     const targetGate = this.gateOpen ? 1 : 0;
     this.gateSwing = THREE.MathUtils.lerp(this.gateSwing, targetGate, this.reduced ? 1 : 1 - Math.exp(-delta * 6.5));
+    frame.gateSwing = this.gateSwing;
 
-    const allowMotion = !this.reduced;
     const summerDistance = Math.abs(this.motion.distance - stopX(4));
-    if (allowMotion && summerDistance < 5.5) this.gullArrivalAt ??= this.time;
+    if (!this.reduced && summerDistance < 5.5) this.gullArrivalAt ??= this.time;
     if (summerDistance > 7) this.gullArrivalAt = undefined;
+    frame.gullArrivalAt = this.gullArrivalAt;
 
-    for (const part of this.paper.parts) {
-      const mesh = part.mesh;
-
-      if (part.kind === 'gate') {
-        const sign = mesh.name === 'garden-gate-left' ? -1 : 1;
-        mesh.rotation.y = sign * this.gateSwing * 1.15;
-        continue;
-      }
-      if (part.kind === 'gull') {
-        const distance = this.motion.distance;
-        mesh.visible = distance >= SEASON_BORDERS.summer && distance < SEASON_BORDERS.autumn;
-        const scale = Math.min(
-          THREE.MathUtils.smoothstep(distance, SEASON_BORDERS.summer, SEASON_BORDERS.summer + 1.5),
-          1 - THREE.MathUtils.smoothstep(distance, SEASON_BORDERS.autumn - 1.5, SEASON_BORDERS.autumn),
-        );
-        mesh.scale.setScalar(scale);
-      }
-      if (!allowMotion) continue;
-
-      const t = this.time + part.phase;
-      // One lookup per part: the same wake time feeds the boost and the activity clock.
-      const started = part.key === undefined ? undefined : this.wakeTimes.get(part.key);
-      const boost = this.wakeBoost(started);
-      const activityTime = started === undefined ? this.time : this.time - started;
-      const idle = started === undefined;
-
-      switch (part.kind) {
-        case 'still':
-          break;
-        case 'sway': {
-          mesh.rotation.z = part.rotation.z + Math.sin(t * 1.25) * 0.055 + Math.sin(t * 9.5) * 0.14 * boost;
-          mesh.position.y = part.position.y + Math.abs(Math.sin(t * 7)) * 0.08 * boost;
-          break;
-        }
-        case 'wing': {
-          mesh.rotation.z = part.rotation.z + Math.sin(t * 3.1) * 0.11 + Math.sin(t * 10) * 0.24 * boost;
-          break;
-        }
-        case 'flutter': {
-          mesh.rotation.z = part.rotation.z + Math.sin(t * 4.2) * 0.18;
-          break;
-        }
-        case 'fire': {
-          const flicker = Math.sin(t * 7.5) * 0.05 + Math.sin(t * 13) * 0.03;
-          mesh.scale.set(
-            part.scale.x * (1 + flicker * 0.5 + boost * 0.12),
-            part.scale.y * (1 + flicker + boost * 0.28),
-            part.scale.z,
-          );
-          break;
-        }
-        case 'float': {
-          mesh.position.y = part.position.y + Math.sin(t * 1.5) * 0.055 + Math.sin(t * 6) * 0.14 * boost;
-          mesh.rotation.z = part.rotation.z + Math.sin(t * 1.1) * 0.035;
-          break;
-        }
-        case 'jump': {
-          mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
-          break;
-        }
-        case 'cat-blink': {
-          mesh.scale.y = part.scale.y * (1 - 0.9 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.08, 0.52));
-          break;
-        }
-        case 'cat-tail': {
-          mesh.rotation.z = part.rotation.z + 0.13 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.52, 0.35);
-          break;
-        }
-        case 'bunny-ear': {
-          mesh.rotation.z = part.rotation.z + 0.32 * motionPulse((activityTime + (idle ? 3.2 : 0)) % 6.5, 0.08, 0.62);
-          break;
-        }
-        case 'deer-ear': {
-          const time = (activityTime + (idle ? 2.5 : 0)) % 6.2;
-          mesh.rotation.z = part.rotation.z + 0.36 * motionPulse(time, 0.1, 0.2) + 0.24 * motionPulse(time, 0.43, 0.24);
-          break;
-        }
-        case 'crab-step': {
-          const time = (activityTime + (idle ? 1.2 : 0)) % 6.8;
-          const first = THREE.MathUtils.smoothstep(time, 0, 0.24);
-          const second = THREE.MathUtils.smoothstep(time, 0.3, 0.54);
-          const back = THREE.MathUtils.smoothstep(time, 1.05, 1.55);
-          mesh.position.x = part.position.x + (first + second - 2 * back) * 0.18;
-          mesh.rotation.z = part.rotation.z + 0.07 * (motionPulse(time, 0, 0.24) - motionPulse(time, 0.3, 0.24));
-          break;
-        }
-        case 'crab-claw': {
-          mesh.rotation.z = part.rotation.z + 0.35 * motionPulse((activityTime + (idle ? 1.2 : 0)) % 6.8, 0.55, 0.52);
-          break;
-        }
-        case 'fish-dive': {
-          const time = (activityTime + (idle ? 3.5 : 0)) % 5.8;
-          const leap = motionPulse(time, 0, 0.78);
-          const dive = motionPulse(time, 0.35, 1.08);
-          mesh.position.set(part.position.x - dive * 0.24, part.position.y + leap * 0.35 - dive * 0.61, part.position.z);
-          mesh.rotation.z = part.rotation.z + leap * 0.42 - dive * 0.58;
-          mesh.visible = dive < 0.95;
-          break;
-        }
-        case 'fish-splash': {
-          const splash = motionPulse((activityTime + (idle ? 3.5 : 0)) % 5.8, 0.6, 0.48);
-          mesh.visible = splash > 0.01;
-          mesh.scale.set(0.7 + 0.45 * splash, splash, 1);
-          break;
-        }
-        case 'gull': {
-          const angle = t * Math.PI / 4;
-          const arrival = this.gullArrivalAt === undefined ? 0 : this.time - this.gullArrivalAt;
-          const approach = THREE.MathUtils.smoothstep(arrival, 0, 3);
-          mesh.position.x = part.position.x + 2 * (1 - approach) + 1.15 * Math.sin(angle);
-          mesh.position.y = part.position.y + 0.27 * Math.cos(angle);
-          mesh.position.z = part.position.z + 0.55 * Math.cos(angle);
-          const flap = 0.48 * Math.sin(arrival * 9 + part.phase) * motionPulse(arrival, 0.7, 1.4);
-          mesh.children[0].rotation.z = -flap;
-          mesh.children[1].rotation.z = flap;
-          break;
-        }
-        case 'airborne-leaf': {
-          if (!(mesh instanceof THREE.Mesh) || Array.isArray(mesh.material)) break;
-          const age = t % 9;
-          const progress = Math.min(age / 4.8, 1);
-          const fadeIn = THREE.MathUtils.smoothstep(progress, 0, 0.14);
-          const fadeOut = 1 - THREE.MathUtils.smoothstep(progress, 0.72, 1);
-          mesh.visible = progress > 0 && progress < 1;
-          if (!mesh.visible) break;
-          mesh.material.opacity = fadeIn * fadeOut;
-          mesh.position.x = part.position.x + progress * 5.7;
-          mesh.position.y = part.position.y + 0.32 * Math.sin(age * 2.6 + part.phase) + progress * 0.6;
-          mesh.position.z = part.position.z - progress * 1.4;
-          mesh.rotation.y = Math.sin(age * 3.2 + part.phase) * 0.95;
-          mesh.rotation.z = age * 1.7 + part.phase;
-          break;
-        }
-        case 'spin': {
-          mesh.rotation.z = part.rotation.z + this.time * 0.35;
-          const pulse = 1 + boost * 0.5;
-          mesh.scale.set(part.scale.x * pulse, part.scale.y * pulse, part.scale.z);
-          break;
-        }
-        case 'wave': {
-          mesh.position.x = part.position.x + Math.sin(t * 1.1) * 0.14;
-          mesh.position.y = part.position.y + Math.sin(t * 1.9) * 0.025;
-          break;
-        }
-        default: {
-          // The compiler flags this assignment when a new kind has no case above.
-          const unhandled: never = part.kind;
-          throw new Error(`Unhandled paper part kind: ${String(unhandled)}`);
-        }
-      }
+    // The motion was bound to each part at build time, so this loop has no
+    // branch on the part kind. Parts outside the view skip their math.
+    for (const part of this.paper.animated) {
+      if (Math.abs(part.worldX - frame.distance) > MOTION_SPAN) continue;
+      part.apply(part, frame);
     }
   }
 
@@ -845,6 +727,8 @@ export class YearWorld {
     this.resolveLoaded();
     this.observer.disconnect();
     this.unsubscribe();
+    this.unsubscribeLanguage();
+    this.unsubscribeFact();
     window.removeEventListener('pointermove', this.movePointer);
     window.removeEventListener('wheel', this.onWheel);
     window.removeEventListener('keydown', this.onKeyDown);

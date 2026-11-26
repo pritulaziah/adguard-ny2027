@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
 import type { PaperDetail } from './paper-brush';
+import type { PartKind } from './part-motion';
 import { cut, oval, rect, stroke } from './paper-shapes';
 
 export interface AnimalBuilderContext {
@@ -8,8 +9,7 @@ export interface AnimalBuilderContext {
   place: (name: string, x: number, z?: number, scale?: number, y?: number) => THREE.Group;
   animate: (
     mesh: THREE.Object3D,
-    kind: 'still' | 'sway' | 'wing' | 'float' | 'jump' | 'flutter'
-      | 'cat-blink' | 'cat-tail' | 'bunny-ear' | 'deer-ear' | 'crab-step' | 'crab-claw' | 'fish-dive' | 'fish-splash',
+    kind: PartKind,
     key?: Interaction,
     sparkLift?: number,
   ) => void;

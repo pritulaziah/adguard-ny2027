@@ -85,6 +85,19 @@ export function createScalarUniform(initial = 0) {
 
 export type ScalarUniform = ReturnType<typeof createScalarUniform>;
 
+// One transparent copy of the sheet serves every fading shape, so the renderer
+// compiles a single extra pipeline instead of one per shape.
+let transparentSheet: MeshBasicNodeMaterial | null = null;
+
+export function transparentPaperSheet(): MeshBasicNodeMaterial {
+  if (transparentSheet) return transparentSheet;
+  const material = paperSheet().clone();
+  material.transparent = true;
+  material.depthWrite = false;
+  transparentSheet = material;
+  return material;
+}
+
 export interface SeasonalPaperOptions {
   verticalWash?: number;
   grainStrength?: number;
@@ -124,6 +137,8 @@ export function seasonalPaperMaterial(ramp: SeasonalRamp, options: SeasonalPaper
 export function resetPaperMaterials(): void {
   sheetMaterial?.dispose();
   sheetMaterial = null;
+  transparentSheet?.dispose();
+  transparentSheet = null;
   grainTexture?.dispose();
   grainTexture = null;
 }
