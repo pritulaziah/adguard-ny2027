@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
-import { createPaperScenery } from './paper-scenery.ts';
+import { createPaperScenery } from './scenery/index.ts';
 import { createScalarUniform } from './paper-materials.ts';
 import { stopX } from './route.ts';
 
-test('every scenery part has a bound motion and merged details keep colors', async () => {
+test('every scenery object has its own mesh and keeps colors', async () => {
   globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
 
   const set = await createPaperScenery(createScalarUniform(0));
@@ -23,9 +23,36 @@ test('every scenery part has a bound motion and merged details keep colors', asy
     expect(part.worldX).toBeLessThan(120);
   }
 
-  const details = set.group.getObjectByName('folded-paper-details');
-  expect(details).toBeInstanceOf(THREE.Mesh);
-  expect(details.geometry.getAttribute('color').count).toBe(details.geometry.getAttribute('position').count);
+  // Static details no longer collapse into two route-wide batches.
+  expect(set.group.getObjectByName('folded-paper-details')).toBeUndefined();
+  expect(set.group.getObjectByName('folded-paper-firs')).toBeUndefined();
+
+  const objects = [
+    ...set.group.getObjectsByProperty('name', 'paper-fir'),
+    ...set.group.getObjectsByProperty('name', 'paper-cloud'),
+    ...set.group.getObjectsByProperty('name', 'layered-paper-tree-spring-green'),
+    ...set.group.getObjectsByProperty('name', 'paper-cabin'),
+    ...set.group.getObjectsByProperty('name', 'spring-meadow-cluster'),
+  ];
+  expect(objects.length).toBeGreaterThan(30);
+  for (const object of objects) {
+    const mesh = object.children.find(child => child instanceof THREE.Mesh);
+    expect(mesh, object.name).toBeInstanceOf(THREE.Mesh);
+    const color = mesh.geometry.getAttribute('color');
+    expect(color, object.name).toBeTruthy();
+    expect(color.count).toBe(mesh.geometry.getAttribute('position').count);
+  }
+
+  // Static child shapes merge into the object mesh. Animated parts stay separate.
+  let meshes = 0;
+  let unnamed = 0;
+  set.group.traverse(object => {
+    if (!(object instanceof THREE.Mesh)) return;
+    meshes++;
+    if (!object.name) unnamed++;
+  });
+  expect(meshes).toBeLessThan(260);
+  expect(unnamed).toBeLessThan(60);
 
   // Each story after winter has one fact on either side of its centre.
   const pairs = [['fox', 'hedgehog'], ['bird', 'frog'], ['duck', 'beaver'], ['bunny', 'squirrel'], ['cat', 'owl']];
@@ -42,6 +69,23 @@ test('every scenery part has a bound motion and merged details keep colors', asy
   }
   expect(set.group.getObjectByName('paper-willow')).toBeUndefined();
   expect(set.group.getObjectsByProperty('name', 'paper-cabin')).toHaveLength(1);
+}, 60000);
+
+test('every animated part can run its motion', async () => {
+  globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
+  const set = await createPaperScenery(createScalarUniform(0));
+  for (const part of set.animated) {
+    expect(
+      () => part.apply(part, {
+        time: 1,
+        delta: 1 / 60,
+        reduced: false,
+        distance: part.worldX,
+        gullArrivalAt: 0,
+      }),
+      part.kind,
+    ).not.toThrow();
+  }
 }, 60000);
 
 test('perched birds keep two small feet attached while reacting', async () => {
@@ -100,15 +144,14 @@ test('small animals keep their relative size and pond foliage stays clear', asyn
 
 
 test('river tree canopies stay clear of the autumn trees and the central story', async () => {
-  const { PaperBatch, PaperDetail } = await import('./paper-brush.ts');
-  const { addSummerRiver } = await import('./paper-river.ts');
+  const { PaperDetail } = await import('./paper-brush.ts');
+  const { addSummerRiver } = await import('./scenery/river/index.ts');
   const root = new THREE.Group();
   const details = [];
   addSummerRiver({
     detail: (name, x, z = 0, scale = 1, y = 0.34) => {
-      const batch = new PaperBatch();
-      const detail = new PaperDetail(batch, root, name, x, y, z, scale);
-      details.push({ batch, detail });
+      const detail = new PaperDetail(root, name, x, y, z, scale);
+      details.push(detail);
       return detail;
     },
     place: (name, x, z = 0, scale = 1, y = 0.34) => {
@@ -121,12 +164,15 @@ test('river tree canopies stay clear of the autumn trees and the central story',
     },
     animate: () => {},
   });
-  const trees = details.filter(({ detail }) => ['river-weeping-willow', 'river-alder'].includes(detail.group.name));
+  const trees = details.filter(detail => ['river-weeping-willow', 'river-alder'].includes(detail.group.name));
   expect(trees).toHaveLength(2);
-  for (const { batch, detail } of trees) {
-    const geometry = batch.build();
-    geometry.computeBoundingBox();
-    const box = geometry.boundingBox;
+  for (const detail of trees) {
+    const geometry = detail.buildGeometry();
+    expect(geometry, detail.group.name).not.toBeNull();
+    const mesh = new THREE.Mesh(geometry);
+    detail.group.add(mesh);
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(mesh);
     // The first autumn canopy begins near stopX(4) + 4.9.
     expect(box.max.x).toBeLessThan(stopX(4) + 4.8);
     expect(box.min.x).toBeGreaterThan(stopX(4) - 6.0);

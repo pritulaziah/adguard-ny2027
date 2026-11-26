@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { PaperBatch } from './paper-brush';
-import { carded } from './paper-mesh';
-import { paperSheet } from './paper-materials';
-import { pointOnTrack } from './route';
+import { PaperBatch } from '../paper-brush';
+import { carded } from '../paper-mesh';
+import { paperSheet } from '../paper-materials';
+import { pointOnTrack } from '../route';
 
 const CUT_SIDE = '#e5d6ba';
 

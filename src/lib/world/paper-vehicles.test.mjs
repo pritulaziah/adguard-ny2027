@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
-import { createSeasonalFleet } from './paper-vehicles.ts';
+import { createSeasonalFleet } from './vehicles/index.ts';
 import { stopX } from './route.ts';
 
 function inventory(scene) {

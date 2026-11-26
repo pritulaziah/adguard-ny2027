@@ -1,19 +1,9 @@
 import * as THREE from 'three';
-import type { Interaction } from '../../content/i18n';
 import type { PaperDetail } from '../paper-brush';
-import type { PartKind } from '../part-motion';
 import { oval } from '../paper-shapes';
+import type { BuilderContext } from '../scene-context';
 
-export interface AnimalBuilderContext {
-  detail: (name: string, x: number, z?: number, scale?: number, y?: number) => PaperDetail;
-  place: (name: string, x: number, z?: number, scale?: number, y?: number) => THREE.Group;
-  animate: (
-    mesh: THREE.Object3D,
-    kind: PartKind,
-    key?: Interaction,
-    sparkLift?: number,
-  ) => void;
-}
+export type AnimalBuilderContext = BuilderContext;
 
 export const INK = '#3f4744';
 export const CREAM = '#f5ecd7';

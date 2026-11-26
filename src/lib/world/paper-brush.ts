@@ -298,23 +298,27 @@ export function resetTemplates(): void {
 }
 
 /**
- * One detail of the scenery. Static shapes go into the shared batch and cost no
- * draw call of their own. Moving shapes stay separate meshes inside the group,
- * so the animation code keeps working in detail space.
+ * One object of the scenery. Static shapes build into the detail's own batch,
+ * so every object gets its own mesh and can be culled, moved, or inspected
+ * alone. Moving shapes stay separate meshes inside the group, so the animation
+ * code keeps working in detail space.
  */
 export class PaperDetail {
   readonly group: THREE.Group;
+  /** Placement of this frame inside the owning object's local frame. */
   readonly matrix: THREE.Matrix4;
+  private readonly batch: PaperBatch;
+  private readonly ownsBatch: boolean;
 
   constructor(
-    private readonly batch: PaperBatch,
     parent: THREE.Object3D,
     name: string,
     x: number,
     y: number,
     z: number,
     scale = 1,
-    parentMatrix?: THREE.Matrix4,
+    frame?: THREE.Matrix4,
+    batch?: PaperBatch,
   ) {
     this.group = new THREE.Group();
     this.group.name = name;
@@ -322,16 +326,18 @@ export class PaperDetail {
     this.group.scale.setScalar(scale);
     parent.add(this.group);
 
-    const local = new THREE.Matrix4().compose(
-      this.group.position,
-      this.group.quaternion,
-      this.group.scale,
-    );
-    this.matrix = parentMatrix ? new THREE.Matrix4().multiplyMatrices(parentMatrix, local) : local;
+    this.matrix = frame ?? new THREE.Matrix4();
+    this.batch = batch ?? new PaperBatch();
+    this.ownsBatch = batch === undefined;
     // A detail never moves. Keep its local matrix fixed so the scene graph does
     // not recompute it on every frame.
     this.group.matrixAutoUpdate = false;
     this.group.updateMatrix();
+  }
+
+  /** Builds the static shapes of this object into one geometry. */
+  buildGeometry(): THREE.BufferGeometry | null {
+    return this.ownsBatch ? this.batch.build() : null;
   }
 
   private world(local: Placement): THREE.Matrix4 {
@@ -341,7 +347,13 @@ export class PaperDetail {
   }
 
   child(name: string, x: number, y: number, z: number, scale = 1): PaperDetail {
-    return new PaperDetail(this.batch, this.group, name, x, y, z, scale, this.matrix);
+    const local = new THREE.Matrix4().compose(
+      new THREE.Vector3(x, y, z),
+      new THREE.Quaternion(),
+      new THREE.Vector3(scale, scale, scale),
+    );
+    const frame = new THREE.Matrix4().multiplyMatrices(this.matrix, local);
+    return new PaperDetail(this.group, name, x, y, z, scale, frame, this.batch);
   }
 
   raw(geometry: THREE.BufferGeometry, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
