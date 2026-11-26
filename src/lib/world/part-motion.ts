@@ -21,10 +21,7 @@ export const PART_KINDS = [
   'deer-ear',
   'crab-step',
   'crab-claw',
-  'fish-dive',
-  'fish-splash',
   'gull',
-  'airborne-leaf',
   'spin',
   'wave',
 ] as const;
@@ -163,21 +160,6 @@ const crabClaw: PartMotion = (part, frame) => {
   part.mesh.rotation.z = part.rotation.z + 0.35 * motionPulse(time, 0.55, 0.52);
 };
 
-const fishDive: PartMotion = (part, frame) => {
-  const time = (activityTime(part, frame) + (part.startedAt === undefined ? 3.5 : 0)) % 5.8;
-  const leap = motionPulse(time, 0, 0.78);
-  const dive = motionPulse(time, 0.35, 1.08);
-  part.mesh.position.set(part.position.x - dive * 0.24, part.position.y + leap * 0.35 - dive * 0.61, part.position.z);
-  part.mesh.rotation.z = part.rotation.z + leap * 0.42 - dive * 0.58;
-  part.mesh.visible = dive < 0.95;
-};
-
-const fishSplash: PartMotion = (part, frame) => {
-  const splash = motionPulse((activityTime(part, frame) + (part.startedAt === undefined ? 3.5 : 0)) % 5.8, 0.6, 0.48);
-  part.mesh.visible = splash > 0.01;
-  part.mesh.scale.set(0.7 + 0.45 * splash, splash, 1);
-};
-
 const gull: PartMotion = (part, frame) => {
   const mesh = part.mesh;
   // Scale and visibility depend on the route, not on motion preference.
@@ -199,24 +181,6 @@ const gull: PartMotion = (part, frame) => {
   const flap = 0.48 * Math.sin(arrival * 9 + part.phase) * motionPulse(arrival, 0.7, 1.4);
   mesh.children[0].rotation.z = -flap;
   mesh.children[1].rotation.z = flap;
-};
-
-const airborneLeaf: PartMotion = (part, frame) => {
-  if (frame.reduced) return;
-  const mesh = part.mesh;
-  if (!(mesh instanceof THREE.Mesh) || Array.isArray(mesh.material)) return;
-  const age = (frame.time + part.phase) % 9;
-  const progress = Math.min(age / 4.8, 1);
-  const fadeIn = THREE.MathUtils.smoothstep(progress, 0, 0.14);
-  const fadeOut = 1 - THREE.MathUtils.smoothstep(progress, 0.72, 1);
-  mesh.visible = progress > 0 && progress < 1;
-  if (!mesh.visible) return;
-  mesh.material.opacity = fadeIn * fadeOut;
-  mesh.position.x = part.position.x + progress * 5.7;
-  mesh.position.y = part.position.y + 0.32 * Math.sin(age * 2.6 + part.phase) + progress * 0.6;
-  mesh.position.z = part.position.z - progress * 1.4;
-  mesh.rotation.y = Math.sin(age * 3.2 + part.phase) * 0.95;
-  mesh.rotation.z = age * 1.7 + part.phase;
 };
 
 const spin: PartMotion = (part, frame) => {
@@ -246,10 +210,7 @@ const motions: Record<PartKind, PartMotion> = {
   'deer-ear': deerEar,
   'crab-step': crabStep,
   'crab-claw': crabClaw,
-  'fish-dive': fishDive,
-  'fish-splash': fishSplash,
   gull,
-  'airborne-leaf': airborneLeaf,
   spin,
   wave,
 };

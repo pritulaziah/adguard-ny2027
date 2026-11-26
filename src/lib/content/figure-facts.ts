@@ -25,11 +25,11 @@ export const figureFacts: Record<Interaction, Record<Language, string>> = {
     en: 'In version 5.4, custom filters in MV3 can update separately from the extension again.',
     ru: 'В версии 5.4 собственные фильтры в MV3 снова обновляются отдельно от расширения.',
   },
-  fish: {
+  beaver: {
     en: 'Statistics in Windows 8.0 breaks requests down by company, app, and domain.',
     ru: 'Статистика в Windows 8.0 разбивает запросы по компаниям, приложениям и доменам.',
   },
-  crab: {
+  duck: {
     en: 'Version 8.0 filters HTTPS at the level of a path, so one part of a site can load and another can be blocked.',
     ru: 'Версия 8.0 фильтрует HTTPS на уровне пути: одна часть сайта загружается, другая блокируется.',
   },

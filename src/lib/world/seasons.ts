@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { STRETCH, STOP_SPACING, TRACK_LENGTH } from './route.ts';
+import { STRETCH, STOP_SPACING, TRACK_LENGTH, routeDistance } from './route.ts';
 
 export type SeasonId = 'winter-start' | 'spring' | 'summer' | 'autumn' | 'winter-end';
 
@@ -15,7 +15,7 @@ export interface SeasonalRamp {
 }
 
 /** Scenes are stretched, so every border and gradient stop scales with them. */
-const at = (x: number): number => Math.round(x * STRETCH * 100) / 100;
+const at = (x: number): number => routeDistance(Math.round(x * STRETCH * 100) / 100);
 
 const scale = (ramp: SeasonalRamp): SeasonalRamp => ({
   base: ramp.base,
@@ -23,10 +23,10 @@ const scale = (ramp: SeasonalRamp): SeasonalRamp => ({
 });
 
 export const SEASON_BORDERS = {
-  spring: 1.5 * STOP_SPACING,
-  summer: 3.5 * STOP_SPACING,
-  autumn: 4.5 * STOP_SPACING,
-  winterEnd: 6.5 * STOP_SPACING,
+  spring: routeDistance(1.5 * STOP_SPACING),
+  summer: routeDistance(3.5 * STOP_SPACING),
+  autumn: routeDistance(4.5 * STOP_SPACING),
+  winterEnd: routeDistance(6.5 * STOP_SPACING),
 } as const;
 
 export const WALL_RAMP: SeasonalRamp = scale({

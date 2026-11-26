@@ -4,7 +4,7 @@ import { figureFacts } from './figure-facts.ts';
 import { storyProducts } from './story-modal.ts';
 
 const storyIds = ['ios-pqc', 'quest', 'extension', 'windows', 'mini-android', 'home'];
-const interactionKeys = ['deer', 'snowman', 'fox', 'hedgehog', 'bird', 'frog', 'crab', 'fish', 'bunny', 'squirrel', 'cat', 'owl'];
+const interactionKeys = ['deer', 'snowman', 'fox', 'hedgehog', 'bird', 'frog', 'duck', 'beaver', 'bunny', 'squirrel', 'cat', 'owl'];
 
 test('every story has a deep dive in both languages', () => {
   expect(Object.keys(deepDives).sort()).toEqual([...storyIds].sort());
@@ -68,7 +68,7 @@ test('facts at one stop differ from each other', () => {
     ['snowman'],
     ['fox', 'hedgehog'],
     ['bird', 'frog'],
-    ['crab', 'fish'],
+    ['duck', 'beaver'],
     ['bunny', 'squirrel'],
     ['cat', 'owl'],
   ];

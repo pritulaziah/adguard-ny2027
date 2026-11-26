@@ -28,7 +28,7 @@ test('every scenery part has a bound motion and merged details keep colors', asy
   expect(details.geometry.getAttribute('color').count).toBe(details.geometry.getAttribute('position').count);
 
   // Each story after winter has one fact on either side of its centre.
-  const pairs = [['fox', 'hedgehog'], ['bird', 'frog'], ['crab', 'fish'], ['bunny', 'squirrel'], ['cat', 'owl']];
+  const pairs = [['fox', 'hedgehog'], ['bird', 'frog'], ['duck', 'beaver'], ['bunny', 'squirrel'], ['cat', 'owl']];
   expect([...set.objects.keys()].sort()).toEqual(['deer', 'snowman', ...pairs.flat()].sort());
   set.group.updateMatrixWorld(true);
   for (const [index, pair] of pairs.entries()) {
@@ -97,3 +97,41 @@ test('small animals keep their relative size and pond foliage stays clear', asyn
     expect(Math.abs(flowers.position.x - frogX), 'flowers stay outside the pond').toBeGreaterThan(1.5);
   }
 }, 60000);
+
+
+test('river tree canopies stay clear of the autumn trees and the central story', async () => {
+  const { PaperBatch, PaperDetail } = await import('./paper-brush.ts');
+  const { addSummerRiver } = await import('./paper-river.ts');
+  const root = new THREE.Group();
+  const details = [];
+  addSummerRiver({
+    detail: (name, x, z = 0, scale = 1, y = 0.34) => {
+      const batch = new PaperBatch();
+      const detail = new PaperDetail(batch, root, name, x, y, z, scale);
+      details.push({ batch, detail });
+      return detail;
+    },
+    place: (name, x, z = 0, scale = 1, y = 0.34) => {
+      const group = new THREE.Group();
+      group.name = name;
+      group.position.set(x, y, z);
+      group.scale.setScalar(scale);
+      root.add(group);
+      return group;
+    },
+    animate: () => {},
+  });
+  const trees = details.filter(({ detail }) => ['river-weeping-willow', 'river-alder'].includes(detail.group.name));
+  expect(trees).toHaveLength(2);
+  for (const { batch, detail } of trees) {
+    const geometry = batch.build();
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox;
+    // The first autumn canopy begins near stopX(4) + 4.9.
+    expect(box.max.x).toBeLessThan(stopX(4) + 4.8);
+    expect(box.min.x).toBeGreaterThan(stopX(4) - 6.0);
+    const inCentre = box.min.x < stopX(4) + 2 && box.max.x > stopX(4) - 2;
+    expect(inCentre, `${detail.group.name} stays outside the story column`).toBe(false);
+    geometry.dispose();
+  }
+});

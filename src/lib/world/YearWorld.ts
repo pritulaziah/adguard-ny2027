@@ -12,7 +12,7 @@ import { createScalarUniform, createWeatherField, resetPaperMaterials, seasonalP
 import { createPaperScenery, type PaperSet } from './paper-scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './paper-vehicles';
 import type { MotionFrame } from './part-motion';
-import { JourneyMotion, STOP_COUNT, STOP_SPACING, TRACK_LENGTH, STORY_Z, stopIndexAt, stopX } from './route';
+import { JourneyMotion, STOP_COUNT, routeProgress, TRACK_LENGTH, STORY_Z, stopIndexAt, stopX } from './route';
 import { createYieldPacer } from './schedule';
 import { FLOOR_RAMP, SEASON_BORDERS, WALL_RAMP, sampleRampColor } from './seasons';
 
@@ -437,7 +437,8 @@ export class YearWorld {
     if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
     if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
       event.preventDefault();
-      this.scrollBy(event.key === 'ArrowRight' ? STOP_SPACING : -STOP_SPACING, Number.POSITIVE_INFINITY);
+      const next = routeProgress(this.motion.target) + (event.key === 'ArrowRight' ? 1 : -1);
+      this.scrollBy(stopX(next) - this.motion.target, Number.POSITIVE_INFINITY);
     }
   };
 
@@ -504,7 +505,8 @@ export class YearWorld {
     this.pointerSmooth.lerp(this.pointer, 1 - Math.exp(-delta * 3.8));
     const parallaxX = this.portrait || this.reduced ? 0 : 0.58;
     const parallaxY = this.portrait || this.reduced ? 0 : 0.26;
-    const fraction = (((this.motion.distance % STOP_SPACING) + STOP_SPACING) % STOP_SPACING) / STOP_SPACING;
+    const progress = routeProgress(this.motion.distance);
+    const fraction = ((progress % 1) + 1) % 1;
     const speedFactor = THREE.MathUtils.clamp(Math.abs(this.motion.speed) / 2.2, 0, 1);
     const peek = this.reduced ? 0 : Math.sin(fraction * Math.PI) * speedFactor;
 

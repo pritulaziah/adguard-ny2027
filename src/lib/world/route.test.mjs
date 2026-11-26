@@ -2,6 +2,10 @@ import { expect, test } from 'vitest';
 import {
   JourneyMotion,
   STOP_COUNT,
+  SUMMER_EXTENSION,
+  routeDistance,
+  routeProgress,
+  stopIndexAt,
   STOP_SPACING,
   STORY_END,
   TRACK_LENGTH,
@@ -84,7 +88,7 @@ test('the route ends at the finale stop after the stories', () => {
   expect(STOP_COUNT).toBe(7);
   close(stopX(0), 0);
   close(stopX(7), STORY_END);
-  close(STORY_END, 7 * STOP_SPACING);
+  close(STORY_END, 7 * STOP_SPACING + SUMMER_EXTENSION);
   close(TRACK_LENGTH, STORY_END + 14);
 });
 
@@ -104,11 +108,11 @@ test('each stop sits inside its named season', () => {
   });
 });
 
-test('season borders fall halfway between the stops they separate', () => {
-  close(SEASON_BORDERS.spring, 1.5 * STOP_SPACING);
-  close(SEASON_BORDERS.summer, 3.5 * STOP_SPACING);
-  close(SEASON_BORDERS.autumn, 4.5 * STOP_SPACING);
-  close(SEASON_BORDERS.winterEnd, 6.5 * STOP_SPACING);
+test('season borders follow the extended summer route', () => {
+  close(SEASON_BORDERS.spring, routeDistance(1.5 * STOP_SPACING));
+  close(SEASON_BORDERS.summer, routeDistance(3.5 * STOP_SPACING));
+  close(SEASON_BORDERS.autumn, routeDistance(4.5 * STOP_SPACING));
+  close(SEASON_BORDERS.winterEnd, routeDistance(6.5 * STOP_SPACING));
 });
 
 test('the midpoint between two stops shows no story', () => {
@@ -122,5 +126,25 @@ test('the midpoint between two stops shows no story', () => {
 test('season centers land inside their own season', () => {
   for (const id of ['winter-start', 'spring', 'summer', 'autumn', 'winter-end']) {
     expect(seasonAt(seasonCenter(id)), id).toBe(id);
+  }
+});
+
+
+test('summer gains distance while the other seasons retain their length', () => {
+  close(SEASON_BORDERS.autumn - SEASON_BORDERS.summer, STOP_SPACING + SUMMER_EXTENSION);
+  close(SEASON_BORDERS.winterEnd - SEASON_BORDERS.autumn, 2 * STOP_SPACING);
+  close(stopX(3), 3 * STOP_SPACING);
+  close(stopX(4), 4 * STOP_SPACING + SUMMER_EXTENSION / 2);
+  for (let i = 5; i <= STOP_COUNT; i++) close(stopX(i), i * STOP_SPACING + SUMMER_EXTENSION);
+});
+
+test('navigation and nearest stops follow the longer river section', () => {
+  for (let index = 0; index <= STOP_COUNT; index += 0.25) {
+    close(routeProgress(stopX(index)), index);
+  }
+  for (let index = 0; index < STOP_COUNT; index++) {
+    const middle = (stopX(index) + stopX(index + 1)) / 2;
+    expect(stopIndexAt(middle - 0.001)).toBe(index);
+    expect(stopIndexAt(middle + 0.001)).toBe(index + 1);
   }
 });

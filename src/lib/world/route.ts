@@ -2,8 +2,29 @@
 export const STRETCH = 1.15;
 export const STOP_COUNT = 7;
 export const STOP_SPACING = 11 * STRETCH;
+/** Additional river distance, inserted only inside the summer section. */
+export const SUMMER_EXTENSION = 3;
+const SUMMER_START = 3.5 * STOP_SPACING;
+const SUMMER_END = 4.5 * STOP_SPACING;
+
+/** Convert the original route distance to the longer summer route. */
+export function routeDistance(distance: number): number {
+  const fraction = Math.max(0, Math.min(1, (distance - SUMMER_START) / STOP_SPACING));
+  return distance + SUMMER_EXTENSION * fraction;
+}
+
+/** Fractional stop index, including the unequal summer intervals. */
+export function routeProgress(distance: number): number {
+  let original = distance;
+  if (distance >= SUMMER_END + SUMMER_EXTENSION) original -= SUMMER_EXTENSION;
+  else if (distance > SUMMER_START) {
+    original = SUMMER_START + (distance - SUMMER_START) / (1 + SUMMER_EXTENSION / STOP_SPACING);
+  }
+  return original / STOP_SPACING;
+}
+
 /** The last story stands here; the road continues past it. */
-export const STORY_END = STOP_COUNT * STOP_SPACING;
+export const STORY_END = routeDistance(STOP_COUNT * STOP_SPACING);
 export const TRACK_LENGTH = STORY_END + 14;
 export const WALL_Z = -2.92;
 export const STORY_Z = -2.23;
@@ -20,11 +41,14 @@ export function clampDistance(distance: number): number {
 }
 
 export function stopIndexAt(distance: number): number {
-  return Math.max(0, Math.min(STOP_COUNT, Math.round(distance / STOP_SPACING)));
+  for (let index = 0; index < STOP_COUNT; index++) {
+    if (distance < (stopX(index) + stopX(index + 1)) / 2) return index;
+  }
+  return STOP_COUNT;
 }
 
 export function stopX(index: number): number {
-  return index * STOP_SPACING;
+  return routeDistance(index * STOP_SPACING);
 }
 
 /**

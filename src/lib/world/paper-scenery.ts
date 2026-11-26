@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
 import { TRACK_LENGTH, stopX, STORY_END } from './route';
 import { oval } from './paper-shapes';
-import { paperSheet, seasonalPaperMaterial, transparentPaperSheet, type ScalarUniform } from './paper-materials';
-import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
+import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
+import { PaperBatch, PaperDetail, cutGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
 import { carded } from './paper-mesh';
 import { GROUND_RAMP, SEASON_BORDERS } from './seasons';
-import { addBird, addBunny, addCat, addDeer, addCrab, addFish, addFox, addHedgehog, addOwl, addPondWithFrog, addSnowman, addSquirrel, type AnimalBuilderContext } from './animals';
+import { addBird, addBunny, addCat, addDeer, addBeaver, addFox, addHedgehog, addOwl, addPondWithFrog, addSnowman, addSquirrel, type AnimalBuilderContext } from './animals';
 import { addForegroundFraming, addPanoramaRidges, addSkyDetails } from './paper-backdrop';
+import { addSummerRiver, addRiverDuck } from './paper-river';
 import { createYieldPacer } from './schedule';
 import { isAnimated, motionFor, type PaperPart } from './part-motion';
 
@@ -249,20 +250,8 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
       tree.oval(cw, ch, p.front, cx, cy, 0.085 + i * 0.008, undefined, 0.03);
     }
 
-    // Seasonal botanical leaf or blossom accents perched harmoniously along the canopy edge.
-    if (variant === 'autumn-maple' || variant === 'autumn-oak') {
-      const accents: Array<[number, number, number, string]> = [
-        [-0.86, 2.04, 0.45, p.mid],
-        [-0.22, 3.06, -0.22, p.front],
-        [0.84, 2.38, -0.52, p.mid],
-        [0.34, 1.92, 0.35, p.back],
-      ];
-      for (let i = 0; i < accents.length; i++) {
-        const [ax, ay, rot, col] = accents[i];
-        if (variant === 'autumn-maple') tree.mapleLeaf(0.24, col, ax, ay, 0.125 + i * 0.004, [0, 0, rot]);
-        else tree.oakLeaf(0.24, col, ax, ay, 0.125 + i * 0.004, [0, 0, rot]);
-      }
-    } else if (variant === 'spring-blossom') {
+    // Spring blossom accents perched along the canopy edge.
+    if (variant === 'spring-blossom') {
       const blooms: Array<[number, number]> = [[-0.68, 2.24], [0.06, 2.9], [0.62, 2.32], [-0.2, 2.08]];
       for (let b = 0; b < blooms.length; b++) {
         const [bx, by] = blooms[b];
@@ -273,32 +262,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
         tree.oval(0.048, 0.048, '#e8c477', bx, by, 0.146, undefined, 0.012);
       }
     }
-  }
-
-  /** Wind-sculpted coastal umbrella pine for the sunny summer shore. */
-  function coastalPine(x: number, scale = 1.0, z = -2.2): void {
-    const pine = detail('coastal-umbrella-pine', x, z, scale);
-    const trunk = shapeFrom(s => {
-      s.moveTo(-0.18, 0);
-      s.bezierCurveTo(-0.14, 0.72, -0.26, 1.48, -0.06, 2.18);
-      s.lineTo(-0.56, 2.52);
-      s.lineTo(-0.46, 2.6);
-      s.lineTo(-0.02, 2.32);
-      s.lineTo(0.48, 2.58);
-      s.lineTo(0.56, 2.48);
-      s.lineTo(0.1, 2.15);
-      s.bezierCurveTo(-0.06, 1.45, 0.08, 0.68, 0.18, 0);
-      s.closePath();
-    });
-    pine.shape(trunk, '#8f725e', 0, 0, -0.03, undefined, 0.044);
-
-    // Layered flat-topped coastal pine canopy pads.
-    pine.oval(1.65, 0.62, '#4f7a6c', 0.02, 2.62, -0.08, undefined, 0.036);
-    pine.oval(1.22, 0.5, '#5e8b7a', -0.58, 2.54, 0.01, undefined, 0.036);
-    pine.oval(1.28, 0.52, '#5e8b7a', 0.62, 2.56, 0.02, undefined, 0.036);
-    pine.oval(1.36, 0.54, '#739f89', 0.04, 2.86, 0.06, undefined, 0.034);
-    pine.oval(0.86, 0.38, '#87b097', -0.28, 2.94, 0.1, undefined, 0.028);
-    pine.oval(0.82, 0.36, '#87b097', 0.38, 2.92, 0.11, undefined, 0.028);
   }
 
   /** Natural clustered spring wildflowers (daisies, tulips, and grass blades). */
@@ -345,63 +308,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     }
   }
 
-  /** Rich organic autumn leaf drifts lying flat and natural on the ground. */
-  function autumnLeafDrifts(): void {
-    const rng = seeded(202610);
-    const leafPalette = ['#c65e44', '#da8b49', '#e4b75e', '#ad5246', '#cf784d', '#d8a758'];
-
-    // Natural drift zones around tree bases, road verges, and animal resting spots.
-    const zones: Array<{ cx: number; spreadX: number; cz: number; spreadZ: number; count: number }> = [
-      { cx: stopX(5) - 4.3, spreadX: 2.3, cz: -1.35, spreadZ: 0.75, count: 14 },
-      { cx: stopX(5) - 1.4, spreadX: 2.0, cz: -0.95, spreadZ: 0.55, count: 9 },
-      { cx: stopX(5) + 2.5, spreadX: 2.2, cz: -1.05, spreadZ: 0.65, count: 12 },
-      { cx: stopX(5) + 4.4, spreadX: 2.1, cz: -1.45, spreadZ: 0.7, count: 12 },
-      { cx: stopX(6) - 4.4, spreadX: 2.2, cz: -1.4, spreadZ: 0.7, count: 13 },
-      { cx: stopX(6) - 2.1, spreadX: 1.9, cz: -0.9, spreadZ: 0.5, count: 10 },
-      { cx: stopX(6) + 2.6, spreadX: 2.4, cz: -1.15, spreadZ: 0.65, count: 12 },
-      { cx: stopX(6) + 4.7, spreadX: 2.0, cz: -1.45, spreadZ: 0.68, count: 11 },
-    ];
-
-    for (const zone of zones) {
-      for (let i = 0; i < zone.count; i++) {
-        // Triangular distribution clusters leaves thicker near the zone center.
-        const ox = ((rng() + rng()) - 1) * zone.spreadX;
-        const oz = ((rng() + rng()) - 1) * zone.spreadZ;
-        const x = zone.cx + ox;
-        const z = THREE.MathUtils.clamp(zone.cz + oz, -2.2, -0.52);
-        const y = 0.275 + rng() * 0.035;
-        const size = 0.16 + rng() * 0.14;
-        const col = leafPalette[Math.floor(rng() * leafPalette.length)];
-        // Mostly flat on the autumn earth with subtle natural curl tilt.
-        const tiltX = -Math.PI / 2 + 0.16 + rng() * 0.34;
-        const tiltY = (rng() - 0.5) * 0.28;
-        const yaw = rng() * Math.PI * 2;
-        const rot: [number, number, number] = [tiltX, tiltY, yaw];
-
-        const leafDetail = detail('fallen-paper-leaf', x, z, 1, y);
-        const kind = i % 3;
-        if (kind === 0) leafDetail.mapleLeaf(size, col, 0, 0, 0, rot);
-        else if (kind === 1) leafDetail.oakLeaf(size * 1.05, col, 0, 0, 0, rot);
-        else leafDetail.birchLeaf(size * 0.95, col, 0, 0, 0, rot);
-      }
-    }
-  }
-
-  function autumnWind(x: number): void {
-    const colors = ['#f6cd7c', '#ac4937', '#efad57', '#ffe1a1', '#bd563d'];
-    for (const [index, color] of colors.entries()) {
-      const size = 0.26 + (index % 3) * 0.04;
-      const outline = index % 2 === 0 ? mapleLeafGeometry(size) : oakLeafGeometry(size);
-      const leaf = carded(outline.clone(), color);
-      leaf.name = 'paper-airborne-leaf';
-      leaf.material = transparentPaperSheet();
-      leaf.position.set(x - index * 0.32, 3.05 + Math.sin(index * 2) * 0.33, -1.9 - index * 0.12);
-      leaf.visible = false;
-      group.add(leaf);
-      animate(leaf, 'airborne-leaf');
-    }
-  }
-
   function createTransferStations(): void {
     // 1. Winter Rails -> Spring Garden Path
     const winterSpring = detail('transfer-winter-spring', SEASON_BORDERS.spring, -0.62);
@@ -412,7 +318,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     buffer.rect(0.12, 0.42, '#8b7361', 0, -0.02, 0.06);
     buffer.rect(0.28, 0.12, '#c88c79', 0, 0.28, 0.1);
 
-    // 2. Spring Garden Path -> Summer Sea Pier
+    // 2. Spring Garden Path -> River Landing
     const pierLeft = detail('transfer-spring-summer', SEASON_BORDERS.summer, -0.04);
     pierLeft.box(0.95, 0.09, 0.92, '#b69374', -0.18, 0.05, 0);
     for (const px of [-0.52, 0.18]) {
@@ -420,7 +326,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
       pierLeft.oval(0.14, 0.07, '#dfd1b4', px, 0.46, -0.4);
     }
 
-    // 3. Summer Sea -> Autumn Road Landing Pier
+    // 3. Summer River -> Autumn Road Landing Pier
     const pierRight = detail('transfer-summer-autumn', SEASON_BORDERS.autumn, -0.04);
     pierRight.box(0.95, 0.09, 0.92, '#b69374', 0.18, 0.05, 0);
     for (const px of [-0.18, 0.52]) {
@@ -501,16 +407,16 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
       );
     }
 
-    // Summer sea waves.
+    // Calm river current.
     const summerLen = SEASON_BORDERS.autumn - SEASON_BORDERS.summer;
     const summerCenter = (SEASON_BORDERS.summer + SEASON_BORDERS.autumn) / 2;
-    const sea = detail('paper-sea', summerCenter, 0, 1, 0);
-    sea.box(summerLen + 0.1, 0.06, 1.44, '#78a6a9', 0, 0.29, -0.08);
+    const sea = detail('paper-river', summerCenter, 0, 1, 0);
+    sea.box(summerLen + 0.1, 0.06, 1.44, '#7eaaa0', 0, 0.29, -0.08);
 
     const waveSpecs: Array<{ z: number; y: number; color: string; amp: number; freq: number }> = [
-      { z: -0.5, y: 0.31, color: '#6b9aa0', amp: 0.13, freq: 1.45 },
-      { z: -0.08, y: 0.31, color: '#87b4b3', amp: 0.14, freq: 1.75 },
-      { z: 0.35, y: 0.3, color: '#a2c9c2', amp: 0.12, freq: 2.0 },
+      { z: -0.5, y: 0.31, color: '#70988d', amp: 0.13, freq: 1.45 },
+      { z: -0.08, y: 0.31, color: '#8bb4a6', amp: 0.14, freq: 1.75 },
+      { z: 0.35, y: 0.3, color: '#abc9b4', amp: 0.12, freq: 2.0 },
     ];
     waveSpecs.forEach((spec, idx) => {
       const shape = new THREE.Shape();
@@ -604,10 +510,10 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   );
   await pause();
 
-  // Stop 4 (AdGuard for Windows v8.0, summer, x = 50.60): sailboat clamp 46.3 .. 54.9; laptop at -1.95.
-  addCrab(animalCtx, stopX(4) - 2.85, -1.14);
-  addFish(animalCtx, stopX(4) + 3.05, -0.34);
-  coastalPine(stopX(4) - 5.1, 0.82, -2.2);
+  // Stop 4 (AdGuard for Windows v8.0, summer, x = 50.60): punt clamp 46.3 .. 54.9; forest river banks.
+  addSummerRiver(animalCtx);
+  addRiverDuck(animalCtx, stopX(4) - 2.85);
+  addBeaver(animalCtx, stopX(4) + 3.05);
   await pause();
 
   // Stop 5 (AdGuard Mini for Android v3.0, autumn, x = 63.25): car clamp 58.95 .. 79.5; lantern at +1.95.
@@ -616,7 +522,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   broadTree(stopX(5) - 4.4, 'autumn-oak', 0.82, -3.0);
   addBunny(animalCtx, stopX(5) - 2.85, -0.98);
   addSquirrel(animalCtx, stopX(5) + 2.85, -1.02);
-  autumnWind(stopX(5) - 5.2);
   await pause();
 
   // Stop 6 (AdGuard Home 1.0, autumn, x = 75.90): car clamp 58.95 .. 79.5; cat and owl flank the story.
@@ -625,9 +530,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   broadTree(stopX(6) + 3.9, 'autumn-birch', 0.88, -3.05);
   broadTree(stopX(6) + 4.6, 'autumn-maple', 1.06, -2.12);
   broadTree(stopX(6) + 5.8, 'autumn-oak', 0.88, -2.84);
-  autumnWind(stopX(6) + 2.45);
-  await pause();
-  autumnLeafDrifts();
   await pause();
 
   // Stop 7 (Finale, x = 88.55): finale train clamp 86.2 .. 102.55; the road runs on past the story.

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, starGeometry } from './paper-brush';
+import { PaperBatch, PaperDetail, cutGeometry, ovalGeometry, starGeometry } from './paper-brush';
 import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
 import { stopX, TRACK_LENGTH } from './route';
 import { cut } from './paper-shapes';
@@ -344,16 +344,16 @@ export async function addForegroundFraming(group: THREE.Group, batch: PaperBatch
   }
   await pause();
 
-  // Summer coastal foreground dune reeds & lapping sea-foam scallops.
+  // Grassy foreground river bank with reeds.
   for (let x = SEASON_BORDERS.summer + 0.9; x < SEASON_BORDERS.autumn - 0.6; x += 2.6) {
-    const dune = fg('fg-summer-coast', x, 0.25, 1.18);
+    const dune = fg('fg-summer-river-bank', x, 0.25, 1.18);
     const wave = shapeFrom(s => {
       s.moveTo(-1.1, 0);
       s.quadraticCurveTo(-0.5, 0.34, 0, 0.24);
       s.quadraticCurveTo(0.55, 0.38, 1.15, 0);
       s.closePath();
     });
-    dune.shape(wave, '#d9d0b4', 0, 0, 0, undefined, 0.022);
+    dune.shape(wave, '#91a879', 0, 0, 0, undefined, 0.022);
     for (let b = -1; b <= 1; b++) {
       dune.cut(
         [[b * 0.11 - 0.025, 0.04], [b * 0.19, 0.44 - Math.abs(b) * 0.06], [b * 0.11 + 0.025, 0.04]],
@@ -368,25 +368,5 @@ export async function addForegroundFraming(group: THREE.Group, batch: PaperBatch
   }
   await pause();
 
-  // Autumn foreground fallen-leaf mounds (authentic maple/oak silhouettes!).
-  const autumnColors = ['#c96a4a', '#da9b4e', '#b75a4b', '#e2b666', '#a85a45'];
-  for (let x = SEASON_BORDERS.autumn + 0.9; x < SEASON_BORDERS.winterEnd - 0.8; x += 2.5) {
-    const pile = fg('fg-autumn-leaves', x, 0.25, 1.16 + ((Math.round(x) % 2) * 0.12));
-    const mound = shapeFrom(s => {
-      s.moveTo(-0.95, 0);
-      s.quadraticCurveTo(-0.2, 0.34, 0.25, 0.26);
-      s.quadraticCurveTo(0.65, 0.36, 1.0, 0);
-      s.closePath();
-    });
-    pile.shape(mound, '#b67d57', 0, 0, 0, undefined, 0.022);
-    for (let k = 0; k < 4; k++) {
-      const col = autumnColors[(Math.round(x) + k) % autumnColors.length];
-      const lx = -0.45 + k * 0.3;
-      const ly = 0.24 + (k % 2) * 0.1;
-      const rot: [number, number, number] = [0, 0, (k - 1.5) * 0.55];
-      if (k % 2 === 0) pile.mapleLeaf(0.24, col, lx, ly, 0.03 + k * 0.008, rot);
-      else pile.oakLeaf(0.22, col, lx, ly, 0.03 + k * 0.008, rot);
-    }
-  }
 }
 

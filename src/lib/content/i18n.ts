@@ -1,7 +1,7 @@
 import { derived, writable } from 'svelte/store';
 
 export type Language = 'en' | 'ru';
-export type Interaction = 'deer' | 'snowman' | 'fox' | 'hedgehog' | 'bird' | 'frog' | 'crab' | 'fish' | 'bunny' | 'squirrel' | 'cat' | 'owl';
+export type Interaction = 'deer' | 'snowman' | 'fox' | 'hedgehog' | 'bird' | 'frog' | 'duck' | 'beaver' | 'bunny' | 'squirrel' | 'cat' | 'owl';
 
 interface Copy {
   title: string; description: string; scene: string; canvas: string;
@@ -29,8 +29,8 @@ export const translations: Record<Language, Copy> = {
       hedgehog: { label: 'Say hello to the hedgehog' },
       bird: { label: 'Listen to the bird' },
       frog: { label: 'Call the frog' },
-      fish: { label: 'Nudge the fish' },
-      crab: { label: 'Call the crab' },
+      beaver: { label: 'Say hello to the beaver' },
+      duck: { label: 'Say hello to the duck' },
       cat: { label: 'Call the cat' },
       bunny: { label: 'Say hello to the bunny' },
       squirrel: { label: 'Call the squirrel' },
@@ -53,8 +53,8 @@ export const translations: Record<Language, Copy> = {
       hedgehog: { label: 'Поздороваться с ежом' },
       bird: { label: 'Послушать птицу' },
       frog: { label: 'Позвать лягушку' },
-      fish: { label: 'Потревожить рыбку' },
-      crab: { label: 'Позвать краба' },
+      beaver: { label: 'Поздороваться с бобром' },
+      duck: { label: 'Поздороваться с уткой' },
       cat: { label: 'Позвать кота' },
       bunny: { label: 'Поздороваться с зайцем' },
       squirrel: { label: 'Позвать белку' },
