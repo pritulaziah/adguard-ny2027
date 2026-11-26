@@ -4,16 +4,16 @@ import type { SceneryContext } from '../scene-context';
 import { addAutumnFloor } from './autumn-plants';
 import { shapeFrom } from './palette';
 
-/** Grounded foreground bottom-edge foliage/snowbanks (z = +1.15, 1.24x speed). */
+/** Sparse plants and snowbanks at the bottom edge (z = +1.15). */
 export async function addForegroundFraming(ctx: SceneryContext, pause: () => Promise<void>): Promise<void> {
   const fg = (name: string, x: number, y: number, z: number, scale = 1) =>
     ctx.detail(name, x, z, scale, y);
 
   // --- 1. Grounded bottom-edge foreground details (rooted at y = 0.26, below vehicle wheels) ---
-  // Winter start & finale: crisp folded-paper snowdrifts + tiny foreground pine tips.
+  // Winter start and finale: isolated paper snowdrifts.
   const snowBanks = [
-    -4.2, -0.8, 3.6, 7.9, 12.2, 15.8,
-    stopX(7) - 4.2, stopX(7) - 0.8, stopX(7) + 3.6, stopX(7) + 7.9,
+    -3.2, 4.5, 12.8,
+    stopX(7) - 2.8, stopX(7) + 6.8,
   ];
   for (let i = 0; i < snowBanks.length; i++) {
     const x = snowBanks[i];
@@ -25,15 +25,11 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
       s.closePath();
     });
     bank.shape(drift, i % 2 ? '#edf1f3' : '#e4eaee', 0, 0, 0, undefined, 0.024);
-    if (i % 2 === 0) {
-      bank.cut([[-0.22, 0.08], [0, 0.46], [0.22, 0.08]], '#5e7e71', -0.45, 0, 0.03, undefined, 0.02);
-      bank.cut([[-0.16, 0.08], [0, 0.36], [0.16, 0.08]], '#6e8d7f', -0.18, 0, 0.035, undefined, 0.02);
-    }
   }
   await pause();
 
   // Spring foreground meadow grass tufts & tiny daisies.
-  for (let x = SEASON_BORDERS.spring + 0.8; x < SEASON_BORDERS.summer - 0.6; x += 2.35) {
+  for (let x = SEASON_BORDERS.spring + 0.8; x < SEASON_BORDERS.summer - 0.6; x += 7.6) {
     const tuft = fg('fg-spring-grass', x, 0.25, 1.15 + ((Math.round(x) % 2) * 0.12));
     for (let b = -2; b <= 2; b++) {
       const h = 0.32 + (2 - Math.abs(b)) * 0.05;
@@ -53,7 +49,7 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
   await pause();
 
   // Grassy foreground river bank with reeds.
-  for (let x = SEASON_BORDERS.summer + 0.9; x < SEASON_BORDERS.autumn - 0.6; x += 2.6) {
+  for (let x = SEASON_BORDERS.summer + 0.9; x < SEASON_BORDERS.autumn - 0.6; x += 7.2) {
     const dune = fg('fg-summer-river-bank', x, 0.25, 1.18);
     const wave = shapeFrom(s => {
       s.moveTo(-1.1, 0);
@@ -78,9 +74,7 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
 
   // Small plants frame the autumn road without covering the wheels.
   const autumnSpots = [
-    [-1.7, 202631],
     [8.1, 202688],
-    [17.7, 202745],
   ];
   autumnSpots.forEach(([dx, seed], index) => {
     const x = stopX(5) + dx;
