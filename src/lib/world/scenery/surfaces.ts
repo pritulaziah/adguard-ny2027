@@ -85,7 +85,10 @@ export function addTravelSurfaces(ctx: SceneryContext): void {
     shape.moveTo(0, -0.08);
     for (let dx = 0; dx <= summerLen + 0.2; dx += 0.35) {
       const crest = 0.08 + Math.abs(Math.sin(dx * spec.freq + idx * 1.3)) * spec.amp;
-      shape.lineTo(dx, crest);
+      // Flatten the water at both shores so the low landings stay visible.
+      const shoreFade = THREE.MathUtils.smoothstep(dx, 0.6, 1.2)
+        * THREE.MathUtils.smoothstep(summerLen + 0.2 - dx, 0.6, 1.2);
+      shape.lineTo(dx, crest * shoreFade);
     }
     shape.lineTo(summerLen + 0.2, -0.08);
     shape.closePath();
