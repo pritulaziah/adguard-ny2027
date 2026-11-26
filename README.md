@@ -41,3 +41,9 @@ release notes.
 - [Contributing](CONTRIBUTING.md) — report a problem, propose a change,
   open a pull request
 - [Security](SECURITY.md) — report a vulnerability privately
+
+## TODO
+
+- [ ] The final December and New Year scene is still in development.
+      Define its setting, objects, and animations.
+- [ ] Decide how visitors who reach the end receive a gift or discount.
