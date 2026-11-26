@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { NoToneMapping, PerspectiveCamera, Scene, SRGBColorSpace } from 'three';
-  import { WebGPURenderer } from 'three/webgpu';
+  import { WebGPUBackend, WebGPURenderer } from 'three/webgpu';
   import { YearWorld } from './YearWorld';
   import type { JourneyStore } from './journey-state';
   import { openStoryId } from '../content/story-modal';
@@ -17,6 +17,7 @@
   let cleanup: (() => void) | null = null;
 
   onMount(() => {
+    const params = new URLSearchParams(window.location.search);
     const canvas = document.createElement('canvas');
     canvas.style.display = 'block';
     canvas.style.width = '100%';
@@ -30,7 +31,7 @@
       antialias: true,
       alpha: false,
       // `?webgl` checks the WebGL2 fallback without a WebGPU-capable browser.
-      forceWebGL: new URLSearchParams(window.location.search).has('webgl'),
+      forceWebGL: params.has('webgl'),
     });
     renderer.toneMapping = NoToneMapping;
     renderer.outputColorSpace = SRGBColorSpace;
@@ -75,8 +76,24 @@
       try {
         await renderer.init();
         if (stopped) return;
-        const backend = (renderer as unknown as { backend?: { isWebGPUBackend?: boolean } }).backend;
-        document.documentElement.dataset.renderer = backend?.isWebGPUBackend ? 'webgpu' : 'webgl';
+        const isWebGPU = renderer.backend instanceof WebGPUBackend;
+        document.documentElement.dataset.renderer = isWebGPU ? 'webgpu' : 'webgl';
+        // The three.js inspector is a WebGPU tool. Keep it in dev only.
+        if (import.meta.env.DEV && isWebGPU && params.has('stats')) {
+          try {
+            const { Inspector } = await import('three/addons/inspector/Inspector.js');
+            if (stopped) return;
+            // Keep the inspector away from the language switch at the top right.
+            const inspector = new Inspector();
+            inspector.setHorizontalAlign('right').setVerticalAlign('bottom');
+            renderer.inspector = inspector;
+            // The renderer parent is the scene layer. Move the inspector to
+            // the body, so it stays above the whole interface.
+            document.body.append(inspector.domElement);
+          } catch (cause) {
+            console.warn('The three.js inspector could not load.', cause);
+          }
+        }
         const created = new YearWorld({ renderer, scene, camera, layer, journey, onerror: () => onerror('loadError') });
         world = created;
         // Render only after the world is fully built and its shaders are ready.
