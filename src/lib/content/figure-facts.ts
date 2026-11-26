@@ -45,7 +45,7 @@ export const figureFacts: Record<Interaction, Record<Language, string>> = {
     en: 'AdGuard Home v1.0 brought 22 stability improvements and one behavioral change over v0.107.80.',
     ru: 'В AdGuard Home 1.0 по сравнению с 0.107.80 появилось 22 улучшения стабильности и одно изменение поведения.',
   },
-  lighthouse: {
+  umbrella: {
     en: 'Browsers make only about 55–60% of desktop traffic, so Windows 8.0 filters every app, not just browsers.',
     ru: 'Через браузеры проходит лишь около 55–60% трафика компьютера, поэтому Windows 8.0 фильтрует все программы, а не только браузеры.',
   },

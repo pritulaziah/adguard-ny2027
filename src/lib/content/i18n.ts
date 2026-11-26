@@ -1,7 +1,7 @@
 import { derived, writable } from 'svelte/store';
 
 export type Language = 'en' | 'ru';
-export type Interaction = 'deer' | 'snowman' | 'gate' | 'fox' | 'frog' | 'fish' | 'dragon' | 'crab' | 'cat' | 'bunny' | 'mail' | 'lighthouse';
+export type Interaction = 'deer' | 'snowman' | 'gate' | 'fox' | 'frog' | 'fish' | 'dragon' | 'crab' | 'cat' | 'bunny' | 'mail' | 'umbrella';
 
 interface Copy {
   title: string; description: string; scene: string; canvas: string;
@@ -34,7 +34,7 @@ export const translations: Record<Language, Copy> = {
       cat: { label: 'Call the cat' },
       bunny: { label: 'Say hello to the bunny' },
       mail: { label: 'Send a New Year letter' },
-      lighthouse: { label: 'Light the lighthouse beacon' },
+      umbrella: { label: 'Rest under the summer umbrella' },
     },
   },
   ru: {
@@ -58,7 +58,7 @@ export const translations: Record<Language, Copy> = {
       cat: { label: 'Позвать кота' },
       bunny: { label: 'Поздороваться с зайцем' },
       mail: { label: 'Отправить новогоднее письмо' },
-      lighthouse: { label: 'Включить маяк' },
+      umbrella: { label: 'Отдохнуть под летним зонтом' },
     },
   },
 };

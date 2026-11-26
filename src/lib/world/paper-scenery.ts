@@ -425,39 +425,18 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     }
   }
 
-  function lighthouse(x: number): void {
-    const tower = detail('paper-lighthouse', x, -1.95);
-    // Coastal rocky headland base.
-    tower.cut([[-0.92, 0], [-0.54, 0.46], [0.62, 0.38], [0.98, 0]], '#b8a589', 0, 0, -0.06);
-    tower.cut([[-0.56, 0], [-0.24, 0.3], [0.34, 0.28], [0.65, 0]], '#a49279', 0, 0, -0.01);
-    // Tapered whitewashed tower with crisp terracotta bands.
-    tower.cut([[-0.38, 0.24], [0.38, 0.24], [0.24, 2.12], [-0.24, 2.12]], colors.cream, 0, 0, 0);
-    tower.cut([[-0.33, 0.72], [0.33, 0.72], [0.29, 1.12], [-0.29, 1.12]], '#c97865', 0, 0, 0.05);
-    tower.cut([[-0.27, 1.52], [0.27, 1.52], [0.25, 1.84], [-0.25, 1.84]], '#c97865', 0, 0, 0.05);
-    // Gallery deck + warm glowing lantern room + cupola roof.
-    tower.rect(0.66, 0.09, '#6d837d', 0, 2.09, 0.07);
-    tower.rect(0.42, 0.36, '#f8e2a3', 0, 2.18, 0.04);
-    tower.stroke([[-0.21, 2.18], [-0.21, 2.54]], '#6d837d', 0.022, 0.1);
-    tower.stroke([[0, 2.18], [0, 2.54]], '#6d837d', 0.022, 0.1);
-    tower.stroke([[0.21, 2.18], [0.21, 2.54]], '#6d837d', 0.022, 0.1);
-    tower.cut([[-0.29, 2.54], [0, 2.88], [0.29, 2.54]], '#c97865', 0, 0, 0.08);
-    tower.oval(0.08, 0.08, colors.gold, 0, 2.91, 0.09);
-    // Small coastal door and round porthole window.
-    tower.rect(0.18, 0.34, '#7a6558', 0, 0.3, 0.06);
-    tower.oval(0.13, 0.13, '#6d837d', 0, 1.32, 0.06);
-    tower.oval(0.08, 0.08, '#f5dea0', 0, 1.32, 0.09);
-
-    // Slow paper glint on the lantern room; a click also lights the beacon.
-    const beacon = cut(
-      tower.group,
-      [[0, 0.34], [0.06, 0.1], [0.3, 0.06], [0.07, 0.01], [0.13, -0.24], [0, -0.08], [-0.13, -0.24], [-0.07, 0.01], [-0.3, 0.06], [-0.06, 0.1]],
-      '#fbeab4',
-      0,
-      2.18,
-      0.02,
-      0.01,
-    );
-    animate(beacon, 'spin', 'lighthouse', 0.5);
+  function summerUmbrella(x: number): void {
+    const umbrella = detail('striped-summer-umbrella', x + 1.7, -1.9, 0.9);
+    umbrella.rect(0.06, 1.55, '#9d8062');
+    for (let i = 0; i < 6; i++) {
+      const left = -0.95 + i * (1.9 / 6);
+      umbrella.cut([[left, 1.42], [0, 2.05], [left + 1.9 / 6, 1.42]], i % 2 ? '#f0e3c4' : '#cd8572', 0, 0, 0.04);
+    }
+    umbrella.oval(0.09, 0.09, colors.gold, 0, 2.08, 0.1);
+    const anchor = new THREE.Group();
+    anchor.position.y = 2.08;
+    umbrella.group.add(anchor);
+    animate(anchor, 'still', 'umbrella');
 
     // Subtle beach grass & pastel seashells resting along the summer shore.
     const shells = detail('summer-beach-details', x - 1.15, -0.82);
@@ -673,7 +652,7 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   addFish(animalCtx, stopX(4) + 4.15, -0.34);
   coastalPine(stopX(4) + 3.4, 0.88, -2.22);
   coastalPine(stopX(4) - 5.1, 0.82, -2.2);
-  lighthouse(stopX(4) - 2.6);
+  summerUmbrella(stopX(4) - 2.6);
   await pause();
 
   // Stop 5 (AdGuard Mini for Android v3.0, autumn, x = 63.25): car clamp 58.95 .. 79.5; lantern at +1.95.
