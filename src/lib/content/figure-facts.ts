@@ -1,6 +1,6 @@
-import type { Interaction, Language } from './i18n';
+import type { FactInteraction, Language } from './i18n';
 
-export const figureFacts: Record<Interaction, Record<Language, string>> = {
+export const figureFacts: Record<FactInteraction, Record<Language, string>> = {
   deer: {
     en: 'Click the glowing marks on figures and objects to learn a fact about this year.',
     ru: 'Нажимайте на светящиеся значки у фигур и предметов — узнаете факт об этом годе.',

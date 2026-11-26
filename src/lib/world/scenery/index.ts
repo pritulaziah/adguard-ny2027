@@ -26,6 +26,7 @@ import { addCabin } from './cabin';
 import { addFir } from './fir';
 import { addForegroundFraming } from './foreground';
 import { addSpringMeadowCluster } from './meadow';
+import { addFinaleMascots } from './mascots';
 import { mergeStaticChildren, pruneEmptyGroups } from './merge-static';
 import { addDistantRidgeTrees } from './ridge-trees';
 import { addPanoramaRidges } from './ridges';
@@ -194,8 +195,8 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   // Stop 7 (Finale, x = 88.55): finale train clamp 86.2 .. 102.55; the road runs on past the story.
   addFir(ctx, STORY_END - 5.9, 3.7, true, true, -2.05);
   addFir(ctx, STORY_END - 4.4, 2.5, true, false, -2.35);
-  addSnowman(ctx, STORY_END + 2.15, false, -1.04);
-  addCabin(ctx, STORY_END + 4.45, true);
+  await addFinaleMascots(ctx);
+  addCabin(ctx, STORY_END + 3.6, true);
   addFir(ctx, STORY_END + 7.4, 3.2, true, true, -2.1);
   addFir(ctx, STORY_END + 10.1, 3.6, true, true, -2.0);
   await pause();

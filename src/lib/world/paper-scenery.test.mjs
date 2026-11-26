@@ -57,7 +57,8 @@ test('every scenery object has its own mesh and keeps colors', async () => {
 
   // Each story after winter has one fact on either side of its centre.
   const pairs = [['fox', 'hedgehog'], ['bird', 'frog'], ['duck', 'beaver'], ['bunny', 'squirrel'], ['cat', 'owl']];
-  expect([...set.objects.keys()].sort()).toEqual(['deer', 'snowman', ...pairs.flat()].sort());
+  expect([...set.objects.keys()].sort()).toEqual(['deer', 'snowman', ...pairs.flat(), 'agnar', 'tengu', 'diana'].sort());
+  expect(set.group.getObjectsByProperty('name', 'paper-snowman')).toHaveLength(1);
   set.group.updateMatrixWorld(true);
   for (const [index, pair] of pairs.entries()) {
     const centre = stopX(index + 2);

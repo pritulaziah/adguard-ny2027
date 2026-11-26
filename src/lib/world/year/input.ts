@@ -72,7 +72,7 @@ export class WorldInput {
 
   private isInteractiveTarget(target: EventTarget | null): boolean {
     if (!(target instanceof Element)) return false;
-    return target.closest('button, a, .language-switch, .object-spark') !== null;
+    return target.closest('button, a, .language-switch, .object-spark, .object-fact') !== null;
   }
 
   private onTouchStart = (event: TouchEvent): void => {

@@ -1,7 +1,9 @@
 import { derived, writable } from 'svelte/store';
 
 export type Language = 'en' | 'ru';
-export type Interaction = 'deer' | 'snowman' | 'fox' | 'hedgehog' | 'bird' | 'frog' | 'duck' | 'beaver' | 'bunny' | 'squirrel' | 'cat' | 'owl';
+export type FactInteraction = 'deer' | 'snowman' | 'fox' | 'hedgehog' | 'bird' | 'frog' | 'duck' | 'beaver' | 'bunny' | 'squirrel' | 'cat' | 'owl';
+export type MascotInteraction = 'agnar' | 'tengu' | 'diana';
+export type Interaction = FactInteraction | MascotInteraction;
 
 interface Copy {
   title: string; description: string; scene: string; canvas: string;
@@ -35,6 +37,9 @@ export const translations: Record<Language, Copy> = {
       bunny: { label: 'Say hello to the bunny' },
       squirrel: { label: 'Call the squirrel' },
       owl: { label: 'Say hello to the owl' },
+      agnar: { label: 'Get an AdGuard promo code from Agnar' },
+      tengu: { label: 'Get an AdGuard VPN promo code from Tengu' },
+      diana: { label: 'Get an AdGuard DNS promo code from Diana' },
     },
   },
   ru: {
@@ -59,6 +64,9 @@ export const translations: Record<Language, Copy> = {
       bunny: { label: 'Поздороваться с зайцем' },
       squirrel: { label: 'Позвать белку' },
       owl: { label: 'Поздороваться с совой' },
+      agnar: { label: 'Получить промокод на AdGuard у Агнара' },
+      tengu: { label: 'Получить промокод на AdGuard VPN у Тэнгу' },
+      diana: { label: 'Получить промокод на AdGuard DNS у Дианы' },
     },
   },
 };
