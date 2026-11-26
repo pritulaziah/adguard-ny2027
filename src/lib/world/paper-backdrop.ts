@@ -210,7 +210,7 @@ export async function addPanoramaRidges({ group, cameraX }: BackdropContext, pau
 export async function addSkyDetails(
   group: THREE.Group,
   pause: () => Promise<void>,
-  addGull: (gull: THREE.Group) => void,
+  addGull: (bird: THREE.Group) => void,
 ): Promise<void> {
   const sky = new PaperBatch();
 
@@ -267,10 +267,10 @@ export async function addSkyDetails(
   sky.add(ovalGeometry(1.48, 1.48, 0.02), '#b8cab8', { x: seasonCenter('summer') - 0.1, y: 8.65, z: -6.85 });
   sky.add(ovalGeometry(1.02, 1.02, 0.02), '#f5e2b2', { x: seasonCenter('summer') - 0.1, y: 8.65, z: -6.78 });
 
-  for (const [x, y, size] of [[-6.4, 6.2, 0.43], [-5.3, 6.72, 0.35]]) {
-    const gull = new THREE.Group();
-    gull.position.set(stopX(4) + x, y, -7.9);
-    group.add(gull);
+  function flyingGull(x: number, y: number, size: number): void {
+    const bird = new THREE.Group();
+    bird.position.set(x, y, -7.9);
+    group.add(bird);
     for (const side of [-1, 1]) {
       const wing = shapeFrom(s => {
         s.moveTo(0, -0.16 * size);
@@ -278,33 +278,14 @@ export async function addSkyDetails(
         s.quadraticCurveTo(side * 0.45 * size, 0.36 * size, 0, 0);
         s.closePath();
       });
-      cut(gull, wing, '#fff4df', 0, 0, 0, 0.016);
+      cut(bird, wing, '#fff4df', 0, 0, 0, 0.016);
     }
-    addGull(gull);
+    addGull(bird);
   }
 
-  const birdSpots: Array<[number, number, number, string]> = [
-    [stopX(5) + 4.4, 8.2, 0.24, '#7d5f4c'],
-    [stopX(5) + 5.1, 8.45, 0.22, '#7d5f4c'],
-    [stopX(5) + 5.8, 8.15, 0.2, '#7d5f4c'],
-    [stopX(6) - 3.8, 8.5, 0.22, '#7c5c52'],
-    [stopX(6) - 3.1, 8.75, 0.2, '#7c5c52'],
-  ];
-  for (const [bx, by, bs, col] of birdSpots) {
-    const bird = shapeFrom(s => {
-      s.moveTo(-bs, -bs * 0.12);
-      s.quadraticCurveTo(-bs * 0.45, bs * 0.36, 0, 0);
-      s.quadraticCurveTo(bs * 0.45, bs * 0.36, bs, -bs * 0.12);
-      s.quadraticCurveTo(bs * 0.42, bs * 0.12, 0, -bs * 0.16);
-      s.quadraticCurveTo(-bs * 0.42, bs * 0.12, -bs, -bs * 0.12);
-      s.closePath();
-    });
-    sky.add(new THREE.ExtrudeGeometry(bird, { depth: 0.016, bevelEnabled: false }), col, {
-      x: bx,
-      y: by,
-      z: -7.9,
-    });
-  }
+  flyingGull(stopX(4) + 5.4, 6.2, 0.43);
+  flyingGull(stopX(4) + 6.55, 6.72, 0.35);
+
   await pause();
 
   const skyMesh = sky.build();

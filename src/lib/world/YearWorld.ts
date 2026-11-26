@@ -94,6 +94,7 @@ export class YearWorld {
   private mailX = stopX(6) - 2.2;
   private found = new Set<string>();
   private wakeTimes = new Map<Interaction, number>();
+  private gullArrivalAt?: number;
   private gateOpen = false;
   private gateSwing = 0;
   private propUpdates: Array<(time: number, delta: number, reduced: boolean) => void> = [];
@@ -647,6 +648,9 @@ export class YearWorld {
     this.gateSwing = THREE.MathUtils.lerp(this.gateSwing, targetGate, this.reduced ? 1 : 1 - Math.exp(-delta * 6.5));
 
     const allowMotion = !this.reduced;
+    const summerDistance = Math.abs(this.motion.distance - stopX(4));
+    if (allowMotion && summerDistance < 5.5) this.gullArrivalAt ??= this.time;
+    if (summerDistance > 7) this.gullArrivalAt = undefined;
 
     for (const part of this.paper.parts) {
       const mesh = part.mesh;
@@ -655,6 +659,15 @@ export class YearWorld {
         const sign = mesh.name === 'garden-gate-left' ? -1 : 1;
         mesh.rotation.y = sign * this.gateSwing * 1.15;
         continue;
+      }
+      if (part.kind === 'gull') {
+        const distance = this.motion.distance;
+        mesh.visible = distance >= SEASON_BORDERS.summer && distance < SEASON_BORDERS.autumn;
+        const scale = Math.min(
+          THREE.MathUtils.smoothstep(distance, SEASON_BORDERS.summer, SEASON_BORDERS.summer + 1.5),
+          1 - THREE.MathUtils.smoothstep(distance, SEASON_BORDERS.autumn - 1.5, SEASON_BORDERS.autumn),
+        );
+        mesh.scale.setScalar(scale);
       }
       if (!allowMotion) continue;
 
@@ -745,14 +758,31 @@ export class YearWorld {
           break;
         }
         case 'gull': {
-          const cycle = t % 8;
-          const angle = cycle / 8 * Math.PI * 2;
-          mesh.position.x = part.position.x + 1.15 * Math.sin(angle);
+          const angle = t * Math.PI / 4;
+          const arrival = this.gullArrivalAt === undefined ? 0 : this.time - this.gullArrivalAt;
+          const approach = THREE.MathUtils.smoothstep(arrival, 0, 3);
+          mesh.position.x = part.position.x + 2 * (1 - approach) + 1.15 * Math.sin(angle);
           mesh.position.y = part.position.y + 0.27 * Math.cos(angle);
           mesh.position.z = part.position.z + 0.55 * Math.cos(angle);
-          const flap = 0.48 * Math.sin(cycle * 11) * motionPulse(cycle, 0.15, 1.7);
+          const flap = 0.48 * Math.sin(arrival * 9 + part.phase) * motionPulse(arrival, 0.7, 1.4);
           mesh.children[0].rotation.z = -flap;
           mesh.children[1].rotation.z = flap;
+          break;
+        }
+        case 'airborne-leaf': {
+          if (!(mesh instanceof THREE.Mesh) || Array.isArray(mesh.material)) break;
+          const age = t % 9;
+          const progress = Math.min(age / 4.8, 1);
+          const fadeIn = THREE.MathUtils.smoothstep(progress, 0, 0.14);
+          const fadeOut = 1 - THREE.MathUtils.smoothstep(progress, 0.72, 1);
+          mesh.visible = progress > 0 && progress < 1;
+          if (!mesh.visible) break;
+          mesh.material.opacity = fadeIn * fadeOut;
+          mesh.position.x = part.position.x + progress * 5.7;
+          mesh.position.y = part.position.y + 0.32 * Math.sin(age * 2.6 + part.phase) + progress * 0.6;
+          mesh.position.z = part.position.z - progress * 1.4;
+          mesh.rotation.y = Math.sin(age * 3.2 + part.phase) * 0.95;
+          mesh.rotation.z = age * 1.7 + part.phase;
           break;
         }
         case 'spin': {

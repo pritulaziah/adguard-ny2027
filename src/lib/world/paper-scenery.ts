@@ -3,7 +3,7 @@ import type { Interaction } from '../content/i18n';
 import { TRACK_LENGTH, stopX, STORY_END } from './route';
 import { cut, oval, rect, stroke } from './paper-shapes';
 import { paperSheet, seasonalPaperMaterial, type ScalarUniform } from './paper-materials';
-import { PaperBatch, PaperDetail, cutGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
+import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
 import { carded } from './paper-mesh';
 import { GROUND_RAMP, SEASON_BORDERS } from './seasons';
 import { addBunny, addCat, addCrab, addDeer, addFish, addFox, addPondWithFrog, addSeaDragon, addSnowman, type AnimalBuilderContext } from './paper-animals';
@@ -15,7 +15,7 @@ export interface PaperPart {
   position: THREE.Vector3;
   rotation: THREE.Euler;
   scale: THREE.Vector3;
-  kind: Parameters<AnimalBuilderContext['animate']>[1] | 'fire' | 'gate' | 'spin' | 'wave' | 'gull';
+  kind: Parameters<AnimalBuilderContext['animate']>[1] | 'fire' | 'gate' | 'spin' | 'wave' | 'gull' | 'airborne-leaf';
   phase: number;
   key?: Interaction;
   sparkLift?: number;
@@ -386,6 +386,24 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
     }
   }
 
+  function autumnWind(x: number): void {
+    const colors = ['#f6cd7c', '#ac4937', '#efad57', '#ffe1a1', '#bd563d'];
+    for (const [index, color] of colors.entries()) {
+      const size = 0.26 + (index % 3) * 0.04;
+      const outline = index % 2 === 0 ? mapleLeafGeometry(size) : oakLeafGeometry(size);
+      const leaf = carded(outline.clone(), color);
+      leaf.name = 'paper-airborne-leaf';
+      const material = paperSheet().clone();
+      material.transparent = true;
+      material.depthWrite = false;
+      leaf.material = material;
+      leaf.position.set(x - index * 0.32, 3.05 + Math.sin(index * 2) * 0.33, -1.9 - index * 0.12);
+      leaf.visible = false;
+      group.add(leaf);
+      animate(leaf, 'airborne-leaf');
+    }
+  }
+
   function garden(x: number): void {
     const arch = detail('paper-garden-gate', x, -1.55);
     arch.stroke([[-0.85, 0], [-0.85, 1.82], [-0.55, 2.24], [0.55, 2.24], [0.85, 1.82], [0.85, 0]], colors.cream, 0.09, 0);
@@ -615,7 +633,6 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   fir(-3.6, 2.7, true, false, -2.35);
   await pause();
   addDeer(animalCtx, 2.05, -1.08);
-  cabin(3.85);
   await pause();
   fir(7.3, 3.0, true, false, -2.15);
   fir(9.1, 3.5, true, false, -1.98);
@@ -632,15 +649,15 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   broadTree(stopX(2) - 5.9, 'spring-green', 0.88, -2.35);
   broadTree(stopX(2) - 4.55, 'spring-blossom', 1.08, -2.08);
   addFox(animalCtx, stopX(2) - 2.45, -1.02);
-  broadTree(stopX(2) + 5.6, 'spring-green', 0.96, -2.2);
+  broadTree(stopX(2) + 3.5, 'spring-green', 0.96, -2.68);
   await pause();
 
   // Stop 3 (Browser Extension v5.4, spring, x = 37.95): bicycle clamp 20.8 .. 41.95.
-  broadTree(stopX(3) - 5.0, 'spring-blossom', 1.0, -2.3);
-  broadTree(stopX(3) - 4.55, 'spring-green', 0.86, -2.08);
-  garden(stopX(3) + 1.9);
+  broadTree(stopX(3) - 6.35, 'spring-blossom', 0.94, -2.16);
+  broadTree(stopX(3) - 4.15, 'spring-green', 0.9, -3.03);
+  broadTree(stopX(3) - 1.95, 'spring-blossom', 0.78, -2.65);
+  garden(stopX(3) + 0.8);
   addPondWithFrog(animalCtx, stopX(3) + 4.05, -1.04);
-  broadTree(stopX(3) + 5.6, 'spring-blossom', 0.96, -2.2);
   await pause();
   const meadowSpots: Array<[number, number]> = [
     [-5.3, -0.78], [-3.8, -1.3], [-1.4, -0.75], [-0.4, -1.45],
@@ -661,17 +678,19 @@ export async function createPaperScenery(cameraX: ScalarUniform): Promise<PaperS
   await pause();
 
   // Stop 5 (AdGuard Mini for Android v3.0, autumn, x = 63.25): car clamp 58.95 .. 79.5; lantern at +1.95.
-  broadTree(stopX(5) - 4.3, 'autumn-maple', 1.08, -2.08);
-  broadTree(stopX(5) - 2.6, 'autumn-birch', 0.88, -2.32);
+  broadTree(stopX(5) - 6.55, 'autumn-birch', 0.92, -2.95);
+  broadTree(stopX(5) - 5.55, 'autumn-maple', 1.12, -2.15);
+  broadTree(stopX(5) - 4.4, 'autumn-oak', 0.82, -3.0);
   addCat(animalCtx, stopX(5) - 2.45, -1.02);
   addBunny(animalCtx, stopX(5) + 3.55, -0.98);
-  broadTree(stopX(5) + 4.1, 'autumn-oak', 1.05, -2.05);
+  autumnWind(stopX(5) - 5.2);
   await pause();
 
   // Stop 6 (AdGuard Home 1.0, autumn, x = 75.90): car clamp 58.95 .. 79.5; mailbox at -2.2.
-  broadTree(stopX(6) - 4.55, 'autumn-birch', 1.06, -2.12);
-  broadTree(stopX(6) - 2.6, 'autumn-oak', 0.92, -2.3);
-  broadTree(stopX(6) + 4.6, 'autumn-maple', 1.04, -2.15);
+  broadTree(stopX(6) + 3.4, 'autumn-birch', 0.88, -3.05);
+  broadTree(stopX(6) + 4.6, 'autumn-maple', 1.06, -2.12);
+  broadTree(stopX(6) + 5.8, 'autumn-oak', 0.88, -2.84);
+  autumnWind(stopX(6) + 2.45);
   await pause();
   autumnLeafDrifts();
   await pause();
