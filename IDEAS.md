@@ -56,7 +56,7 @@ All world paths below are relative to `src/lib/world/`.
 - `paper-scenery.ts`: scenery construction, trees, travel surfaces,
   transfer points, and object registration.
 - `paper-backdrop.ts`: landscape layers, sky objects, and foreground framing.
-- `paper-animals.ts`: animal geometry and moving parts.
+- `animals/`: animal geometry and moving parts, one file per animal.
 - `paper-vehicles.ts`: seasonal vehicles and their movement.
 - `paper-train.ts`: initial and final trains.
 - `part-motion.ts`: motion functions and shared frame data.
@@ -289,7 +289,7 @@ visual values remain subject to design review.
    seasonal transitions. Change `route.ts` only if length changes are chosen.
 5. Coordinate animation.
    Review existing motions in `part-motion.ts`, animals in
-   `paper-animals.ts`, and vehicles in `paper-vehicles.ts`.
+   `animals/`, and vehicles in `paper-vehicles.ts`.
    Add pauses, shared wind, leaf settling, and movement-dependent effects.
 6. Design and implement the finale after reward decisions.
    Review `paper-train.ts`, finale scenery, and localized interface text.

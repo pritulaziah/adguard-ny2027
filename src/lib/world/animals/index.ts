@@ -1,0 +1,10 @@
+export { addDeer } from './deer';
+export { addSnowman } from './snowman';
+export { addFox } from './fox';
+export { addPondWithFrog } from './pond-with-frog';
+export { addSeaDragon } from './sea-dragon';
+export { addCrab } from './crab';
+export { addFish } from './fish';
+export { addCat } from './cat';
+export { addBunny } from './bunny';
+export type { AnimalBuilderContext } from './shared';

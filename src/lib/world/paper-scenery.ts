@@ -6,7 +6,7 @@ import { paperSheet, seasonalPaperMaterial, transparentPaperSheet, type ScalarUn
 import { PaperBatch, PaperDetail, cutGeometry, mapleLeafGeometry, oakLeafGeometry, ovalGeometry, rectGeometry, starGeometry, paint, type Placement } from './paper-brush';
 import { carded } from './paper-mesh';
 import { GROUND_RAMP, SEASON_BORDERS } from './seasons';
-import { addBunny, addCat, addCrab, addDeer, addFish, addFox, addPondWithFrog, addSeaDragon, addSnowman, type AnimalBuilderContext } from './paper-animals';
+import { addBunny, addCat, addCrab, addDeer, addFish, addFox, addPondWithFrog, addSeaDragon, addSnowman, type AnimalBuilderContext } from './animals';
 import { addForegroundFraming, addPanoramaRidges, addSkyDetails } from './paper-backdrop';
 import { createYieldPacer } from './schedule';
 import { isAnimated, motionFor, type PaperPart } from './part-motion';
