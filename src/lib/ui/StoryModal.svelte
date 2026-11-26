@@ -66,10 +66,6 @@
             </figure>
           {/each}
         {/if}
-        <aside class="story-fact">
-          <span>{$storyChrome.factTitle}</span>
-          <p>{article.hiddenFact}</p>
-        </aside>
         <div class="story-reading afterword"><p>{story.afterword}</p></div>
         <footer class="story-footer">
           <a class="full-story" href={article.link} target="_blank" rel="noreferrer">{$storyChrome.read} <span aria-hidden="true">↗</span></a>
@@ -101,9 +97,6 @@
   .story-reading h3 { margin: 0 0 12px; font-size: 22px; font-weight: 500; line-height: 1.4; }
   .story-reading { margin-top: 26px; }
   .story-reading p { margin: 0; max-width: 810px; font-size: 16px; line-height: 1.85; color: #667361; }
-  .story-fact { margin-top: 30px; padding: 18px 22px; background: #f8f3e4; border: 1px solid #e0d6bd; border-left: 4px solid #b6c5a3; }
-  .story-fact > span { display: block; margin-bottom: 7px; font-size: 10px; letter-spacing: 2px; font-weight: 600; color: #8a9078; text-transform: uppercase; }
-  .story-fact p { margin: 0; max-width: 810px; font-size: 15px; line-height: 1.7; color: #5c6b5a; }
   figure { margin: 30px 0 0; }
   figcaption { margin-bottom: 14px; }
   .screen-label { font-size: 10px; letter-spacing: 2px; font-weight: 600; color: #8a9078; }

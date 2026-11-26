@@ -316,7 +316,7 @@ export function addFox(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
     });
     cut(head, cheek, CREAM, 0, 0, 0.044, 0.016);
 
-    // Tall pointed fox ears with dark outer tips and blush inner ear.
+    // Tall pointed fox ears with a blush inner ear.
     const ear = shapeFrom(s => {
       s.moveTo(sign * 0.08, 0.18);
       s.lineTo(sign * 0.32, 0.52);
@@ -324,7 +324,6 @@ export function addFox(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
       s.closePath();
     });
     cut(head, ear, '#c57249', 0, 0, -0.016, 0.032);
-    cut(head, [[sign * 0.22, 0.37], [sign * 0.32, 0.52], [sign * 0.32, 0.31]], '#4e4743', 0, 0, 0.018, 0.014);
     cut(head, [[sign * 0.14, 0.19], [sign * 0.26, 0.38], [sign * 0.27, 0.15]], '#e7c3b2', 0, 0, 0.018, 0.014);
   }
 

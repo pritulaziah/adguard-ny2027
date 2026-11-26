@@ -27,13 +27,11 @@ const chrome = {
     open: 'Explore the story',
     close: 'Close the story',
     read: 'Read the full release story',
-    factTitle: 'Did you know?',
   },
   ru: {
     open: 'Посмотреть историю',
     close: 'Закрыть историю',
     read: 'Читать статью о релизе целиком',
-    factTitle: 'А вы знали?',
   },
 };
 
