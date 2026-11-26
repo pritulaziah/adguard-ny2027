@@ -633,9 +633,7 @@ export class YearWorld {
     }
   }
 
-  private wakeBoost(key?: Interaction): number {
-    if (!key) return 0;
-    const started = this.wakeTimes.get(key);
+  private wakeBoost(started: number | undefined): number {
     if (started === undefined) return 0;
     const elapsed = this.time - started;
     if (elapsed < 0 || elapsed > 1.35) return 0;
@@ -648,86 +646,131 @@ export class YearWorld {
     const targetGate = this.gateOpen ? 1 : 0;
     this.gateSwing = THREE.MathUtils.lerp(this.gateSwing, targetGate, this.reduced ? 1 : 1 - Math.exp(-delta * 6.5));
 
+    const allowMotion = !this.reduced;
+
     for (const part of this.paper.parts) {
       const mesh = part.mesh;
-      const t = this.time + part.phase;
-      const boost = this.reduced ? 0 : this.wakeBoost(part.key);
 
       if (part.kind === 'gate') {
         const sign = mesh.name === 'garden-gate-left' ? -1 : 1;
         mesh.rotation.y = sign * this.gateSwing * 1.15;
         continue;
       }
-      if (this.reduced) continue;
+      if (!allowMotion) continue;
 
-      const reaction = part.key === undefined ? undefined : this.wakeTimes.get(part.key);
-      const activityTime = this.time - (reaction ?? 0);
-      const idle = reaction === undefined;
+      const t = this.time + part.phase;
+      // One lookup per part: the same wake time feeds the boost and the activity clock.
+      const started = part.key === undefined ? undefined : this.wakeTimes.get(part.key);
+      const boost = this.wakeBoost(started);
+      const activityTime = started === undefined ? this.time : this.time - started;
+      const idle = started === undefined;
 
-      if (part.kind === 'sway') {
-        mesh.rotation.z = part.rotation.z + Math.sin(t * 1.25) * 0.055 + Math.sin(t * 9.5) * 0.14 * boost;
-        mesh.position.y = part.position.y + Math.abs(Math.sin(t * 7)) * 0.08 * boost;
-      } else if (part.kind === 'wing') {
-        mesh.rotation.z = part.rotation.z + Math.sin(t * 3.1) * 0.11 + Math.sin(t * 10) * 0.24 * boost;
-      } else if (part.kind === 'flutter') {
-        mesh.rotation.z = part.rotation.z + Math.sin(t * 4.2) * 0.18;
-      } else if (part.kind === 'fire') {
-        const flicker = Math.sin(t * 7.5) * 0.05 + Math.sin(t * 13) * 0.03;
-        mesh.scale.set(
-          part.scale.x * (1 + flicker * 0.5 + boost * 0.12),
-          part.scale.y * (1 + flicker + boost * 0.28),
-          part.scale.z,
-        );
-      } else if (part.kind === 'float') {
-        mesh.position.y = part.position.y + Math.sin(t * 1.5) * 0.055 + Math.sin(t * 6) * 0.14 * boost;
-        mesh.rotation.z = part.rotation.z + Math.sin(t * 1.1) * 0.035;
-      } else if (part.kind === 'jump') {
-        mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
-      } else if (part.kind === 'cat-blink') {
-        mesh.scale.y = part.scale.y * (1 - 0.9 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.08, 0.52));
-      } else if (part.kind === 'cat-tail') {
-        mesh.rotation.z = part.rotation.z + 0.13 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.52, 0.35);
-      } else if (part.kind === 'bunny-ear') {
-        mesh.rotation.z = part.rotation.z + 0.32 * motionPulse((activityTime + (idle ? 3.2 : 0)) % 6.5, 0.08, 0.62);
-      } else if (part.kind === 'deer-ear') {
-        const time = (activityTime + (idle ? 2.5 : 0)) % 6.2;
-        mesh.rotation.z = part.rotation.z + 0.36 * motionPulse(time, 0.1, 0.2) + 0.24 * motionPulse(time, 0.43, 0.24);
-      } else if (part.kind === 'crab-step') {
-        const time = (activityTime + (idle ? 1.2 : 0)) % 6.8;
-        const first = THREE.MathUtils.smoothstep(time, 0, 0.24);
-        const second = THREE.MathUtils.smoothstep(time, 0.3, 0.54);
-        const back = THREE.MathUtils.smoothstep(time, 1.05, 1.55);
-        mesh.position.x = part.position.x + (first + second - 2 * back) * 0.18;
-        mesh.rotation.z = part.rotation.z + 0.07 * (motionPulse(time, 0, 0.24) - motionPulse(time, 0.3, 0.24));
-      } else if (part.kind === 'crab-claw') {
-        mesh.rotation.z = part.rotation.z + 0.35 * motionPulse((activityTime + (idle ? 1.2 : 0)) % 6.8, 0.55, 0.52);
-      } else if (part.kind === 'fish-dive') {
-        const time = (activityTime + (idle ? 3.5 : 0)) % 5.8;
-        const leap = motionPulse(time, 0, 0.78);
-        const dive = motionPulse(time, 0.35, 1.08);
-        mesh.position.set(part.position.x - dive * 0.24, part.position.y + leap * 0.35 - dive * 0.61, part.position.z);
-        mesh.rotation.z = part.rotation.z + leap * 0.42 - dive * 0.58;
-        mesh.visible = dive < 0.95;
-      } else if (part.kind === 'fish-splash') {
-        const splash = motionPulse((activityTime + (idle ? 3.5 : 0)) % 5.8, 0.6, 0.48);
-        mesh.visible = splash > 0.01;
-        mesh.scale.set(0.7 + 0.45 * splash, splash, 1);
-      } else if (part.kind === 'gull') {
-        const cycle = t % 8;
-        const angle = cycle / 8 * Math.PI * 2;
-        mesh.position.x = part.position.x + 1.15 * Math.sin(angle);
-        mesh.position.y = part.position.y + 0.27 * Math.cos(angle);
-        mesh.position.z = part.position.z + 0.55 * Math.cos(angle);
-        const flap = 0.48 * Math.sin(cycle * 11) * motionPulse(cycle, 0.15, 1.7);
-        mesh.children[0].rotation.z = -flap;
-        mesh.children[1].rotation.z = flap;
-      } else if (part.kind === 'spin') {
-        mesh.rotation.z = part.rotation.z + this.time * 0.35;
-        const pulse = 1 + boost * 0.5;
-        mesh.scale.set(part.scale.x * pulse, part.scale.y * pulse, part.scale.z);
-      } else if (part.kind === 'wave') {
-        mesh.position.x = part.position.x + Math.sin(t * 1.1) * 0.14;
-        mesh.position.y = part.position.y + Math.sin(t * 1.9) * 0.025;
+      switch (part.kind) {
+        case 'still':
+          break;
+        case 'sway': {
+          mesh.rotation.z = part.rotation.z + Math.sin(t * 1.25) * 0.055 + Math.sin(t * 9.5) * 0.14 * boost;
+          mesh.position.y = part.position.y + Math.abs(Math.sin(t * 7)) * 0.08 * boost;
+          break;
+        }
+        case 'wing': {
+          mesh.rotation.z = part.rotation.z + Math.sin(t * 3.1) * 0.11 + Math.sin(t * 10) * 0.24 * boost;
+          break;
+        }
+        case 'flutter': {
+          mesh.rotation.z = part.rotation.z + Math.sin(t * 4.2) * 0.18;
+          break;
+        }
+        case 'fire': {
+          const flicker = Math.sin(t * 7.5) * 0.05 + Math.sin(t * 13) * 0.03;
+          mesh.scale.set(
+            part.scale.x * (1 + flicker * 0.5 + boost * 0.12),
+            part.scale.y * (1 + flicker + boost * 0.28),
+            part.scale.z,
+          );
+          break;
+        }
+        case 'float': {
+          mesh.position.y = part.position.y + Math.sin(t * 1.5) * 0.055 + Math.sin(t * 6) * 0.14 * boost;
+          mesh.rotation.z = part.rotation.z + Math.sin(t * 1.1) * 0.035;
+          break;
+        }
+        case 'jump': {
+          mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
+          break;
+        }
+        case 'cat-blink': {
+          mesh.scale.y = part.scale.y * (1 - 0.9 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.08, 0.52));
+          break;
+        }
+        case 'cat-tail': {
+          mesh.rotation.z = part.rotation.z + 0.13 * motionPulse((activityTime + (idle ? 2 : 0)) % 7.2, 0.52, 0.35);
+          break;
+        }
+        case 'bunny-ear': {
+          mesh.rotation.z = part.rotation.z + 0.32 * motionPulse((activityTime + (idle ? 3.2 : 0)) % 6.5, 0.08, 0.62);
+          break;
+        }
+        case 'deer-ear': {
+          const time = (activityTime + (idle ? 2.5 : 0)) % 6.2;
+          mesh.rotation.z = part.rotation.z + 0.36 * motionPulse(time, 0.1, 0.2) + 0.24 * motionPulse(time, 0.43, 0.24);
+          break;
+        }
+        case 'crab-step': {
+          const time = (activityTime + (idle ? 1.2 : 0)) % 6.8;
+          const first = THREE.MathUtils.smoothstep(time, 0, 0.24);
+          const second = THREE.MathUtils.smoothstep(time, 0.3, 0.54);
+          const back = THREE.MathUtils.smoothstep(time, 1.05, 1.55);
+          mesh.position.x = part.position.x + (first + second - 2 * back) * 0.18;
+          mesh.rotation.z = part.rotation.z + 0.07 * (motionPulse(time, 0, 0.24) - motionPulse(time, 0.3, 0.24));
+          break;
+        }
+        case 'crab-claw': {
+          mesh.rotation.z = part.rotation.z + 0.35 * motionPulse((activityTime + (idle ? 1.2 : 0)) % 6.8, 0.55, 0.52);
+          break;
+        }
+        case 'fish-dive': {
+          const time = (activityTime + (idle ? 3.5 : 0)) % 5.8;
+          const leap = motionPulse(time, 0, 0.78);
+          const dive = motionPulse(time, 0.35, 1.08);
+          mesh.position.set(part.position.x - dive * 0.24, part.position.y + leap * 0.35 - dive * 0.61, part.position.z);
+          mesh.rotation.z = part.rotation.z + leap * 0.42 - dive * 0.58;
+          mesh.visible = dive < 0.95;
+          break;
+        }
+        case 'fish-splash': {
+          const splash = motionPulse((activityTime + (idle ? 3.5 : 0)) % 5.8, 0.6, 0.48);
+          mesh.visible = splash > 0.01;
+          mesh.scale.set(0.7 + 0.45 * splash, splash, 1);
+          break;
+        }
+        case 'gull': {
+          const cycle = t % 8;
+          const angle = cycle / 8 * Math.PI * 2;
+          mesh.position.x = part.position.x + 1.15 * Math.sin(angle);
+          mesh.position.y = part.position.y + 0.27 * Math.cos(angle);
+          mesh.position.z = part.position.z + 0.55 * Math.cos(angle);
+          const flap = 0.48 * Math.sin(cycle * 11) * motionPulse(cycle, 0.15, 1.7);
+          mesh.children[0].rotation.z = -flap;
+          mesh.children[1].rotation.z = flap;
+          break;
+        }
+        case 'spin': {
+          mesh.rotation.z = part.rotation.z + this.time * 0.35;
+          const pulse = 1 + boost * 0.5;
+          mesh.scale.set(part.scale.x * pulse, part.scale.y * pulse, part.scale.z);
+          break;
+        }
+        case 'wave': {
+          mesh.position.x = part.position.x + Math.sin(t * 1.1) * 0.14;
+          mesh.position.y = part.position.y + Math.sin(t * 1.9) * 0.025;
+          break;
+        }
+        default: {
+          // The compiler flags this assignment when a new kind has no case above.
+          const unhandled: never = part.kind;
+          throw new Error(`Unhandled paper part kind: ${String(unhandled)}`);
+        }
       }
     }
   }
