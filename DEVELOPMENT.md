@@ -26,17 +26,30 @@ http://localhost:5173.
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `npm run dev` | Starts the development server. |
-| `npm run build` | Builds the site into `dist/`. |
-| `npm run preview` | Serves the built site. |
-| `npm test` | Runs every test once with Vitest. |
-| `npm run test:watch` | Runs the tests in watch mode. |
-| `npm run check` | Runs `svelte-check` and the TypeScript checks. |
+| Command                | What it does                                   |
+| ---------------------- | ---------------------------------------------- |
+| `npm run dev`          | Starts the development server.                 |
+| `npm run build`        | Builds the site into `dist/`.                  |
+| `npm run preview`      | Serves the built site.                         |
+| `npm test`             | Runs every test once with Vitest.              |
+| `npm run test:watch`   | Runs the tests in watch mode.                  |
+| `npm run check`        | Runs `svelte-check` and the TypeScript checks. |
+| `npm run format`       | Rewrites every file with Prettier.             |
+| `npm run format:check` | Reports files that Prettier would change.      |
 
-Run `npm test`, `npm run check`, and `npm run build` before you open a
-pull request.
+Run `npm run format:check`, `npm test`, `npm run check`, and
+`npm run build` before you open a pull request.
+
+## Formatting
+
+The code is formatted with Prettier. The settings are in
+`.prettierrc.json`, and `.prettierignore` lists the paths that Prettier
+does not touch. Run `npm run format` to rewrite the files, or
+`npm run format:check` to list the files that need a change. CI fails
+when a file does not match the settings.
+
+The VS Code extension `esbenp.prettier-vscode` formats a file on save
+when you make it the default formatter.
 
 ## Browser support
 
@@ -46,26 +59,26 @@ The console prints a warning when the app uses the WebGL2 fallback.
 
 ## Project layout
 
-| Path | Content |
-| --- | --- |
-| `src/lib/content/` | Stories, dialog copy, figure notes, UI strings, language store |
-| `src/lib/ui/` | Svelte components: wall story, story dialog, figure note |
-| `src/lib/world/` | Three.js scene: route, seasons, scenery, vehicles, camera, weather |
-| `src/App.svelte` | Page frame, language switch, loading and error states |
-| `public/` | Fonts, logo, and story screenshots |
-| `.github/workflows/` | GitHub Actions: deploy and CI |
+| Path                 | Content                                                            |
+| -------------------- | ------------------------------------------------------------------ |
+| `src/lib/content/`   | Stories, dialog copy, figure notes, UI strings, language store     |
+| `src/lib/ui/`        | Svelte components: wall story, story dialog, figure note           |
+| `src/lib/world/`     | Three.js scene: route, seasons, scenery, vehicles, camera, weather |
+| `src/App.svelte`     | Page frame, language switch, loading and error states              |
+| `public/`            | Fonts, logo, and story screenshots                                 |
+| `.github/workflows/` | GitHub Actions: deploy and CI                                      |
 
 ## Where to change content
 
-| Change | File |
-| --- | --- |
-| Story title, summary, station, release link | `src/lib/content/articles.ts` |
+| Change                                                 | File                                 |
+| ------------------------------------------------------ | ------------------------------------ |
+| Story title, summary, station, release link            | `src/lib/content/articles.ts`        |
 | Story dialog copy: lead, timeline, passages, afterword | `src/lib/content/story-deep-dive.ts` |
-| Note for one figure | `src/lib/content/figure-facts.ts` |
-| Interface text and language labels | `src/lib/content/i18n.ts` |
-| Welcome and finale copy | `src/lib/content/i18n.ts` |
-| Route length and stop positions | `src/lib/world/route.ts` |
-| Season borders and colour ramps | `src/lib/world/seasons.ts` |
+| Note for one figure                                    | `src/lib/content/figure-facts.ts`    |
+| Interface text and language labels                     | `src/lib/content/i18n.ts`            |
+| Welcome and finale copy                                | `src/lib/content/i18n.ts`            |
+| Route length and stop positions                        | `src/lib/world/route.ts`             |
+| Season borders and colour ramps                        | `src/lib/world/seasons.ts`           |
 
 Every change to the route or the seasons needs the matching update in
 `src/lib/world/route.test.mjs`.

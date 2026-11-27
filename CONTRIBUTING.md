@@ -42,6 +42,7 @@ commands, and the project layout.
 4. Run all checks:
 
    ```sh
+   npm run format:check
    npm test
    npm run check
    npm run build
@@ -60,13 +61,13 @@ commands, and the project layout.
 Use the conventional form: a type, a scope, and a short imperative
 subject.
 
-| Type | Use |
-| --- | --- |
-| `feat` | A new feature or content |
-| `fix` | A defect fix |
-| `perf` | A performance change |
-| `test` | A test change |
-| `docs` | Documentation only |
+| Type    | Use                                     |
+| ------- | --------------------------------------- |
+| `feat`  | A new feature or content                |
+| `fix`   | A defect fix                            |
+| `perf`  | A performance change                    |
+| `test`  | A test change                           |
+| `docs`  | Documentation only                      |
 | `chore` | Tooling, dependencies, and housekeeping |
 
 Keep the subject at 72 characters or less. Use the body for the reason
