@@ -48,3 +48,8 @@ release notes.
       an interesting fact, including animals and the snowman. Reduce repeated
       movements, try different ideas, and choose the most interesting animation
       for each figure.
+- [ ] Decide whether one vehicle runs the whole route: a car in every season
+      or a train in every season. Change the summer scene as well, because the
+      river fits neither vehicle. Choose a bright meadow with a far river, a
+      road on the bank, or a bridge over the water. Decide the future of the
+      bicycle and the punt. Wait for concept approval before this work starts.
