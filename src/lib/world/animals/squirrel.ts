@@ -7,16 +7,18 @@ export function addSquirrel(ctx: AnimalBuilderContext, x: number, z = -1.02): vo
   const squirrel = ctx.detail('paper-squirrel', x, z, 0.62);
   addGroundShadow(squirrel, 1.12, 0.27, '#876d5d');
   const tail = cut(squirrel.group, shapeFrom(s => {
-    s.moveTo(0.13, 0.14);
+    s.moveTo(-0.04, 0.14);
     s.bezierCurveTo(0.94, 0.05, 1.04, 1.37, 0.54, 1.55);
     s.bezierCurveTo(0.09, 1.69, -0.04, 1.13, 0.3, 1.04);
-    s.bezierCurveTo(0.64, 0.99, 0.57, 0.43, 0.14, 0.36);
+    s.bezierCurveTo(0.64, 0.99, 0.57, 0.43, -0.02, 0.36);
     s.closePath();
   }), '#b96f44', 0, 0, -0.04, 0.04);
   const body = oval(squirrel.group, 0.48, 0.7, '#c18050', -0.1, 0.41, 0.02, 0.038);
   // Both motions share the body transform, so the tail stays attached.
   body.add(tail);
-  tail.position.set(0.1, -0.41, -0.06);
+  // Rotate at the tail root, with the base tucked behind the body.
+  tail.geometry.translate(0, -0.25, 0);
+  tail.position.set(0.1, -0.16, -0.06);
   oval(body, 0.25, 0.48, CREAM, -0.08, 0.03, 0.045, 0.02);
   oval(body, 0.31, 0.12, '#b96f44', 0, -0.3, 0.06, 0.026);
   // Ears belong to the head outline, with no overlapping paper edges.
