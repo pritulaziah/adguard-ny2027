@@ -35,6 +35,15 @@ button:focus-visible, a:focus-visible { outline: 2px dashed #fff5ce; outline-off
 .is-portrait .wall-eyebrow { font-size: 0.89em; margin-bottom: 1.31em; }
 .is-portrait .wall-story a { font-size: 1.72em; margin-top: 1.11em; }
 .is-portrait .wall-story.welcome h1 { font-size: 5em; }
+.wall-copy.is-finale { top: 21%; }
+.is-finale .wall-story { text-align: center; }
+.is-finale .wall-story.welcome h1 { font-size: 4em; }
+.is-finale .wall-summary { max-width: 26em; margin-inline: auto; font-size: 1.9em; }
+.is-finale .wall-note { max-width: 30em; margin-inline: auto; font-size: 1.5em; }
+.wall-copy.is-finale.is-portrait { top: 27%; }
+.is-finale.is-portrait .wall-story.welcome h1 { font-size: 4.2em; }
+.is-finale.is-portrait .wall-summary { font-size: 1.9em; }
+.is-finale.is-portrait .wall-note { font-size: 1.6em; }
 .object-spark { width: 42px; height: 42px; border: 1px dashed #fff2d8bb; border-radius: 50%; background: #fff3dc22; color: #fff3d1; font-size: 27px; line-height: 1; text-align: center; padding: 0; text-shadow: 0 1px 5px #3e37585c; transition: background 160ms ease; }
 .object-spark:hover, .object-spark:focus-visible { background: #fff4d66b; color: #fffdf1; }
 .masthead { position: absolute; z-index: 3; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 27px 34px; pointer-events: none; }

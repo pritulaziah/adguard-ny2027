@@ -10,7 +10,7 @@ interface Copy {
   loading: string; loadError: string; webglError: string; retry: string;
   language: string; station: string; story: string; year: string;
   read: string; welcomeTitle: string; welcomeSummary: string; welcomeNote: string;
-  finalTitle: string; finalSummary: string;
+  finalTitle: string; finalSummary: string; finalNote: string;
   interactions: Record<Interaction, { label: string }>;
 }
 
@@ -24,6 +24,7 @@ export const translations: Record<Language, Copy> = {
     welcomeTitle: 'Let’s remember\na good year', welcomeSummary: 'A big year. Six stories about what we achieved together.',
     welcomeNote: 'Look around — this paper world is full of life.',
     finalTitle: 'Next stop —\na new year!', finalSummary: 'Thank you for being with us. Here’s to more good things and fewer distractions in 2027.',
+    finalNote: 'Each character has a New Year promo code for you.',
     interactions: {
       deer: { label: 'Say hello to the deer' },
       snowman: { label: 'Hear a fact about AdGuard for iOS' },
@@ -51,6 +52,7 @@ export const translations: Record<Language, Copy> = {
     welcomeTitle: 'Вспомним\nхороший год', welcomeSummary: 'Большой год. Шесть историй о том, что мы сделали вместе.',
     welcomeNote: 'Оглядывайтесь по сторонам — здесь всё немного живое.',
     finalTitle: 'Следующая остановка —\nновый год!', finalSummary: 'Спасибо, что были с нами. Пусть в 2027 будет больше хорошего и меньше лишнего.',
+    finalNote: 'У каждого персонажа — новогодний промокод.',
     interactions: {
       deer: { label: 'Поздороваться с оленем' },
       snowman: { label: 'Узнать факт об AdGuard для iOS' },

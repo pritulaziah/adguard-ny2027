@@ -22,7 +22,7 @@ import { isAnimated, motionFor, type PaperPart } from '../part-motion';
 import type { SceneryContext } from '../scene-context';
 import { addAutumnUndergrowth } from './autumn';
 import { addBroadTree } from './broad-tree';
-import { addCabin } from './cabin';
+import { addFinaleTree } from './finale-tree';
 import { addFir } from './fir';
 import { addForegroundFraming } from './foreground';
 import { addSpringMeadowCluster } from './meadow';
@@ -192,13 +192,13 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addAutumnUndergrowth(ctx);
   await pause();
 
-  // Stop 7 (Finale, x = 88.55): finale train clamp 86.2 .. 102.55; the road runs on past the story.
-  addFir(ctx, STORY_END - 5.9, 3.7, true, true, -2.05);
+  // The final train passes one decorated tree and the three gift-givers.
+  addFir(ctx, STORY_END - 5.9, 3.3, true, false, -2.05);
   addFir(ctx, STORY_END - 4.4, 2.5, true, false, -2.35);
+  addFinaleTree(ctx);
   await addFinaleMascots(ctx);
-  addCabin(ctx, STORY_END + 3.6, true);
-  addFir(ctx, STORY_END + 7.4, 3.2, true, true, -2.1);
-  addFir(ctx, STORY_END + 10.1, 3.6, true, true, -2.0);
+  addFir(ctx, STORY_END + 10.4, 3.2, true, false, -2.1);
+  addFir(ctx, STORY_END + 13.1, 2.6, true, false, -2.0);
   await pause();
 
   // Close foreground framing elements (bottom-edge foliage and snowbanks).

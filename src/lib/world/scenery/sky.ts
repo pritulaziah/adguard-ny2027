@@ -59,7 +59,7 @@ export async function addSkyDetails(
   await pause();
 
   addMoon(ctx.group, -6.8, 8.9);
-  addMoon(ctx.group, stopX(7) + 6.4, 8.8);
+  addMoon(ctx.group, stopX(7) + 10.8, 8.8);
 
   const starSpots: Array<[number, number, number]> = [
     [-9.2, 9.2, 0.14], [-1.8, 9.5, 0.12], [7.8, 9.2, 0.15], [12.5, 9.4, 0.11],

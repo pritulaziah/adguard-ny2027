@@ -70,7 +70,9 @@ test('every scenery object has its own mesh and keeps colors', async () => {
     expect(right.x - centre).toBeLessThan(4.5);
   }
   expect(set.group.getObjectByName('paper-willow')).toBeUndefined();
-  expect(set.group.getObjectsByProperty('name', 'paper-cabin')).toHaveLength(1);
+  expect(set.group.getObjectsByProperty('name', 'paper-cabin')).toHaveLength(0);
+  expect(set.group.getObjectByName('paper-finale-tree')).toBeTruthy();
+  expect(set.group.getObjectsByProperty('name', 'paper-finale-gift')).toHaveLength(4);
 }, 60000);
 
 test('every animated part can run its motion', async () => {

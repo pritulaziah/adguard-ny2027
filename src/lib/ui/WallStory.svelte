@@ -20,6 +20,6 @@
     <p class="wall-eyebrow">ADGUARD · {$copy.year}</p>
     <h1>{isFinal ? $copy.finalTitle : $copy.welcomeTitle}</h1>
     <p class="wall-summary">{isFinal ? $copy.finalSummary : $copy.welcomeSummary}</p>
-    {#if !isFinal}<p class="wall-note">{$copy.welcomeNote}</p>{/if}
+    <p class="wall-note">{isFinal ? $copy.finalNote : $copy.welcomeNote}</p>
   {/if}
 </article>

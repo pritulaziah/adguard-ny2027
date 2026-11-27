@@ -8,6 +8,7 @@ import {
   stopIndexAt,
   STOP_SPACING,
   STORY_END,
+  JOURNEY_END,
   TRACK_LENGTH,
   pointOnTrack,
   stopX,
@@ -36,11 +37,137 @@ test('scrolling moves the target and clamps at both ends of the route', () => {
   close(motion.target, 4);
 
   motion.scroll(TRACK_LENGTH * 2);
-  close(motion.target, TRACK_LENGTH);
+  close(motion.target, JOURNEY_END);
   expect(motion.scroll(5), 'cannot scroll past the terminus').toBe(false);
 
   motion.scroll(-TRACK_LENGTH * 3);
   close(motion.target, 0);
+});
+
+function settle(motion) {
+  for (let frame = 0; frame < 900 && motion.moving; frame++) motion.step(1 / 60);
+  expect(motion.moving).toBe(false);
+}
+
+function reachFinalHandoff(motion) {
+  motion.distance = motion.target = JOURNEY_END - 1.6;
+  motion.scroll(1.6);
+  for (let frame = 0; frame < 900 && !motion.committedToFinale; frame++) motion.step(1 / 60);
+  expect(motion.committedToFinale).toBe(true);
+}
+
+test('the final target alone does not start the handoff', () => {
+  const motion = new JourneyMotion();
+  motion.scroll(JOURNEY_END);
+  close(motion.target, JOURNEY_END);
+  expect(motion.committedToFinale).toBe(false);
+  motion.step(0.1);
+  expect(motion.committedToFinale).toBe(false);
+  expect(motion.scroll(-1)).toBe(true);
+
+  // Visitors can also stop near the destination without choosing the final leg.
+  motion.distance = motion.target = JOURNEY_END - 0.1;
+  motion.moving = false;
+  expect(motion.committedToFinale).toBe(false);
+  expect(motion.scroll(-1)).toBe(true);
+});
+
+test('the final handoff starts while the train is still approaching the destination', () => {
+  const motion = new JourneyMotion();
+  reachFinalHandoff(motion);
+  expect(motion.moving).toBe(true);
+  expect(motion.finished).toBe(false);
+  expect(motion.distance).toBeLessThan(JOURNEY_END);
+  expect(motion.speed).toBeGreaterThan(0.2);
+});
+
+test('the final handoff blocks input in both directions while travel continues', () => {
+  const motion = new JourneyMotion();
+  reachFinalHandoff(motion);
+  const committedState = {
+    distance: motion.distance, target: motion.target,
+    moving: motion.moving, speed: motion.speed,
+  };
+  for (const delta of [-0.01, -1.6, -TRACK_LENGTH * 3, 0.01, 1.6, TRACK_LENGTH * 3]) {
+    expect(motion.scroll(delta), `scroll ${delta} cannot interrupt the final handoff`).toBe(false);
+    expect({
+      distance: motion.distance, target: motion.target,
+      moving: motion.moving, speed: motion.speed,
+    }).toEqual(committedState);
+  }
+  motion.step(1 / 60);
+  expect(motion.distance).toBeGreaterThan(committedState.distance);
+  expect(motion.committedToFinale).toBe(true);
+  settle(motion);
+  expect(motion.finished).toBe(true);
+});
+
+test('reset releases input during the final handoff', () => {
+  const motion = new JourneyMotion();
+  reachFinalHandoff(motion);
+  motion.reset();
+  expect(motion.committedToFinale).toBe(false);
+  expect(motion.finished).toBe(false);
+  expect(motion.scroll(4)).toBe(true);
+  motion.step(1 / 60);
+  expect(motion.distance).toBeGreaterThan(0);
+});
+
+test('the reader can reverse before reaching the final destination', () => {
+  const motion = new JourneyMotion();
+  motion.scroll(JOURNEY_END);
+  motion.step(0.5);
+
+  expect(motion.distance).toBeGreaterThan(0);
+  expect(motion.distance).toBeLessThan(JOURNEY_END);
+  expect(motion.finished).toBe(false);
+  expect(motion.committedToFinale).toBe(false);
+  expect(motion.scroll(-3)).toBe(true);
+  close(motion.target, JOURNEY_END - 3);
+  settle(motion);
+
+  expect(motion.finished).toBe(false);
+  expect(motion.scroll(-1)).toBe(true);
+});
+
+test('reaching the final destination blocks scrolling in both directions', () => {
+  const motion = new JourneyMotion();
+  motion.scroll(JOURNEY_END);
+  settle(motion);
+
+  expect(motion.finished).toBe(true);
+  expect(motion.committedToFinale).toBe(true);
+  const finalState = {
+    distance: motion.distance, target: motion.target,
+    moving: motion.moving, speed: motion.speed,
+  };
+  expect(finalState).toEqual({ distance: JOURNEY_END, target: JOURNEY_END, moving: false, speed: 0 });
+  for (const delta of [-0.01, -1.6, -TRACK_LENGTH * 3, 0.01, 1.6, TRACK_LENGTH * 3]) {
+    expect(motion.scroll(delta), `scroll ${delta} cannot leave the final screen`).toBe(false);
+    expect(motion.step(1 / 60)).toBe(false);
+    expect({
+      distance: motion.distance, target: motion.target,
+      moving: motion.moving, speed: motion.speed,
+    }).toEqual(finalState);
+    expect(motion.finished).toBe(true);
+  }
+});
+
+test('an explicit reset starts a new journey after the final destination', () => {
+  const motion = new JourneyMotion();
+  motion.scroll(JOURNEY_END);
+  settle(motion);
+  expect(motion.finished).toBe(true);
+
+  motion.reset();
+  expect(motion.finished).toBe(false);
+  expect(motion.committedToFinale).toBe(false);
+  close(motion.distance, 0);
+  close(motion.target, 0);
+  expect(motion.moving).toBe(false);
+  expect(motion.scroll(4)).toBe(true);
+  motion.step(1 / 60);
+  expect(motion.distance).toBeGreaterThan(0);
 });
 
 test('the train eases toward the scroll target and rests where the reader stopped', () => {
@@ -84,11 +211,13 @@ test('reset returns the train to the start', () => {
   expect(motion.moving).toBe(false);
 });
 
-test('the route ends at the finale stop after the stories', () => {
+test('the route continues through the finale after the stories', () => {
   expect(STOP_COUNT).toBe(7);
   close(stopX(0), 0);
   close(stopX(7), STORY_END);
   close(STORY_END, 7 * STOP_SPACING + SUMMER_EXTENSION);
+  close(JOURNEY_END, STORY_END + 6);
+  expect(JOURNEY_END).toBeLessThan(TRACK_LENGTH);
   close(TRACK_LENGTH, STORY_END + 14);
 });
 

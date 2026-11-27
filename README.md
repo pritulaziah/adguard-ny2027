@@ -44,9 +44,6 @@ release notes.
 
 ## TODO
 
-- [ ] The final December and New Year scene is still in development.
-      Define its setting, objects, and animations.
-- [ ] Decide how visitors who reach the end receive a gift or discount.
 - [ ] Explore a distinct, expressive animation for each figure that presents
       an interesting fact, including animals and the snowman. Reduce repeated
       movements, try different ideas, and choose the most interesting animation

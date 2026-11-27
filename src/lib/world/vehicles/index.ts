@@ -1,6 +1,7 @@
 import type * as THREE from 'three';
 import { SEASON_BORDERS } from '../seasons';
-import { TRACK_LENGTH, stopX } from '../route';
+import { stopX } from '../route';
+import { FINALE_TRAIN_X } from '../finale';
 import { createPaperBicycle } from './bicycle';
 import { createVanExhaust } from './exhaust';
 import { createPaperMinivan } from './minivan';
@@ -9,7 +10,7 @@ import { softClamp } from './shared';
 import { createPaperTrain } from './train';
 
 export interface SeasonalFleet {
-  update: (distance: number, delta: number, time: number, reduced: boolean) => void;
+  update: (distance: number, delta: number, time: number, reduced: boolean, finaleOffset?: number) => void;
 }
 
 export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
@@ -29,7 +30,7 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
   };
 
   return {
-    update: (distance, delta, time, reduced) => {
+    update: (distance, delta, time, reduced, finaleOffset = 0) => {
       const dt = Math.max(delta, 1 / 120);
 
       // Steam only appears once the train has picked up speed, not while it rolls out.
@@ -39,7 +40,7 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
       const sbX = softClamp(distance, stopX(2) - 4.5, stopX(3) + 4.0, 0.7);
       const boatX = softClamp(distance, SEASON_BORDERS.summer + 2.025, SEASON_BORDERS.autumn - 2.025, 0.7);
       const vanX = softClamp(distance, stopX(5) - 4.3, stopX(6) + 3.6, 0.7);
-      const ftX = softClamp(distance, stopX(7) - 2.35, TRACK_LENGTH, 0.7);
+      const ftX = softClamp(distance, stopX(7) - 2.35, FINALE_TRAIN_X, 0.45) + finaleOffset;
 
       const wtMoving = Math.abs(wtX - prev.winterTrain) / dt > STEAM_SPEED;
       const sbMoving = Math.abs(sbX - prev.springBike) / dt > 0.08;

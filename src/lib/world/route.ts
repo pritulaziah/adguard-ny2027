@@ -25,19 +25,22 @@ export function routeProgress(distance: number): number {
 
 /** The last story stands here; the road continues past it. */
 export const STORY_END = routeDistance(STOP_COUNT * STOP_SPACING);
+/** The final train continues through the New Year scene. */
+export const JOURNEY_END = STORY_END + 6;
 export const TRACK_LENGTH = STORY_END + 14;
 export const WALL_Z = -2.92;
 export const STORY_Z = -2.23;
 
 const FOLLOW_RATE = 2.6;
 const REST = 0.002;
+const FINALE_HANDOFF = 0.6;
 
 export function pointOnTrack(distance: number): { x: number; z: number; rotation: number } {
   return { x: distance, z: 0, rotation: 0 };
 }
 
 export function clampDistance(distance: number): number {
-  return Math.max(0, Math.min(TRACK_LENGTH, distance));
+  return Math.max(0, Math.min(JOURNEY_END, distance));
 }
 
 export function stopIndexAt(distance: number): number {
@@ -54,6 +57,7 @@ export function stopX(index: number): number {
 /**
  * Free scrolling. Input moves a target, the train eases toward it and stops
  * where the reader left it: no magnetic snapping, no automatic legs.
+ * The final approach hands control to the departing train and ends route input.
  */
 export class JourneyMotion {
   distance = 0;
@@ -61,8 +65,14 @@ export class JourneyMotion {
   speed = 0;
   moving = false;
 
+  get finished(): boolean { return this.distance >= JOURNEY_END; }
+
+  get committedToFinale(): boolean {
+    return this.target >= JOURNEY_END && this.distance >= JOURNEY_END - FINALE_HANDOFF;
+  }
+
   scroll(deltaUnits: number): boolean {
-    if (!Number.isFinite(deltaUnits) || Math.abs(deltaUnits) < 1e-5) return false;
+    if (this.committedToFinale || this.finished || !Number.isFinite(deltaUnits) || Math.abs(deltaUnits) < 1e-5) return false;
     const next = clampDistance(this.target + deltaUnits);
     if (Math.abs(next - this.target) < 1e-6) return false;
     this.target = next;

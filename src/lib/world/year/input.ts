@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 import { openStoryId } from '../../content/story-modal';
-import { routeProgress, stopX } from '../route';
+import { JOURNEY_END, STOP_COUNT, routeProgress, stopX } from '../route';
 
 // One wheel notch or drag event moves at most a fraction of a station.
 export const STEP_LIMIT = 1.6;
@@ -66,7 +66,8 @@ export class WorldInput {
     if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
       event.preventDefault();
       const next = routeProgress(this.getTarget()) + (event.key === 'ArrowRight' ? 1 : -1);
-      this.handlers.scrollBy(stopX(next) - this.getTarget(), Number.POSITIVE_INFINITY);
+      const destination = next >= STOP_COUNT ? JOURNEY_END : stopX(next);
+      this.handlers.scrollBy(destination - this.getTarget(), Number.POSITIVE_INFINITY);
     }
   };
 
@@ -87,6 +88,7 @@ export class WorldInput {
 
   private onTouchMove = (event: TouchEvent): void => {
     if (get(openStoryId)) { this.touchActive = false; return; }
+    if (!this.handlers.canScroll()) { this.touchActive = false; return; }
     if (!this.touchActive || event.touches.length !== 1) return;
     event.preventDefault();
     const touch = event.touches[0];

@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { createSeasonalFleet } from './vehicles/index.ts';
-import { stopX } from './route.ts';
+import { JOURNEY_END, stopX } from './route.ts';
+import { FINALE_TRAIN_X } from './finale.ts';
 
 function inventory(scene) {
   let meshes = 0;
@@ -13,6 +14,19 @@ function inventory(scene) {
   });
   return { meshes, geometries: geometries.size };
 }
+
+test('the festive engine drives through the final scene before stopping', () => {
+  const scene = new THREE.Scene();
+  const fleet = createSeasonalFleet(scene);
+  const engine = scene.getObjectsByProperty('name', 'paper-train-body-0').at(-1);
+  fleet.update(stopX(7) - 3, 1 / 60, 0, true);
+  const startX = engine.parent.position.x;
+  fleet.update(stopX(7), 1 / 60, 0, true);
+  expect(engine.parent.position.x).toBeCloseTo(stopX(7), 5);
+  fleet.update(JOURNEY_END, 1 / 60, 0, true);
+  expect(Math.abs(engine.parent.position.x - FINALE_TRAIN_X)).toBeLessThan(0.15);
+  expect(engine.parent.position.x - startX).toBeGreaterThan(7.5);
+});
 
 test('the fleet merges still parts instead of drawing every detail', () => {
   const scene = new THREE.Scene();

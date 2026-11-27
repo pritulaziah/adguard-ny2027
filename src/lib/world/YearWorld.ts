@@ -11,6 +11,7 @@ import { createPaperScenery, type PaperSet } from './scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './vehicles';
 import type { MotionFrame } from './part-motion';
 import { JourneyMotion, stopIndexAt, stopX } from './route';
+import { FINALE_TRAIN_X } from './finale';
 import { createYieldPacer } from './schedule';
 import { CameraRig } from './year/camera';
 import { WorldInput, STEP_LIMIT } from './year/input';
@@ -19,6 +20,8 @@ import { SparkLayer } from './year/sparks';
 import { StoryLayer } from './year/stories';
 import { createWalls } from './year/walls';
 import { createWeather } from './year/weather';
+import { FinaleFireworks } from './year/fireworks';
+import { FinaleDeparture } from './year/finale-departure';
 
 // Moving parts farther than this from the camera cannot be seen; skip their math.
 const MOTION_SPAN = 13;
@@ -47,6 +50,8 @@ export class YearWorld {
   private paper: PaperSet | null = null;
   private fleet: SeasonalFleet | null = null;
   private weatherFields: WeatherField[] = [];
+  private fireworks: FinaleFireworks;
+  private departure = new FinaleDeparture();
   private rig: CameraRig;
   private stories: StoryLayer;
   private sparks: SparkLayer;
@@ -83,10 +88,11 @@ export class YearWorld {
     this.sparks = new SparkLayer(this.cssScene, host.camera, host.renderer);
     createWalls(this.scene, this.rig.cameraX);
     this.weatherFields = createWeather(this.scene, this.reduced);
+    this.fireworks = new FinaleFireworks(this.scene, this.camera, this.reduced);
     this.input = new WorldInput(() => this.motion.target, {
       scrollBy: (units, limit) => this.scrollBy(units, limit),
       setPointer: (x, y) => this.rig.setPointer(x, y),
-      canScroll: () => this.ready && !this.disposed,
+      canScroll: () => this.ready && !this.disposed && !this.motion.committedToFinale,
     });
     this.observer = new ResizeObserver(this.resize);
     this.observer.observe(this.renderer.domElement);
@@ -218,7 +224,6 @@ export class YearWorld {
         this.journey.update(s => ({ ...s, stop: liveStop }));
       }
 
-      this.fleet?.update(this.motion.distance, step, this.time, this.reduced);
       this.rig.update(step, false, this.motion.distance, this.motion.speed);
       this.animateParts(step);
 
@@ -229,7 +234,14 @@ export class YearWorld {
           this.journey.update(s => ({ ...s, cameraSettled: true }));
         }
       }
+      const atFinale = this.motion.finished && !this.motion.moving && this.state.cameraSettled;
+      // Leave room for both carriages beyond the right edge.
+      const halfView = (this.camera.position.z + 0.7) * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.aspect;
+      const exitOffset = Math.max(0, this.camera.position.x + halfView + 5 - FINALE_TRAIN_X);
+      const trainOffset = this.departure.update(step, this.motion.committedToFinale, this.reduced, exitOffset);
+      this.fleet?.update(this.motion.distance, step, this.time, this.reduced, trainOffset);
       this.updateLayers();
+      this.fireworks.update(step, this.motion.distance, atFinale && this.departure.complete, this.rig.portrait);
     }
     this.cssRenderer.render(this.cssScene, this.camera);
   };

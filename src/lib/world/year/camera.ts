@@ -3,6 +3,7 @@ import type { WebGPURenderer } from 'three/webgpu';
 import { createScalarUniform, type ScalarUniform } from '../paper-materials';
 import { STORY_Z, routeProgress } from '../route';
 import { WALL_RAMP, sampleRampColor } from '../seasons';
+import { finaleCameraOffset } from '../finale';
 
 /** Camera position, parallax, pointer smoothing, and the seasonal background. */
 export class CameraRig {
@@ -59,16 +60,17 @@ export class CameraRig {
     const fraction = ((progress % 1) + 1) % 1;
     const speedFactor = THREE.MathUtils.clamp(Math.abs(speed) / 2.2, 0, 1);
     const peek = this.reduced ? 0 : Math.sin(fraction * Math.PI) * speedFactor;
+    const framedDistance = distance + finaleCameraOffset(distance);
 
     // Pivot gently around the animal plane (z ~ -1.05) so clickable sparks stay steady
     // while close foreground planes and deep hills/sky glide smoothly in opposite parallax.
     this.desiredPosition.set(
-      distance + this.pointerSmooth.x * parallaxX,
+      framedDistance + this.pointerSmooth.x * parallaxX,
       2.55 + this.pointerSmooth.y * parallaxY + peek * 0.14,
       STORY_Z + viewDistance,
     );
     this.desiredLook.set(
-      distance - this.pointerSmooth.x * (parallaxX * 0.14),
+      framedDistance - this.pointerSmooth.x * (parallaxX * 0.14),
       (this.portrait ? viewDistance * 0.32 : 3.06) - this.pointerSmooth.y * (parallaxY * 0.14) - peek * 0.16,
       STORY_Z + 0.18 + peek * 0.45,
     );

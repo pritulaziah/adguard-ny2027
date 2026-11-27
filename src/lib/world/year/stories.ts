@@ -1,6 +1,7 @@
 import { mount, unmount } from 'svelte';
 import WallStory from '../../ui/WallStory.svelte';
 import { STOP_COUNT, stopX } from '../route';
+import { FINALE_STORY_X } from '../finale';
 
 interface Story {
   element: HTMLDivElement;
@@ -25,9 +26,10 @@ export class StoryLayer {
 
   create(): void {
     for (let index = 0; index <= STOP_COUNT; index++) {
-      const x = stopX(index);
+      const x = index === STOP_COUNT ? FINALE_STORY_X : stopX(index);
       const element = document.createElement('div');
       element.className = 'wall-copy';
+      if (index === STOP_COUNT) element.classList.add('is-finale');
       const component = mount(WallStory, { target: element, props: { index } });
       // Stories live in screen space, so every viewport centres them the same way
       // and keeps text steady while the 3D planes shift behind and in front.
@@ -43,8 +45,9 @@ export class StoryLayer {
   }
 
   update(distance: number): void {
+    const storyDistance = Math.min(distance, FINALE_STORY_X);
     for (const story of this.stories) {
-      const absDiff = Math.abs(story.x - distance);
+      const absDiff = Math.abs(story.x - storyDistance);
       const opacity = 1 - smoothstep(1.5, 4.7, absDiff);
       const shown = opacity > 0.004;
       const active = shown && opacity > 0.85;
