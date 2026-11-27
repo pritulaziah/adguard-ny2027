@@ -30,12 +30,12 @@ function buildWingMain(side: -1 | 1, spec: BirdSpeciesSpec): THREE.Shape {
       shape.quadraticCurveTo(-0.28, s * sp * 0.68, -0.22, s * sp * 0.34);
       shape.quadraticCurveTo(-0.21, s * sp * 0.14, -0.18, 0);
     } else {
-      // Compact rounded bullfinch wing.
-      shape.moveTo(0.19, 0);
-      shape.quadraticCurveTo(0.26, s * sp * 0.38, 0.14, s * sp * 0.76);
-      shape.quadraticCurveTo(0.03, s * sp * 0.98, -0.11, s * sp);
-      shape.quadraticCurveTo(-0.25, s * sp * 0.88, -0.28, s * sp * 0.5);
-      shape.quadraticCurveTo(-0.26, s * sp * 0.2, -0.21, 0);
+      // Sleek swept-back finch wing with narrow chord and tapered pointed primaries.
+      shape.moveTo(0.13, 0);
+      shape.quadraticCurveTo(0.14, s * sp * 0.32, 0.0, s * sp * 0.68);
+      shape.quadraticCurveTo(-0.11, s * sp * 0.88, -0.29, s * sp);
+      shape.quadraticCurveTo(-0.24, s * sp * 0.66, -0.18, s * sp * 0.34);
+      shape.quadraticCurveTo(-0.16, s * sp * 0.15, -0.14, 0);
     }
     shape.closePath();
   });
@@ -61,9 +61,11 @@ function buildWingOverlay(side: -1 | 1, spec: BirdSpeciesSpec): THREE.Shape {
       shape.quadraticCurveTo(-0.04, s * sp * 0.86, -0.24, s * sp);
       shape.quadraticCurveTo(-0.27, s * sp * 0.74, -0.24, s * sp * 0.6);
     } else {
-      shape.moveTo(0.1, s * sp * 0.64);
-      shape.quadraticCurveTo(0.02, s * sp * 0.9, -0.11, s * sp);
-      shape.quadraticCurveTo(-0.24, s * sp * 0.86, -0.26, s * sp * 0.62);
+      // Dark outer primaries and trailing edge on the bullfinch wing.
+      shape.moveTo(0.02, s * sp * 0.58);
+      shape.quadraticCurveTo(-0.11, s * sp * 0.86, -0.29, s * sp);
+      shape.quadraticCurveTo(-0.24, s * sp * 0.68, -0.19, s * sp * 0.42);
+      shape.lineTo(-0.1, s * sp * 0.52);
     }
     shape.closePath();
   });
@@ -84,17 +86,28 @@ export function buildWingGeometry(side: -1 | 1, spec: BirdSpeciesSpec): THREE.Bu
   batch.add(extrude(overlay, 0.007), palette.wingTip, { y: 0.024, rotate: rot });
   batch.add(extrude(overlay, 0.006), palette.wingTip, { y: -0.013, rotate: rot });
 
-  // Crisp snow-white wingbar across the bullfinch wing.
-  if (palette.wingPatch) {
-    const bar = shapeFrom(shape => {
-      shape.moveTo(0.05, s * sp * 0.14);
-      shape.lineTo(-0.03, s * sp * 0.72);
-      shape.lineTo(-0.14, s * sp * 0.68);
-      shape.lineTo(-0.07, s * sp * 0.12);
+  // Soft dove-grey inner shoulder coverts on the upper bullfinch wing.
+  if (palette.wingCovert) {
+    const covert = shapeFrom(shape => {
+      shape.moveTo(0.12, s * sp * 0.02);
+      shape.quadraticCurveTo(0.12, s * sp * 0.22, 0.06, s * sp * 0.36);
+      shape.lineTo(-0.04, s * sp * 0.28);
+      shape.lineTo(-0.08, s * sp * 0.02);
       shape.closePath();
     });
-    batch.add(extrude(bar, 0.007), palette.wingPatch, { y: 0.024, rotate: rot });
-    batch.add(extrude(bar, 0.006), palette.wingPatch, { y: -0.013, rotate: rot });
+    batch.add(extrude(covert, 0.007), palette.wingCovert, { y: 0.024, rotate: rot });
+  }
+
+  // Thin white covert wingbar on the upper side only (never a bold band underneath).
+  if (palette.wingPatch) {
+    const bar = shapeFrom(shape => {
+      shape.moveTo(0.03, s * sp * 0.24);
+      shape.lineTo(-0.06, s * sp * 0.56);
+      shape.lineTo(-0.088, s * sp * 0.54);
+      shape.lineTo(0.0, s * sp * 0.22);
+      shape.closePath();
+    });
+    batch.add(extrude(bar, 0.007), palette.wingPatch, { y: 0.025, rotate: rot });
   }
 
   const geometry = batch.build();

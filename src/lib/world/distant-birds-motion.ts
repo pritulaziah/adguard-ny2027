@@ -47,10 +47,10 @@ export interface FlightRuntime {
   yaw?: number;
   /** Angular turn rate (rad/s) used to bank wings into turns. */
   yawRate: number;
-  /** Clamped reader anchor X for the autumn migrating flock. */
-  anchorX?: number;
-  /** Progress clock for the autumn flock, accelerated by forward scrolling. */
-  flockElapsed: number;
+  /** Continuous world X of the autumn migrating flock along startX..endX. */
+  flockX?: number;
+  /** Forward speed of the autumn flock on the current frame. */
+  flockVx: number;
   /** Previous distance for speed fallback when frame.speed is omitted. */
   lastDistance?: number;
 }
@@ -79,18 +79,17 @@ export interface SoarFlightSpec {
 
 export interface FlockFlightSpec {
   mode: 'flock';
-  minX: number;
-  maxX: number;
-  passBefore: number;
-  passAfter: number;
+  /** Start and end world X spanning the entire season without mid-season breaks. */
+  startX: number;
+  endX: number;
   baseY: number;
   climb: number;
   arcY: number;
   baseZ: number;
-  flightDuration: number;
-  period: number;
-  /** Multiplier applied to positive scroll speed to accelerate flock flight. */
-  scrollSpeedGain: number;
+  /** Calm forward migration speed (world units per second) while the reader rests. */
+  idleSpeed: number;
+  /** Share of forward scroll speed added to the migrating flock. */
+  scrollFollow: number;
   members: DistantBirdMember[];
   runtime: FlightRuntime;
 }
@@ -101,6 +100,7 @@ export interface DistantBirdSeasonData {
   season: BirdSeason;
   species: BirdSpecies;
   wingOffset: [number, number, number];
+  dorsalTilt: number;
   centerX: number;
   fadeInStart: number;
   fadeInEnd: number;
@@ -204,7 +204,7 @@ export function createFlightRuntime(): FlightRuntime {
     orbitAngle: 0,
     focusVx: 0,
     yawRate: 0,
-    flockElapsed: 0.4,
+    flockVx: 0,
   };
 }
 
@@ -215,14 +215,18 @@ function resetRuntime(runtime: FlightRuntime, distance: number): void {
   runtime.focusVx = 0;
   runtime.yaw = undefined;
   runtime.yawRate = 0;
-  runtime.anchorX = undefined;
-  runtime.flockElapsed = 0.4;
+  runtime.flockX = undefined;
+  runtime.flockVx = 0;
   runtime.lastDistance = distance;
 }
 
 function targetSoarFocus(flight: SoarFlightSpec, distance: number): number {
   const clamped = THREE.MathUtils.clamp(distance, flight.trackMinX, flight.trackMaxX);
   return THREE.MathUtils.lerp(flight.homeX, clamped, flight.follow);
+}
+
+function initialFlockX(flight: FlockFlightSpec, distance: number): number {
+  return THREE.MathUtils.clamp(distance - 1.5, flight.startX + 0.9, flight.endX - 3.5);
 }
 
 function updateRuntime(
@@ -245,12 +249,11 @@ function updateRuntime(
     runtime.surge = 0;
     runtime.focusVx = 0;
     runtime.yawRate = 0;
+    runtime.flockVx = 0;
     if (flight.mode === 'soar') {
       runtime.focusX = targetSoarFocus(flight, distance);
     } else {
-      const minAnchor = flight.minX + flight.passBefore;
-      const maxAnchor = flight.maxX - flight.passAfter;
-      runtime.anchorX = THREE.MathUtils.clamp(distance + 0.8, minAnchor, maxAnchor);
+      runtime.flockX = THREE.MathUtils.clamp(distance, flight.startX + 1.5, flight.endX - 1.5);
     }
     return;
   }
@@ -291,15 +294,20 @@ function updateRuntime(
       runtime.yawRate = step / dt;
     }
   } else {
-    const minAnchor = flight.minX + flight.passBefore;
-    const maxAnchor = flight.maxX - flight.passAfter;
-    const goalAnchor = THREE.MathUtils.clamp(distance + 0.8, minAnchor, maxAnchor);
-    if (runtime.anchorX === undefined) runtime.anchorX = goalAnchor;
-    else runtime.anchorX += (goalAnchor - runtime.anchorX) * (1 - Math.exp(-dt * 2.2));
+    if (runtime.flockX === undefined) runtime.flockX = initialFlockX(flight, distance);
 
-    // Forward scrolling accelerates the V-flock cleanly; stopping settles into steady gliding.
-    const pace = 1 + Math.max(0, runtime.scrollVel) * flight.scrollSpeedGain;
-    runtime.flockElapsed += dt * pace;
+    // Fly continuously forward across the full season without mid-season resets.
+    // Follow forward scroll closely when near or behind the camera, and taper off
+    // when already ahead so scrolling to Stop 6 catches up instead of pushing past endX.
+    const ahead = runtime.flockX - distance;
+    const catchupScale = 1 - THREE.MathUtils.smoothstep(ahead, -1.0, 5.5);
+    const baseCruise = runtime.scrollVel < -0.2 ? flight.idleSpeed * 0.45 : flight.idleSpeed;
+    const forwardSpeed = baseCruise + Math.max(0, runtime.scrollVel) * flight.scrollFollow * catchupScale;
+    runtime.flockVx = forwardSpeed;
+    runtime.flockX += forwardSpeed * dt;
+
+    // Wrap only at the end of the autumn season, never between screens.
+    if (runtime.flockX > flight.endX) runtime.flockX = flight.startX;
   }
 }
 
@@ -310,6 +318,7 @@ function sampleSoarPose(
   distance: number,
   seasonFade: number,
   reduced: boolean,
+  dorsalTilt: number,
 ): BirdPose {
   const runtime = flight.runtime;
   const clock = reduced ? 0 : (runtime.beatClock || time);
@@ -337,7 +346,7 @@ function sampleSoarPose(
   const yaw = reduced || runtime.yaw === undefined ? Math.atan2(-vz, vx) : runtime.yaw;
   const pitch = THREE.MathUtils.clamp(Math.atan2(vy, Math.hypot(vx, vz) + 0.08), -0.24, 0.24);
   const turnBank = reduced ? 0 : THREE.MathUtils.clamp(-runtime.yawRate * 0.3, -0.42, 0.42);
-  const roll = Math.cos(yaw) * 0.36 + turnBank - sinT * flight.direction * 0.18;
+  const roll = Math.cos(yaw) * dorsalTilt + turnBank - sinT * flight.direction * (dorsalTilt * 0.45);
 
   return {
     x,
@@ -358,27 +367,19 @@ function sampleFlockPose(
   distance: number,
   seasonFade: number,
   reduced: boolean,
+  dorsalTilt: number,
 ): BirdPose {
   const runtime = flight.runtime;
-  const minAnchor = flight.minX + flight.passBefore;
-  const maxAnchor = flight.maxX - flight.passAfter;
-  const anchor = reduced
-    ? THREE.MathUtils.clamp(distance + 0.8, minAnchor, maxAnchor)
-    : (runtime.anchorX ?? THREE.MathUtils.clamp(distance + 0.8, minAnchor, maxAnchor));
+  const span = Math.max(0.01, flight.endX - flight.startX);
+  const leadX = reduced
+    ? THREE.MathUtils.clamp(distance, flight.startX + 1.5, flight.endX - 1.5)
+    : (runtime.flockX ?? initialFlockX(flight, distance));
+  const progress = THREE.MathUtils.clamp((leadX - flight.startX) / span, 0, 1);
 
-  const elapsed = reduced ? flight.flightDuration * 0.46 : runtime.flockElapsed;
-  const local = positiveMod(elapsed, flight.period);
-
-  if (local >= flight.flightDuration || seasonFade <= 0.001) {
-    return { x: anchor, y: flight.baseY, z: flight.baseZ, scale: 0, yaw: 0, pitch: 0, roll: 0, flap: member.glideAngle };
-  }
-
-  const startX = Math.max(flight.minX, anchor - flight.passBefore);
-  const endX = Math.min(flight.maxX, anchor + flight.passAfter);
-  const progress = local / flight.flightDuration;
-  const passFade = Math.min(
-    THREE.MathUtils.smoothstep(progress, 0, 0.1),
-    1 - THREE.MathUtils.smoothstep(progress, 0.9, 1),
+  // Soft fade only at the very ends of the autumn season, never between stops.
+  const edgeFade = Math.min(
+    THREE.MathUtils.smoothstep(progress, 0, 0.03),
+    1 - THREE.MathUtils.smoothstep(progress, 0.97, 1),
   );
 
   const clock = reduced ? 0 : (runtime.beatClock || time);
@@ -388,7 +389,7 @@ function sampleFlockPose(
   const driftY = Math.sin(clock * 0.45 + member.driftSeed * 1.7) * member.driftY;
   const surgeLift = reduced ? 0 : runtime.surge * 0.16;
 
-  const x = THREE.MathUtils.lerp(startX, endX, progress) + member.dx + driftX;
+  const x = leadX + member.dx + driftX;
   const y = flight.baseY
     + member.dy
     + flight.climb * (progress - 0.5)
@@ -396,20 +397,21 @@ function sampleFlockPose(
     + driftY
     + surgeLift
     + wing.lift;
-  const z = flight.baseZ + member.dz + Math.sin(progress * Math.PI) * 0.35;
+  const z = flight.baseZ + member.dz + Math.sin(progress * Math.PI) * 0.4;
 
-  const vx = (endX - startX) / flight.flightDuration;
-  const vy = (flight.climb + flight.arcY * Math.PI * Math.cos(progress * Math.PI)) / flight.flightDuration;
-  const vz = (0.35 * Math.PI * Math.cos(progress * Math.PI)) / flight.flightDuration;
+  const vx = Math.max(flight.idleSpeed, runtime.flockVx);
+  const dProgress = vx / span;
+  const vy = (flight.climb + flight.arcY * Math.PI * Math.cos(progress * Math.PI)) * dProgress;
+  const vz = (0.4 * Math.PI * Math.cos(progress * Math.PI)) * dProgress;
   const yaw = Math.atan2(-vz, vx);
   const pitch = THREE.MathUtils.clamp(Math.atan2(vy, Math.hypot(vx, vz) + 0.05), -0.22, 0.22);
-  const roll = 0.4 + Math.sin(clock * 0.4 + member.driftSeed) * 0.08;
+  const roll = dorsalTilt + Math.sin(clock * 0.4 + member.driftSeed) * 0.07;
 
   return {
     x,
     y,
     z,
-    scale: member.size * passFade * seasonFade,
+    scale: member.size * edgeFade * seasonFade,
     yaw,
     pitch,
     roll,
@@ -425,10 +427,11 @@ export function sampleFlightBirdPose(
   distance: number,
   seasonFade: number,
   reduced: boolean,
+  dorsalTilt = 0.34,
 ): BirdPose {
   return flight.mode === 'soar'
-    ? sampleSoarPose(flight, member, time, distance, seasonFade, reduced)
-    : sampleFlockPose(flight, member, time, distance, seasonFade, reduced);
+    ? sampleSoarPose(flight, member, time, distance, seasonFade, reduced, dorsalTilt)
+    : sampleFlockPose(flight, member, time, distance, seasonFade, reduced, dorsalTilt);
 }
 
 /** Writes all 3D body and wing matrices for one season group. */
@@ -453,7 +456,7 @@ export function updateBirdSeason(
   for (const flight of data.flights) {
     updateRuntime(flight, delta, distance, speed, reduced);
     for (const member of flight.members) {
-      const pose = sampleFlightBirdPose(flight, member, time, distance, seasonFade, reduced);
+      const pose = sampleFlightBirdPose(flight, member, time, distance, seasonFade, reduced, data.dorsalTilt);
       posVec.set(pose.x - data.centerX, pose.y, pose.z);
       bodyEuler.set(pose.roll, pose.yaw, pose.pitch, 'YZX');
       bodyQuat.setFromEuler(bodyEuler);

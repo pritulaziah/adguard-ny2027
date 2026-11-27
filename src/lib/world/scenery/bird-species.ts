@@ -1,7 +1,7 @@
 export type BirdSpecies = 'bullfinch' | 'swallow' | 'stork' | 'goose';
 
 export type WingStyle = 'finch' | 'scythe' | 'broad' | 'angled';
-export type TailStyle = 'notched' | 'forked-long' | 'short' | 'wedge-banded';
+export type TailStyle = 'long-notched' | 'forked-long' | 'short' | 'wedge-banded';
 export type BeakStyle = 'stout' | 'short' | 'spear' | 'bill';
 
 export interface BirdPalette {
@@ -12,6 +12,7 @@ export interface BirdPalette {
   tail: string;
   tailAccent?: string;
   cap?: string;
+  eye?: string;
   throat?: string;
   neck?: string;
   cheek?: string;
@@ -19,6 +20,7 @@ export interface BirdPalette {
   wingTop: string;
   wingTip: string;
   wingUnder: string;
+  wingCovert?: string;
   wingPatch?: string;
 }
 
@@ -29,33 +31,37 @@ export interface BirdSpeciesSpec {
   wingSpan: number;
   neckLength: number;
   bodyDepth: number;
+  dorsalTilt: number;
   wingOffset: [number, number, number];
   palette: BirdPalette;
 }
 
 /** Four distinct 3D folded-paper bird species, one per season. */
 export const BIRD_SPECIES: Record<BirdSpecies, BirdSpeciesSpec> = {
-  // Winter: plump bullfinch with crimson breast, black cap, and snow-white wingbar.
+  // Winter: plump bullfinch with crimson chest, black cap, dove-grey back, and sleek swept wings.
   bullfinch: {
     wingStyle: 'finch',
-    tailStyle: 'notched',
+    tailStyle: 'long-notched',
     beakStyle: 'stout',
     wingSpan: 0.96,
     neckLength: 0,
-    bodyDepth: 0.116,
-    wingOffset: [0.03, 0.03, 0.054],
+    bodyDepth: 0.132,
+    dorsalTilt: 0.16,
+    wingOffset: [0.03, 0.06, 0.062],
     palette: {
-      body: '#7a8a99',
-      back: '#647585',
-      belly: '#d6594c',
-      cap: '#272f38',
-      beak: '#2e363f',
-      tail: '#262e37',
-      tailAccent: '#f5f0e3',
-      wingTop: '#2a333d',
-      wingTip: '#1f262e',
-      wingUnder: '#4c5763',
-      wingPatch: '#f5f0e3',
+      body: '#9faab6',
+      back: '#c6cfd7',
+      belly: '#d94b3e',
+      cap: '#1f252c',
+      eye: '#f5efe0',
+      beak: '#d4be96',
+      tail: '#1f252c',
+      tailAccent: '#f7f3e8',
+      wingTop: '#232b34',
+      wingTip: '#1a2027',
+      wingUnder: '#aeb8c2',
+      wingCovert: '#bcc6cf',
+      wingPatch: '#f3eee2',
     },
   },
   // Spring: sleek barn swallow with rust throat, scythe wings, and long forked tail.
@@ -66,6 +72,7 @@ export const BIRD_SPECIES: Record<BirdSpecies, BirdSpeciesSpec> = {
     wingSpan: 1.16,
     neckLength: 0,
     bodyDepth: 0.092,
+    dorsalTilt: 0.34,
     wingOffset: [0.04, 0.03, 0.042],
     palette: {
       body: '#2f475e',
@@ -87,6 +94,7 @@ export const BIRD_SPECIES: Record<BirdSpecies, BirdSpeciesSpec> = {
     wingSpan: 1.24,
     neckLength: 0.28,
     bodyDepth: 0.112,
+    dorsalTilt: 0.32,
     wingOffset: [0.03, 0.035, 0.052],
     palette: {
       body: '#f1ead8',
@@ -108,6 +116,7 @@ export const BIRD_SPECIES: Record<BirdSpecies, BirdSpeciesSpec> = {
     wingSpan: 1.18,
     neckLength: 0.24,
     bodyDepth: 0.11,
+    dorsalTilt: 0.36,
     wingOffset: [0.02, 0.032, 0.05],
     palette: {
       body: '#6f5649',

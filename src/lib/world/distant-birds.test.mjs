@@ -105,7 +105,12 @@ test('all four seasonal species have distinct 3D paper silhouettes inside season
     const wingBox = new THREE.Box3().setFromBufferAttribute(data.rightWings.geometry.getAttribute('position'));
     const wingSize = wingBox.getSize(new THREE.Vector3());
     expect(bodySize.x, `${data.species} body length`).toBeGreaterThan(1.0);
-    expect(bodySize.z, `${data.species} 3D tail width`).toBeGreaterThan(0.2);
+    expect(bodySize.z, `${data.species} 3D tail width`).toBeGreaterThan(0.18);
+    if (data.species === 'bullfinch') {
+      expect(bodySize.x, 'bullfinch has long avian body and tail').toBeGreaterThan(1.3);
+      expect(wingSize.z / wingSize.x, 'bullfinch wing is sleek and swept, not rounded').toBeGreaterThan(2.1);
+      expect(data.dorsalTilt, 'bullfinch keeps a clear side profile').toBeLessThan(0.22);
+    }
     signatures.set(data.species, `${bodySize.x.toFixed(2)}:${bodySize.z.toFixed(2)}:${wingSize.x.toFixed(2)}:${wingSize.z.toFixed(2)}`);
 
     const bodyColors = data.bodies.geometry.getAttribute('color');
@@ -192,21 +197,53 @@ test('soaring birds fly along with forward and backward scroll and settle when s
   expect(Number.isFinite(flight.runtime.yaw)).toBe(true);
 });
 
-test('autumn migrating geese accelerate with forward scroll and stay stationary in reduced motion', () => {
+test('autumn geese fly continuously across autumn screens without mid-season resets', () => {
   const idle = buildDistantBirds().parts.find(entry => entry.mesh.userData.distantBirds.season === 'autumn');
   const scrolled = buildDistantBirds().parts.find(entry => entry.mesh.userData.distantBirds.season === 'autumn');
 
-  for (let i = 0; i < 45; i++) {
+  let prevX = -Infinity;
+  for (let i = 0; i < 66; i++) {
     const t = i / 30;
-    const d = THREE.MathUtils.lerp(stopX(5), stopX(6), i / 44);
+    const d = THREE.MathUtils.lerp(stopX(5), stopX(6), i / 65);
     idle.apply(idle, { time: t, delta: 1 / 30, reduced: false, distance: stopX(5), speed: 0 });
-    scrolled.apply(scrolled, { time: t, delta: 1 / 30, reduced: false, distance: d, speed: 6.0 });
+    scrolled.apply(scrolled, { time: t, delta: 1 / 30, reduced: false, distance: d, speed: 5.8 });
+
+    const scrollData = scrolled.mesh.userData.distantBirds;
+    const scrollFlock = scrollData.flights[0];
+    const leadPose = sampleFlightBirdPose(scrollFlock, scrollFlock.members[0], t, d, 1, false, scrollData.dorsalTilt);
+    expect(scrolled.mesh.visible, `autumn visible at step ${i}`).toBe(true);
+    expect(leadPose.scale, `no mid-season fade at step ${i}`).toBeCloseTo(scrollFlock.members[0].size, 3);
+    expect(scrollFlock.runtime.flockX, `monotonic forward flight at step ${i}`).toBeGreaterThan(prevX);
+    prevX = scrollFlock.runtime.flockX;
   }
 
   const idleFlock = idle.mesh.userData.distantBirds.flights[0];
   const scrollFlock = scrolled.mesh.userData.distantBirds.flights[0];
-  expect(scrollFlock.runtime.flockElapsed, 'scrolling forward pushes the flock faster').toBeGreaterThan(idleFlock.runtime.flockElapsed + 1.5);
-  expect(scrollFlock.runtime.anchorX, 'flock framing follows reader to Stop 6').toBeGreaterThan(idleFlock.runtime.anchorX + 3);
+  expect(scrollFlock.runtime.flockX, 'scrolling forward carries the flock across autumn').toBeGreaterThan(idleFlock.runtime.flockX + 6);
+  expect(Math.abs(scrollFlock.runtime.flockX - stopX(6)), 'flock stays framed over Stop 6').toBeLessThan(3.5);
+
+  // Pausing to read at Stop 5 and then scrolling to Stop 6 keeps one unbroken flight.
+  const paused = buildDistantBirds().parts.find(entry => entry.mesh.userData.distantBirds.season === 'autumn');
+  const pausedData = paused.mesh.userData.distantBirds;
+  const pausedFlock = pausedData.flights[0];
+  let pt = 0;
+  let lastPausedX = -Infinity;
+  for (let i = 0; i < 450; i++) {
+    pt += 1 / 30;
+    paused.apply(paused, { time: pt, delta: 1 / 30, reduced: false, distance: stopX(5), speed: 0 });
+    expect(pausedFlock.runtime.flockX).toBeGreaterThan(lastPausedX);
+    lastPausedX = pausedFlock.runtime.flockX;
+  }
+  for (let i = 1; i <= 66; i++) {
+    pt += 1 / 30;
+    const d = THREE.MathUtils.lerp(stopX(5), stopX(6), i / 66);
+    paused.apply(paused, { time: pt, delta: 1 / 30, reduced: false, distance: d, speed: 5.8 });
+    const pose = sampleFlightBirdPose(pausedFlock, pausedFlock.members[0], pt, d, 1, false, pausedData.dorsalTilt);
+    expect(pose.scale).toBeCloseTo(pausedFlock.members[0].size, 3);
+    expect(pausedFlock.runtime.flockX).toBeGreaterThan(lastPausedX);
+    lastPausedX = pausedFlock.runtime.flockX;
+  }
+  expect(Math.abs(pausedFlock.runtime.flockX - stopX(6)), 'reader catches up to same flock at Stop 6').toBeLessThan(3.5);
 
   // Reduced motion keeps the flock visible and stationary across time.
   const reduced = buildDistantBirds().parts.find(entry => entry.mesh.userData.distantBirds.season === 'autumn');

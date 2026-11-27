@@ -74,9 +74,9 @@ function winterStartFlights(): FlightGroupSpec[] {
         orbitPeriod: 34, orbitPhase: 0.25, scrollOrbitGain: 0.2, direction: 1,
       },
       [
-        { dx: 0, dy: 0, dz: 0.05, size: 0.4, wingCycle: 7.4, beats: 2, beatDuration: 0.52, beatAmplitude: 0.6, wingPhase: 0.4 },
-        { dx: -0.85, dy: 0.28, dz: -0.16, size: 0.36, wingCycle: 8.1, beats: 2, beatDuration: 0.54, beatAmplitude: 0.58, wingPhase: 3.1 },
-        { dx: 0.72, dy: -0.22, dz: 0.14, size: 0.37, wingCycle: 7.0, beats: 2, beatDuration: 0.5, beatAmplitude: 0.6, wingPhase: 5.5 },
+        { dx: 0, dy: 0, dz: 0.05, size: 0.44, wingCycle: 7.2, beats: 2, beatDuration: 0.44, beatAmplitude: 0.48, wingPhase: 0.4, glideAngle: 0.08 },
+        { dx: -0.95, dy: 0.28, dz: -0.16, size: 0.4, wingCycle: 7.8, beats: 2, beatDuration: 0.46, beatAmplitude: 0.46, wingPhase: 3.1, glideAngle: 0.08 },
+        { dx: 0.82, dy: -0.22, dz: 0.14, size: 0.41, wingCycle: 6.8, beats: 2, beatDuration: 0.43, beatAmplitude: 0.48, wingPhase: 5.5, glideAngle: 0.08 },
       ],
       1.7,
     ),
@@ -122,9 +122,9 @@ function autumnFlights(): FlightGroupSpec[] {
   return [
     {
       mode: 'flock',
-      minX: SEASON_BORDERS.autumn + 3.2, maxX: SEASON_BORDERS.winterEnd - 1.3,
-      passBefore: 4.6, passAfter: 5.4, baseY: 6.55, climb: 0.36, arcY: 0.22, baseZ: -6.95,
-      flightDuration: 15, period: 16.8, scrollSpeedGain: 0.55, runtime: createFlightRuntime(),
+      startX: SEASON_BORDERS.autumn + 2.6, endX: SEASON_BORDERS.winterEnd - 0.3,
+      baseY: 6.55, climb: 0.4, arcY: 0.24, baseZ: -6.95,
+      idleSpeed: 0.45, scrollFollow: 0.92, runtime: createFlightRuntime(),
       members: buildMembers([
         { dx: 0, dy: 0, dz: 0, size: 0.38, wingCycle: 6.6, beats: 3, beatDuration: 0.56, beatAmplitude: 0.56, wingPhase: 0.3 },
         { dx: -0.76, dy: 0.28, dz: -0.14, size: 0.35, wingCycle: 7.0, beats: 2, beatDuration: 0.58, beatAmplitude: 0.56, wingPhase: 2.1 },
@@ -147,8 +147,8 @@ function winterEndFlights(): FlightGroupSpec[] {
         orbitPeriod: 36, orbitPhase: 0.6, scrollOrbitGain: 0.18, direction: 1,
       },
       [
-        { dx: 0, dy: 0, dz: 0.04, size: 0.39, wingCycle: 7.8, beats: 2, beatDuration: 0.54, beatAmplitude: 0.58, wingPhase: 0.9 },
-        { dx: -0.92, dy: 0.26, dz: -0.16, size: 0.36, wingCycle: 8.4, beats: 2, beatDuration: 0.56, beatAmplitude: 0.56, wingPhase: 4.1 },
+        { dx: 0, dy: 0, dz: 0.04, size: 0.43, wingCycle: 7.5, beats: 2, beatDuration: 0.46, beatAmplitude: 0.46, wingPhase: 0.9, glideAngle: 0.08 },
+        { dx: -0.95, dy: 0.26, dz: -0.16, size: 0.4, wingCycle: 8.1, beats: 2, beatDuration: 0.48, beatAmplitude: 0.44, wingPhase: 4.1, glideAngle: 0.08 },
       ],
       47.4,
     ),
@@ -178,6 +178,7 @@ function addSeasonGroup(
     cache.set(setup.species, meshes);
   }
 
+  const spec = BIRD_SPECIES[setup.species];
   const prefix = `distant-birds-${setup.season}-${setup.species}`;
   const bodies = makeInstanced(meshes.body, count, `${prefix}-bodies`);
   const leftWings = makeInstanced(meshes.leftWing, count, `${prefix}-wings-left`);
@@ -187,7 +188,8 @@ function addSeasonGroup(
   const data: DistantBirdSeasonData = {
     season: setup.season,
     species: setup.species,
-    wingOffset: BIRD_SPECIES[setup.species].wingOffset,
+    wingOffset: spec.wingOffset,
+    dorsalTilt: spec.dorsalTilt,
     centerX,
     fadeInStart: setup.fadeInStart,
     fadeInEnd: setup.fadeInEnd,
