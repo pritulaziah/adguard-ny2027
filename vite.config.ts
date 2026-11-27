@@ -13,4 +13,14 @@ export default defineConfig({
   preview: {
     host: 'localhost',
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Keep three.js in its own chunk, so an app change does not invalidate it.
+        manualChunks(id: string) {
+          if (id.includes('node_modules/three')) return 'three';
+        },
+      },
+    },
+  },
 });
