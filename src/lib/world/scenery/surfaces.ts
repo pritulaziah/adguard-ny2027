@@ -6,40 +6,22 @@ import { SEASON_BORDERS } from '../seasons';
 import { TRACK_LENGTH } from '../route';
 import type { SceneryContext } from '../scene-context';
 
-/** Winter rails, the spring garden path, the summer river, and the autumn road. */
+/** Winter snow trails, the spring garden path, the summer river, and the autumn road. */
 export function addTravelSurfaces(ctx: SceneryContext): void {
-  // Winter paper railways: start and finale.
-  const addPaperRailway = (startX: number, endX: number): void => {
+  const addSnowTrail = (startX: number, endX: number): void => {
     const span = endX - startX;
     const center = (startX + endX) / 2;
 
-    const track = ctx.detail('paper-railway', center, 0, 1, 0);
-    track.box(span, 0.036, 0.72, '#d0c8b6', 0, 0.278, 0);
-
-    const sleeperStep = 0.44;
-    const sleeperCount = Math.floor((span - 0.2) / sleeperStep) + 1;
-    const sleepers = new THREE.InstancedMesh(
-      paint(new THREE.BoxGeometry(0.16, 0.024, 0.56), '#967a64'),
-      paperSheet(),
-      sleeperCount,
-    );
-    const dummy = new THREE.Object3D();
-    for (let i = 0; i < sleeperCount; i++) {
-      dummy.position.set(startX + 0.16 + i * sleeperStep - center, 0.309, 0);
-      dummy.updateMatrix();
-      sleepers.setMatrixAt(i, dummy.matrix);
-    }
-    sleepers.instanceMatrix.needsUpdate = true;
-    track.group.add(sleepers);
-
-    for (const zRail of [-0.11, 0.11]) {
-      track.box(span, 0.022, 0.044, '#6d7378', 0, 0.333, zRail);
-      track.box(span, 0.005, 0.026, '#b5babd', 0, 0.347, zRail);
+    const trail = ctx.detail('paper-snow-trail', center, 0, 1, 0);
+    trail.box(span, 0.025, 0.94, '#e7e9e3', 0, 0.292, 0);
+    for (const z of [-0.18, 0.18]) {
+      trail.box(span, 0.008, 0.035, '#cbd5d6', 0, 0.309, z);
+      trail.box(span, 0.013, 0.045, '#f5f2e7', 0, 0.315, z + 0.035);
     }
   };
 
-  addPaperRailway(-10, SEASON_BORDERS.spring - 0.15);
-  addPaperRailway(SEASON_BORDERS.winterEnd, TRACK_LENGTH + 10);
+  addSnowTrail(-10, SEASON_BORDERS.spring - 0.15);
+  addSnowTrail(SEASON_BORDERS.winterEnd, TRACK_LENGTH + 10);
 
   // Spring garden path.
   const springLen = SEASON_BORDERS.summer - SEASON_BORDERS.spring;

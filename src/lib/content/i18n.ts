@@ -17,7 +17,7 @@ interface Copy {
 export const translations: Record<Language, Copy> = {
   en: {
     title: 'AdGuard · 2026 in Review', description: 'A paper journey through the AdGuard 2026 highlights.',
-    scene: 'AdGuard 2026 journey through a paper world', canvas: 'A paper world with a train, four seasons, and stories on the walls',
+    scene: 'AdGuard 2026 journey through a paper world', canvas: 'A paper world with sleighs, four seasons, and stories on the walls',
     loading: 'Unfolding a paper world…', loadError: 'The paper world could not load. Refresh the page to try again.',
     webglError: 'The 3D scene could not open. Refresh the page in a browser with WebGPU or WebGL2 support.', retry: 'Try again',
     language: 'Language', station: 'New Year', story: 'STORY', year: '2026 IN REVIEW', read: 'Read the full story',
@@ -45,7 +45,7 @@ export const translations: Record<Language, Copy> = {
   },
   ru: {
     title: 'AdGuard · Итоги 2026', description: 'Бумажное путешествие AdGuard: шесть историй 2026 года.',
-    scene: 'Бумажное путешествие AdGuard по итогам 2026 года', canvas: 'Бумажный мир: поезд, четыре времени года, истории на стенах',
+    scene: 'Бумажное путешествие AdGuard по итогам 2026 года', canvas: 'Бумажный мир: сани, четыре времени года, истории на стенах',
     loading: 'Раскрываем бумажный мир…', loadError: 'Не удалось загрузить бумажный мир. Обновите страницу, чтобы попробовать ещё раз.',
     webglError: 'Не удалось открыть 3D-сцену. Обновите страницу в браузере с поддержкой WebGPU или WebGL2.', retry: 'Попробовать ещё раз',
     language: 'Язык', station: 'Новогодняя', story: 'ИСТОРИЯ', year: 'ИТОГИ 2026', read: 'Читать историю целиком',

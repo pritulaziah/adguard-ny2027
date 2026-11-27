@@ -2,7 +2,7 @@ import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { createSeasonalFleet } from './vehicles/index.ts';
 import { JOURNEY_END, stopX } from './route.ts';
-import { FINALE_TRAIN_X } from './finale.ts';
+import { FINALE_SLEIGH_X } from './finale.ts';
 
 function inventory(scene) {
   let meshes = 0;
@@ -15,17 +15,17 @@ function inventory(scene) {
   return { meshes, geometries: geometries.size };
 }
 
-test('the festive engine drives through the final scene before stopping', () => {
+test('the festive sleigh drives through the final scene before stopping', () => {
   const scene = new THREE.Scene();
   const fleet = createSeasonalFleet(scene);
-  const engine = scene.getObjectsByProperty('name', 'paper-train-body-0').at(-1);
+  const sleigh = scene.getObjectByName('paper-sleigh-festive');
   fleet.update(stopX(7) - 3, 1 / 60, 0, true);
-  const startX = engine.parent.position.x;
+  const startX = sleigh.position.x;
   fleet.update(stopX(7), 1 / 60, 0, true);
-  expect(engine.parent.position.x).toBeCloseTo(stopX(7), 5);
+  expect(sleigh.position.x).toBeCloseTo(stopX(7), 5);
   fleet.update(JOURNEY_END, 1 / 60, 0, true);
-  expect(Math.abs(engine.parent.position.x - FINALE_TRAIN_X)).toBeLessThan(0.15);
-  expect(engine.parent.position.x - startX).toBeGreaterThan(7.5);
+  expect(Math.abs(sleigh.position.x - FINALE_SLEIGH_X)).toBeLessThan(0.15);
+  expect(sleigh.position.x - startX).toBeGreaterThan(7.5);
 });
 
 test('the fleet merges still parts instead of drawing every detail', () => {
@@ -36,7 +36,10 @@ test('the fleet merges still parts instead of drawing every detail', () => {
   // Before the merge every vehicle detail was its own draw call: 261 meshes.
   // A regression guard with room for a new vehicle detail or two.
   expect(meshes).toBeLessThan(64);
-  expect(meshes).toBeGreaterThan(20);
+  // Each sleigh is now one mesh, without separate team limbs or lanterns.
+  for (const name of ['paper-sleigh-winter', 'paper-sleigh-festive', 'paper-bicycle', 'paper-autumn-minivan', 'paper-hero-punt']) {
+    expect(scene.getObjectByName(name), name).toBeTruthy();
+  }
   expect(geometries).toBeLessThan(meshes);
 });
 

@@ -5,7 +5,7 @@ function progress(time: number): number {
   return t * t;
 }
 
-/** Moves only the final train after the visitor reaches the destination. */
+/** Moves only the final sleigh after the visitor reaches the destination. */
 export class FinaleDeparture {
   private active = false;
   private elapsed = 0;

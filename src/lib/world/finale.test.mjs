@@ -4,7 +4,7 @@ import { FINALE_MASCOTS, FINALE_TREE_X, FINALE_STORY_X, finaleCameraOffset } fro
 import { JOURNEY_END, STORY_END } from './route.ts';
 import { FinaleFireworks } from './year/fireworks.ts';
 
-test('the final framing keeps three rewards together while the train continues', () => {
+test('the final framing keeps three rewards together while the vehicle continues', () => {
   expect(finaleCameraOffset(STORY_END - 6)).toBe(0);
   expect(finaleCameraOffset(STORY_END)).toBe(1.9);
   expect(JOURNEY_END + finaleCameraOffset(JOURNEY_END)).toBeCloseTo(FINALE_TREE_X);

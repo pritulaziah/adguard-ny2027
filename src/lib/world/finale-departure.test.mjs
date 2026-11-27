@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import { FinaleDeparture } from './year/finale-departure.ts';
 
-test('the train moves as soon as the final handoff begins and leaves only once', () => {
+test('the vehicle moves as soon as the final handoff begins and leaves only once', () => {
   const departure = new FinaleDeparture();
   expect(departure.update(20, false, false, 12)).toBe(0);
   expect(departure.complete).toBe(false);
@@ -28,7 +28,7 @@ test('departure and return distances do not depend on the frame rate', () => {
   expect(x).toBeCloseTo(y, 9);
 });
 
-test('reverse travel returns the train smoothly and permits a fresh departure', () => {
+test('reverse travel returns the vehicle smoothly and permits a fresh departure', () => {
   const departure = new FinaleDeparture();
   departure.update(5, true, false, 12);
   const returning = departure.update(0.1, false, false, 12);
@@ -61,7 +61,7 @@ test('a wider screen extends the departure without a jump or backward movement',
   expect(departure.update(5, true, false, 32)).toBe(32);
 });
 
-test('reduced motion leaves the train beyond the screen without animated travel', () => {
+test('reduced motion leaves the vehicle beyond the screen without animated travel', () => {
   const departure = new FinaleDeparture();
   expect(departure.update(0, true, true, 12)).toBe(12);
   expect(departure.complete).toBe(true);

@@ -116,7 +116,7 @@ export class SparkLayer {
       } else {
         spark.object.scale.setScalar(0.0075);
       }
-      // The marks stay visible while the train moves; only distance hides them.
+      // The marks stay visible while the vehicle moves; only distance hides them.
       const visible = Math.abs(spark.x - distance) < 5.6;
       if (spark.object.visible !== visible) {
         spark.object.visible = visible;

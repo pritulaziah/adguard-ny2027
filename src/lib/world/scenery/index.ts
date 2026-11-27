@@ -127,7 +127,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addTransferStations(ctx);
   await pause();
 
-  // Stop 0 (Winter start, x = 0.00): train clamp -10 .. 16.85; deer at +2.05.
+  // Stop 0 (Winter start, x = 0.00): sleigh clamp -10 .. 16.85; deer at +2.05.
   addFir(ctx, -5.2, 3.7, true, false, -2.1);
   addFir(ctx, -3.6, 2.7, true, false, -2.35);
   await pause();
@@ -137,7 +137,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addFir(ctx, 9.1, 3.5, true, false, -1.98);
   await pause();
 
-  // Stop 1 (iOS v4.5.15, winter, x = 12.65): train clamp -10 .. 16.85; snowman at +2.35.
+  // Stop 1 (iOS v4.5.15, winter, x = 12.65): sleigh clamp -10 .. 16.85; snowman at +2.35.
   addFir(ctx, stopX(1) - 4.4, 3.1, true, false, -2.2);
   addSnowman(ctx, stopX(1) + 2.35, true, -1.04);
   addFir(ctx, stopX(1) + 4.45, 3.5, true, false, -2.0);
@@ -192,7 +192,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addAutumnUndergrowth(ctx);
   await pause();
 
-  // The final train passes one decorated tree and the three gift-givers.
+  // The final sleigh passes one decorated tree and the three gift-givers.
   addFir(ctx, STORY_END - 5.9, 3.3, true, false, -2.05);
   addFir(ctx, STORY_END - 4.4, 2.5, true, false, -2.35);
   addFinaleTree(ctx);

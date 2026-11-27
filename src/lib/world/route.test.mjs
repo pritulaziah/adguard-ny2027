@@ -17,7 +17,7 @@ import { SEASON_BORDERS, seasonAt, seasonCenter } from './seasons.ts';
 
 const close = (a, b, tolerance = 1e-6) => expect(Math.abs(a - b), `${a} differs from ${b}`).toBeLessThan(tolerance);
 
-test('the train and carriages follow a straight route without wrapping', () => {
+test('the vehicles follow a straight route without wrapping', () => {
   for (let distance = 0; distance < TRACK_LENGTH * 3; distance += 0.17) {
     for (const offset of [0, 1.55, 3.1]) {
       const p = pointOnTrack(distance - offset);
@@ -72,7 +72,7 @@ test('the final target alone does not start the handoff', () => {
   expect(motion.scroll(-1)).toBe(true);
 });
 
-test('the final handoff starts while the train is still approaching the destination', () => {
+test('the final handoff starts while the vehicle is still approaching the destination', () => {
   const motion = new JourneyMotion();
   reachFinalHandoff(motion);
   expect(motion.moving).toBe(true);
@@ -170,7 +170,7 @@ test('an explicit reset starts a new journey after the final destination', () =>
   expect(motion.distance).toBeGreaterThan(0);
 });
 
-test('the train eases toward the scroll target and rests where the reader stopped', () => {
+test('the vehicle eases toward the scroll target and rests where the reader stopped', () => {
   const motion = new JourneyMotion();
   motion.scroll(7.3);
 
@@ -178,14 +178,14 @@ test('the train eases toward the scroll target and rests where the reader stoppe
   let previous = -1;
   for (let frame = 0; frame < 600; frame++) {
     if (motion.step(1 / 60)) rested++;
-    expect(motion.distance, 'the train never jumps back').toBeGreaterThanOrEqual(previous - 1e-9);
+    expect(motion.distance, 'the vehicle never jumps back').toBeGreaterThanOrEqual(previous - 1e-9);
     previous = motion.distance;
   }
 
   expect(rested).toBe(1);
   expect(motion.moving).toBe(false);
   close(motion.distance, 7.3);
-  expect(motion.distance, 'the train does not snap to a station').not.toBe(STOP_SPACING);
+  expect(motion.distance, 'the vehicle does not snap to a station').not.toBe(STOP_SPACING);
 });
 
 test('scrolling is frame-rate independent', () => {
@@ -200,7 +200,7 @@ test('scrolling is frame-rate independent', () => {
   close(a.distance, b.distance, 1e-6);
 });
 
-test('reset returns the train to the start', () => {
+test('reset returns the vehicle to the start', () => {
   const motion = new JourneyMotion();
   motion.scroll(30);
   for (let i = 0; i < 100; i++) motion.step(1 / 60);
