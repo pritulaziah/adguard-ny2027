@@ -111,9 +111,7 @@ export function seasonalPaperMaterial(ramp: SeasonalRamp, options: SeasonalPaper
   const { verticalWash = 0, grainStrength = 0.085, grainScale = 0.55, cameraX, colorSpread = 1 } = options;
   const material = new MeshBasicNodeMaterial({ side: DoubleSide, toneMapped: false });
 
-  const sampleX = cameraX && colorSpread < 1
-    ? mix(cameraX, positionWorld.x, float(colorSpread))
-    : positionWorld.x;
+  const sampleX = cameraX && colorSpread < 1 ? mix(cameraX, positionWorld.x, float(colorSpread)) : positionWorld.x;
 
   const toColorNode = (hex: ColorRepresentation) => color(new Color(hex));
   let blended = mix(toColorNode(ramp.base), toColorNode(ramp.base), float(0));

@@ -48,9 +48,14 @@ test('fireworks begin after arrival, pause between volleys, and restart on retur
 test('reduced motion keeps small still stars away from the greeting', () => {
   const { fireworks, camera } = setup(true);
   fireworks.update(0.1, STORY_END, true, true);
-  const before = fireworks.group.children.map(mesh => ({ position: mesh.position.toArray(), scale: mesh.scale.toArray() }));
+  const before = fireworks.group.children.map(mesh => ({
+    position: mesh.position.toArray(),
+    scale: mesh.scale.toArray(),
+  }));
   fireworks.update(8, STORY_END, true, true);
-  expect(fireworks.group.children.map(mesh => ({ position: mesh.position.toArray(), scale: mesh.scale.toArray() }))).toEqual(before);
+  expect(
+    fireworks.group.children.map(mesh => ({ position: mesh.position.toArray(), scale: mesh.scale.toArray() })),
+  ).toEqual(before);
   for (const mesh of fireworks.group.children) {
     expect(mesh.material.opacity).toBe(0.65);
     const projected = mesh.position.clone().project(camera);

@@ -42,8 +42,14 @@ test('a dragonfly faces its flight direction instead of sliding sideways', () =>
   const mesh = new THREE.Group();
   const apply = motionFor('dragonfly');
   const part = {
-    mesh, position: new THREE.Vector3(50, 1.5, 0), rotation: new THREE.Euler(),
-    scale: new THREE.Vector3(1, 1, 1), phase: 0, worldX: 50, kind: 'dragonfly', apply,
+    mesh,
+    position: new THREE.Vector3(50, 1.5, 0),
+    rotation: new THREE.Euler(),
+    scale: new THREE.Vector3(1, 1, 1),
+    phase: 0,
+    worldX: 50,
+    kind: 'dragonfly',
+    apply,
   };
   const frame = { time: 0, delta: 1 / 120, reduced: false, distance: 50 };
   const previous = new THREE.Vector3();
@@ -72,7 +78,9 @@ test('river dragonflies stay symmetric, clear of the story and punt, and fade at
   addRiverDragonflies({
     group: root,
     cameraX: null,
-    detail: () => { throw new Error('unexpected detail'); },
+    detail: () => {
+      throw new Error('unexpected detail');
+    },
     place: (name, x, z = 0, scale = 1, y = 0.34) => {
       const group = new THREE.Group();
       group.name = name;

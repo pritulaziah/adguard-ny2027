@@ -10,7 +10,9 @@ export interface JourneyState {
 
 export function createJourneyState() {
   return writable<JourneyState>({
-    ready: false, moving: false, stop: 0,
+    ready: false,
+    moving: false,
+    stop: 0,
     cameraSettled: false,
     discoveries: 0,
   });

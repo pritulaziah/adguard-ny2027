@@ -8,7 +8,7 @@ Link the issue, or write "none".
 
 ## What changed
 
-- 
+-
 
 ## Screenshots
 

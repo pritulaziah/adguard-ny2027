@@ -33,8 +33,26 @@ export function addRiverWillow(ctx: SceneryContext): void {
     s.closePath();
   });
   willow.shape(trunk, '#89745a', 0, 0, -0.025);
-  willow.stroke([[-0.07, 1.71], [-0.45, 2.38], [-1.05, 2.72]], '#89745a', 0.065, -0.02);
-  willow.stroke([[0.13, 1.97], [0.33, 2.77], [0.13, 3.14]], '#89745a', 0.055, -0.02);
+  willow.stroke(
+    [
+      [-0.07, 1.71],
+      [-0.45, 2.38],
+      [-1.05, 2.72],
+    ],
+    '#89745a',
+    0.065,
+    -0.02,
+  );
+  willow.stroke(
+    [
+      [0.13, 1.97],
+      [0.33, 2.77],
+      [0.13, 3.14],
+    ],
+    '#89745a',
+    0.055,
+    -0.02,
+  );
 
   for (let i = 0; i < 19; i++) {
     const offset = -1.21 + i * 0.134;
@@ -53,8 +71,7 @@ export function addRiverWillow(ctx: SceneryContext): void {
     // Separate the full paper volumes, including the leaves, while the strands sway.
     const layer = front ? i - Math.floor(i / 3) - 1 : Math.floor(i / 3);
     const depth = front ? 0.065 + layer * 0.028 : -0.27 + layer * 0.028;
-    const twig = ctx.place('willow-hanging-twig', x + offset * scale,
-      -2.15 + depth * scale, scale, 0.34 + top * scale);
+    const twig = ctx.place('willow-hanging-twig', x + offset * scale, -2.15 + depth * scale, scale, 0.34 + top * scale);
     const batch = new PaperBatch();
     batch.add(shapeGeometry(curtain, 0.006), front ? '#87a571' : '#6c8e65');
     const curve = new THREE.QuadraticBezierCurve3(
@@ -63,17 +80,37 @@ export function addRiverWillow(ctx: SceneryContext): void {
       new THREE.Vector3(bend, -length, 0),
     );
     const points = curve.getPoints(12);
-    batch.add(strokeGeometry(points.map(p => [p.x, p.y]), 0.012, 0.004), '#73835a', { z: 0.01 });
+    batch.add(
+      strokeGeometry(
+        points.map(p => [p.x, p.y]),
+        0.012,
+        0.004,
+      ),
+      '#73835a',
+      { z: 0.01 },
+    );
     for (let j = 1; j < points.length; j++) {
       const p = points[j]!;
       const side = j % 2 ? -1 : 1;
       batch.add(leafGeometry(0.065, 0.21, 0.004), (i + j) % 3 ? '#abc386' : '#789965', {
-        x: p.x, y: p.y, z: 0.018, rotate: [0, 0, Math.PI + side * 0.48],
+        x: p.x,
+        y: p.y,
+        z: 0.018,
+        rotate: [0, 0, Math.PI + side * 0.48],
       });
     }
     const geometry = batch.build();
     if (geometry) twig.add(new THREE.Mesh(geometry, paperSheet()));
     ctx.animate(twig, 'sway');
   }
-  willow.stroke([[-0.2, 0.05], [-0.4, 0], [-0.52, 0.02]], '#89745a', 0.04, 0.04);
+  willow.stroke(
+    [
+      [-0.2, 0.05],
+      [-0.4, 0],
+      [-0.52, 0.02],
+    ],
+    '#89745a',
+    0.04,
+    0.04,
+  );
 }

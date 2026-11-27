@@ -27,12 +27,20 @@ export function addAutumnShrub(ctx: SceneryContext, x: number, z: number, seed: 
   shrub.shape(crown, green, 0, 0, 0, undefined, 0.035);
 
   const berries: Array<[number, number]> = [
-    [-0.54, 0.32], [-0.28, 0.58], [0.16, 0.54], [0.48, 0.32], [-0.04, 0.23],
+    [-0.54, 0.32],
+    [-0.28, 0.58],
+    [0.16, 0.54],
+    [0.48, 0.32],
+    [-0.04, 0.23],
   ];
   berries.forEach(([x, y], index) => {
     const berryX = x + (rng() - 0.5) * 0.06;
     const berryY = y + (rng() - 0.5) * 0.05;
-    for (const [dx, dy] of [[-0.04, 0.016], [0.027, 0.035], [0.002, -0.037]]) {
+    for (const [dx, dy] of [
+      [-0.04, 0.016],
+      [0.027, 0.035],
+      [0.002, -0.037],
+    ]) {
       shrub.oval(0.07, 0.073, index % 2 ? '#af493f' : '#c05a47', berryX + dx, berryY + dy, 0.04, undefined, 0.022);
       shrub.oval(0.018, 0.015, '#e8a084', berryX + dx - 0.009, berryY + dy + 0.013, 0.066, undefined, 0.009);
     }
@@ -40,17 +48,42 @@ export function addAutumnShrub(ctx: SceneryContext, x: number, z: number, seed: 
 }
 
 function addFern(detail: PaperDetail, x: number, height: number, spread: number): void {
-  const fronds: Array<[number, number]> = [[-0.32 * spread, height * 0.7], [-0.14 * spread, height], [0.16 * spread, height * 0.88]];
+  const fronds: Array<[number, number]> = [
+    [-0.32 * spread, height * 0.7],
+    [-0.14 * spread, height],
+    [0.16 * spread, height * 0.88],
+  ];
   fronds.forEach(([reach, top], index) => {
-    detail.stroke([[x, 0.015], [x + reach * 0.35, top * 0.58], [x + reach, top]], '#7b8354', 0.014, 0.045);
+    detail.stroke(
+      [
+        [x, 0.015],
+        [x + reach * 0.35, top * 0.58],
+        [x + reach, top],
+      ],
+      '#7b8354',
+      0.014,
+      0.045,
+    );
     for (let pair = 0; pair < 5; pair++) {
       const t = 0.3 + pair * 0.13;
       const px = x + reach * t * t;
       const py = top * t;
       const width = (1 - t) * 0.18 + 0.025;
       for (const side of [-1, 1]) {
-        detail.cut([[px, py - 0.025], [px + side * width, py + 0.045], [px + side * width * 0.6, py + 0.07], [px, py + 0.018]],
-          (pair + index) % 2 ? '#a1a36c' : '#8c9866', 0, 0, 0.065 + index * 0.008, undefined, 0.014);
+        detail.cut(
+          [
+            [px, py - 0.025],
+            [px + side * width, py + 0.045],
+            [px + side * width * 0.6, py + 0.07],
+            [px, py + 0.018],
+          ],
+          (pair + index) % 2 ? '#a1a36c' : '#8c9866',
+          0,
+          0,
+          0.065 + index * 0.008,
+          undefined,
+          0.014,
+        );
       }
     }
   });
@@ -82,8 +115,7 @@ export function addAutumnFloor(ctx: SceneryContext, x: number, z: number, seed: 
     });
     floor.shape(grass, blade % 2 ? '#bca168' : '#8f9866', 0, 0, 0.01 + blade * 0.008, undefined, 0.015);
     if (blade % 2 === 0) {
-      floor.oval(0.038, 0.095, '#d3b87b', gx + lean, height - 0.015, 0.07,
-        [0, 0, -lean * 2], 0.014);
+      floor.oval(0.038, 0.095, '#d3b87b', gx + lean, height - 0.015, 0.07, [0, 0, -lean * 2], 0.014);
     }
   }
 
@@ -115,7 +147,15 @@ export function addAutumnFloor(ctx: SceneryContext, x: number, z: number, seed: 
     });
     floor.oval(width, 0.04 * size, '#ead3a7', mx + lean, my + stemHeight, layer + 0.022, undefined, 0.018);
     floor.shape(cap, color, mx + lean, my + stemHeight + 0.009 * size, layer + 0.037, undefined, 0.025);
-    floor.oval(0.058 * size, 0.027 * size, '#dec08b', mx + lean - width * 0.15,
-      my + stemHeight + width * 0.3, layer + 0.065, [0, 0, 0.35], 0.008);
+    floor.oval(
+      0.058 * size,
+      0.027 * size,
+      '#dec08b',
+      mx + lean - width * 0.15,
+      my + stemHeight + width * 0.3,
+      layer + 0.065,
+      [0, 0, 0.35],
+      0.008,
+    );
   });
 }

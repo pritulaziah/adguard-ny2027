@@ -15,7 +15,9 @@
     <h1>{article.title}</h1>
     <p class="wall-summary">{article.summary}</p>
     <p class="wall-note">{article.facts.join(' · ')}</p>
-    <button class="story-open" type="button" onclick={() => openStory(article.id)}>{$storyChrome.open} <span aria-hidden="true">↗</span></button>
+    <button class="story-open" type="button" onclick={() => openStory(article.id)}>
+      {$storyChrome.open} <span aria-hidden="true">↗</span>
+    </button>
   {:else}
     <p class="wall-eyebrow">ADGUARD · {$copy.year}</p>
     <h1>{isFinal ? $copy.finalTitle : $copy.welcomeTitle}</h1>

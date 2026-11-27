@@ -4,7 +4,20 @@ import { figureFacts } from './figure-facts.ts';
 import { storyProducts } from './story-modal.ts';
 
 const storyIds = ['ios-pqc', 'quest', 'extension', 'windows', 'mini-android', 'home'];
-const interactionKeys = ['deer', 'snowman', 'fox', 'hedgehog', 'bird', 'frog', 'duck', 'beaver', 'bunny', 'squirrel', 'cat', 'owl'];
+const interactionKeys = [
+  'deer',
+  'snowman',
+  'fox',
+  'hedgehog',
+  'bird',
+  'frog',
+  'duck',
+  'beaver',
+  'bunny',
+  'squirrel',
+  'cat',
+  'owl',
+];
 
 test('every story has a deep dive in both languages', () => {
   expect(Object.keys(deepDives).sort()).toEqual([...storyIds].sort());
@@ -37,7 +50,9 @@ test('only the home story shows screenshots', () => {
       expect(shots?.length, 'home has two screenshots').toBe(2);
       for (const shot of shots ?? []) {
         expect(shot.image.includes('blog/home/'), 'home screenshots come from the home folder').toBe(true);
-        expect(shot.label.length > 0 && shot.title.length > 0 && shot.alt.length > 0, 'home screenshot copy').toBe(true);
+        expect(shot.label.length > 0 && shot.title.length > 0 && shot.alt.length > 0, 'home screenshot copy').toBe(
+          true,
+        );
       }
     }
   }

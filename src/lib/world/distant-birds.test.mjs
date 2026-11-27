@@ -14,7 +14,9 @@ function buildDistantBirds() {
   addDistantBirds({
     group: root,
     cameraX: null,
-    detail: () => { throw new Error('unexpected detail'); },
+    detail: () => {
+      throw new Error('unexpected detail');
+    },
     place: (name, x, z = 0, scale = 1, y = 0.34) => {
       const group = new THREE.Group();
       group.name = name;
@@ -111,24 +113,30 @@ test('all four seasonal species have distinct 3D paper silhouettes inside season
       expect(wingSize.z / wingSize.x, 'bullfinch wing is sleek and swept, not rounded').toBeGreaterThan(2.1);
       expect(data.dorsalTilt, 'bullfinch keeps a clear side profile').toBeLessThan(0.22);
     }
-    signatures.set(data.species, `${bodySize.x.toFixed(2)}:${bodySize.z.toFixed(2)}:${wingSize.x.toFixed(2)}:${wingSize.z.toFixed(2)}`);
+    signatures.set(
+      data.species,
+      `${bodySize.x.toFixed(2)}:${bodySize.z.toFixed(2)}:${wingSize.x.toFixed(2)}:${wingSize.z.toFixed(2)}`,
+    );
 
     const bodyColors = data.bodies.geometry.getAttribute('color');
     const uniqueTones = new Set();
     for (let i = 0; i < bodyColors.count; i += 6) {
-      uniqueTones.add(`${bodyColors.getX(i).toFixed(2)},${bodyColors.getY(i).toFixed(2)},${bodyColors.getZ(i).toFixed(2)}`);
+      uniqueTones.add(
+        `${bodyColors.getX(i).toFixed(2)},${bodyColors.getY(i).toFixed(2)},${bodyColors.getZ(i).toFixed(2)}`,
+      );
     }
     expect(uniqueTones.size, `${data.species} layered paper tones`).toBeGreaterThanOrEqual(3);
 
-    const testDistances = data.season === 'winter-start'
-      ? [stopX(0), stopX(1)]
-      : data.season === 'spring'
-        ? [stopX(2), stopX(3)]
-        : data.season === 'summer'
-          ? [stopX(4)]
-          : data.season === 'autumn'
-            ? [stopX(5), stopX(6)]
-            : [stopX(7), stopX(7) + 6];
+    const testDistances =
+      data.season === 'winter-start'
+        ? [stopX(0), stopX(1)]
+        : data.season === 'spring'
+          ? [stopX(2), stopX(3)]
+          : data.season === 'summer'
+            ? [stopX(4)]
+            : data.season === 'autumn'
+              ? [stopX(5), stopX(6)]
+              : [stopX(7), stopX(7) + 6];
 
     for (const distance of testDistances) {
       part.apply(part, { time: 0, delta: 1 / 60, reduced: false, distance, speed: 0 });
@@ -219,7 +227,9 @@ test('autumn geese fly continuously across autumn screens without mid-season res
 
   const idleFlock = idle.mesh.userData.distantBirds.flights[0];
   const scrollFlock = scrolled.mesh.userData.distantBirds.flights[0];
-  expect(scrollFlock.runtime.flockX, 'scrolling forward carries the flock across autumn').toBeGreaterThan(idleFlock.runtime.flockX + 6);
+  expect(scrollFlock.runtime.flockX, 'scrolling forward carries the flock across autumn').toBeGreaterThan(
+    idleFlock.runtime.flockX + 6,
+  );
   expect(Math.abs(scrollFlock.runtime.flockX - stopX(6)), 'flock stays framed over Stop 6').toBeLessThan(3.5);
 
   // Pausing to read at Stop 5 and then scrolling to Stop 6 keeps one unbroken flight.
@@ -243,7 +253,9 @@ test('autumn geese fly continuously across autumn screens without mid-season res
     expect(pausedFlock.runtime.flockX).toBeGreaterThan(lastPausedX);
     lastPausedX = pausedFlock.runtime.flockX;
   }
-  expect(Math.abs(pausedFlock.runtime.flockX - stopX(6)), 'reader catches up to same flock at Stop 6').toBeLessThan(3.5);
+  expect(Math.abs(pausedFlock.runtime.flockX - stopX(6)), 'reader catches up to same flock at Stop 6').toBeLessThan(
+    3.5,
+  );
 
   // Reduced motion keeps the flock visible and stationary across time.
   const reduced = buildDistantBirds().parts.find(entry => entry.mesh.userData.distantBirds.season === 'autumn');

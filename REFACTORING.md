@@ -28,12 +28,12 @@ then implement it.
 
 ## How to read the catalog
 
-| Mark | Meaning |
-| --- | --- |
-| P0 | Do first. It enables measurement of everything else. |
-| P1 | Clear win with low risk. |
-| P2 | Likely win. Measure on the target device first. |
-| P3 | Optional or large work. |
+| Mark | Meaning                                              |
+| ---- | ---------------------------------------------------- |
+| P0   | Do first. It enables measurement of everything else. |
+| P1   | Clear win with low risk.                             |
+| P2   | Likely win. Measure on the target device first.      |
+| P3   | Optional or large work.                              |
 
 Effort is S for under a day, M for a few days, L for a week or more.
 Risk is low, medium, or high. A high-risk item needs a prototype before
@@ -52,12 +52,12 @@ device pixel ratio 1. It waited for a settled stop, then read
 `renderer.info` and 90 frame intervals.
 
 | Stop | Calls | Triangles | Geom. | Med. ms | P95 ms |
-| --- | --- | --- | --- | --- | --- |
-| 0 | 53 | 250857 | 249 | 6.9 | 7.0 |
-| 2 | 59 | 251585 | 252 | 6.9 | 7.1 |
-| 4 | 95 | 249581 | 256 | 6.9 | 7.1 |
-| 6 | 46 | 248049 | 256 | 7.0 | 7.1 |
-| 7 | 55 | 251109 | 259 | 6.9 | 7.0 |
+| ---- | ----- | --------- | ----- | ------- | ------ |
+| 0    | 53    | 250857    | 249   | 6.9     | 7.0    |
+| 2    | 59    | 251585    | 252   | 6.9     | 7.1    |
+| 4    | 95    | 249581    | 256   | 6.9     | 7.1    |
+| 6    | 46    | 248049    | 256   | 7.0     | 7.1    |
+| 7    | 55    | 251109    | 259   | 6.9     | 7.0    |
 
 Headless frame times are not a device benchmark. The counter values are
 reliable and repeatable.
@@ -446,8 +446,7 @@ loading screen alive, but long sections compete with rendering.
 
 Change: build geometry in a worker and transfer position and colour
 buffers. Keep DOM stories and fonts on the main thread. This needs a
-serializable scene description and the consolidated builder from item
-16.
+serializable scene description and the consolidated builder from item 16.
 
 Expected: smooth loading on slow devices. No steady-state gain.
 
@@ -490,12 +489,12 @@ Priority: P3. Effort: S.
 
 ## Proposed order
 
-| Phase | Items | Reason |
-| --- | --- | --- |
-| 0 | 0, 3, 2, 5 | Measure, stop leaks, remove dead nodes, cut churn |
-| 1 | 4, 1, 12, 7 | Build cost and rendered triangles |
-| 2 | 6, 8, 9, 10, 11, 13, 14 | Steady-state cost and quality checks |
-| 3 | 15, 16, 17, 18 | Structure, worker build, GPU budgets |
+| Phase | Items                   | Reason                                            |
+| ----- | ----------------------- | ------------------------------------------------- |
+| 0     | 0, 3, 2, 5              | Measure, stop leaks, remove dead nodes, cut churn |
+| 1     | 4, 1, 12, 7             | Build cost and rendered triangles                 |
+| 2     | 6, 8, 9, 10, 11, 13, 14 | Steady-state cost and quality checks              |
+| 3     | 15, 16, 17, 18          | Structure, worker build, GPU budgets              |
 
 Item 1 is the largest expected render gain. Item 4 is the largest
 expected build gain. Item 0 must come first.

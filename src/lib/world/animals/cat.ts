@@ -75,8 +75,32 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
 
   // Pointed cat ears with soft blush inner triangles.
   for (const sign of [-1, 1]) {
-    cut(head, [[sign * 0.08, 0.18], [sign * 0.29, 0.45], [sign * 0.31, 0.08]], '#5b6b77', 0, 0, -0.015, 0.032);
-    cut(head, [[sign * 0.13, 0.19], [sign * 0.25, 0.36], [sign * 0.26, 0.14]], '#e5b9ae', 0, 0, 0.018, 0.014);
+    cut(
+      head,
+      [
+        [sign * 0.08, 0.18],
+        [sign * 0.29, 0.45],
+        [sign * 0.31, 0.08],
+      ],
+      '#5b6b77',
+      0,
+      0,
+      -0.015,
+      0.032,
+    );
+    cut(
+      head,
+      [
+        [sign * 0.13, 0.19],
+        [sign * 0.25, 0.36],
+        [sign * 0.26, 0.14],
+      ],
+      '#e5b9ae',
+      0,
+      0,
+      0.018,
+      0.014,
+    );
   }
 
   // Subtle tabby forehead stripes.
@@ -87,8 +111,32 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
   // Soft cream muzzle cheeks, tiny pink triangle nose, and 'w' smile.
   oval(head, 0.17, 0.13, CREAM, -0.08, -0.12, 0.046, 0.016);
   oval(head, 0.17, 0.13, CREAM, 0.08, -0.12, 0.046, 0.016);
-  cut(head, [[-0.042, -0.05], [0.042, -0.05], [0, -0.1]], '#de9187', 0, 0, 0.064, 0.014);
-  stroke(head, [[-0.075, -0.13], [-0.035, -0.16], [0, -0.11], [0.035, -0.16], [0.075, -0.13]], INK, 0.012, 0.066);
+  cut(
+    head,
+    [
+      [-0.042, -0.05],
+      [0.042, -0.05],
+      [0, -0.1],
+    ],
+    '#de9187',
+    0,
+    0,
+    0.064,
+    0.014,
+  );
+  stroke(
+    head,
+    [
+      [-0.075, -0.13],
+      [-0.035, -0.16],
+      [0, -0.11],
+      [0.035, -0.16],
+      [0.075, -0.13],
+    ],
+    INK,
+    0.012,
+    0.066,
+  );
 
   // Warm golden-amber eyes with dark vertical pupils and sparkle.
   const eyes = new THREE.Group();
@@ -98,13 +146,39 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
 
   // Three crisp splayed whiskers per side.
   for (const sign of [-1, 1]) {
-    stroke(head, [[sign * 0.18, -0.07], [sign * 0.42, -0.03]], '#eee6d4', 0.01, 0.068);
-    stroke(head, [[sign * 0.19, -0.11], [sign * 0.44, -0.11]], '#eee6d4', 0.01, 0.068);
-    stroke(head, [[sign * 0.18, -0.15], [sign * 0.41, -0.19]], '#eee6d4', 0.01, 0.068);
+    stroke(
+      head,
+      [
+        [sign * 0.18, -0.07],
+        [sign * 0.42, -0.03],
+      ],
+      '#eee6d4',
+      0.01,
+      0.068,
+    );
+    stroke(
+      head,
+      [
+        [sign * 0.19, -0.11],
+        [sign * 0.44, -0.11],
+      ],
+      '#eee6d4',
+      0.01,
+      0.068,
+    );
+    stroke(
+      head,
+      [
+        [sign * 0.18, -0.15],
+        [sign * 0.41, -0.19],
+      ],
+      '#eee6d4',
+      0.01,
+      0.068,
+    );
   }
 
   ctx.animate(head, 'still', 'cat', 0.42);
   ctx.animate(eyes, 'cat-blink', 'cat');
   ctx.animate(movingTail, 'cat-tail', 'cat');
 }
-

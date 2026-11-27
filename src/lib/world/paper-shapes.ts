@@ -29,17 +29,36 @@ export function cut(
   depth = 0.045,
   side?: string,
 ): THREE.Mesh {
-  const geometry = outline instanceof THREE.Shape
-    ? new THREE.ExtrudeGeometry(outline, { depth, bevelEnabled: false, curveSegments: 12 })
-    : cutGeometry(outline, depth);
+  const geometry =
+    outline instanceof THREE.Shape
+      ? new THREE.ExtrudeGeometry(outline, { depth, bevelEnabled: false, curveSegments: 12 })
+      : cutGeometry(outline, depth);
   return place(parent, geometry, color, x, y, z, side);
 }
 
-export function oval(parent: THREE.Object3D, width: number, height: number, color: string, x = 0, y = 0, z = 0, depth = 0.045): THREE.Mesh {
+export function oval(
+  parent: THREE.Object3D,
+  width: number,
+  height: number,
+  color: string,
+  x = 0,
+  y = 0,
+  z = 0,
+  depth = 0.045,
+): THREE.Mesh {
   return place(parent, ovalGeometry(width, height, depth).clone(), color, x, y, z);
 }
 
-export function rect(parent: THREE.Object3D, width: number, height: number, color: string, x = 0, y = 0, z = 0, depth = 0.045): THREE.Mesh {
+export function rect(
+  parent: THREE.Object3D,
+  width: number,
+  height: number,
+  color: string,
+  x = 0,
+  y = 0,
+  z = 0,
+  depth = 0.045,
+): THREE.Mesh {
   return place(parent, rectGeometry(width, height, depth).clone(), color, x, y, z);
 }
 
@@ -47,9 +66,26 @@ export function stroke(parent: THREE.Object3D, points: Outline, color: string, w
   place(parent, strokeGeometry(points, width), color, 0, 0, z);
 }
 
-export function leaf(parent: THREE.Object3D, width: number, height: number, color: string, x: number, y: number, z = 0): THREE.Mesh {
+export function leaf(
+  parent: THREE.Object3D,
+  width: number,
+  height: number,
+  color: string,
+  x: number,
+  y: number,
+  z = 0,
+): THREE.Mesh {
   const mesh = place(parent, leafGeometry(width, height).clone(), color, x, y, z);
-  stroke(mesh, [[0, 0.07], [0, height * 0.86]], '#b9b491', 0.012, 0.05);
+  stroke(
+    mesh,
+    [
+      [0, 0.07],
+      [0, height * 0.86],
+    ],
+    '#b9b491',
+    0.012,
+    0.05,
+  );
   return mesh;
 }
 

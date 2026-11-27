@@ -6,15 +6,11 @@ import { shapeFrom } from './palette';
 
 /** Sparse plants and snowbanks at the bottom edge (z = +1.15). */
 export async function addForegroundFraming(ctx: SceneryContext, pause: () => Promise<void>): Promise<void> {
-  const fg = (name: string, x: number, y: number, z: number, scale = 1) =>
-    ctx.detail(name, x, z, scale, y);
+  const fg = (name: string, x: number, y: number, z: number, scale = 1) => ctx.detail(name, x, z, scale, y);
 
   // --- 1. Grounded bottom-edge foreground details (rooted at y = 0.26, below vehicle wheels) ---
   // Winter start and finale: isolated paper snowdrifts.
-  const snowBanks = [
-    -3.2, 4.5, 12.8,
-    stopX(7) - 2.8, stopX(7) + 6.8,
-  ];
+  const snowBanks = [-3.2, 4.5, 12.8, stopX(7) - 2.8, stopX(7) + 6.8];
   for (let i = 0; i < snowBanks.length; i++) {
     const x = snowBanks[i];
     const bank = fg('fg-snowbank', x, 0.25, 1.18 + (i % 2) * 0.14);
@@ -30,11 +26,15 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
 
   // Spring foreground meadow grass tufts & tiny daisies.
   for (let x = SEASON_BORDERS.spring + 0.8; x < SEASON_BORDERS.summer - 0.6; x += 7.6) {
-    const tuft = fg('fg-spring-grass', x, 0.25, 1.15 + ((Math.round(x) % 2) * 0.12));
+    const tuft = fg('fg-spring-grass', x, 0.25, 1.15 + (Math.round(x) % 2) * 0.12);
     for (let b = -2; b <= 2; b++) {
       const h = 0.32 + (2 - Math.abs(b)) * 0.05;
       tuft.cut(
-        [[b * 0.08 - 0.03, 0], [b * 0.15, h], [b * 0.08 + 0.03, 0]],
+        [
+          [b * 0.08 - 0.03, 0],
+          [b * 0.15, h],
+          [b * 0.08 + 0.03, 0],
+        ],
         b % 2 === 0 ? '#749664' : '#85a673',
         0,
         0,
@@ -60,7 +60,11 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
     dune.shape(wave, '#91a879', 0, 0, 0, undefined, 0.022);
     for (let b = -1; b <= 1; b++) {
       dune.cut(
-        [[b * 0.11 - 0.025, 0.04], [b * 0.19, 0.44 - Math.abs(b) * 0.06], [b * 0.11 + 0.025, 0.04]],
+        [
+          [b * 0.11 - 0.025, 0.04],
+          [b * 0.19, 0.44 - Math.abs(b) * 0.06],
+          [b * 0.11 + 0.025, 0.04],
+        ],
         '#7b9e84',
         0.25,
         0,
@@ -73,9 +77,7 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
   await pause();
 
   // Small plants frame the autumn road without covering the wheels.
-  const autumnSpots = [
-    [8.1, 202688],
-  ];
+  const autumnSpots = [[8.1, 202688]];
   autumnSpots.forEach(([dx, seed], index) => {
     const x = stopX(5) + dx;
     addAutumnFloor(ctx, x, 1.16 + (index % 2) * 0.1, seed, 0.78);

@@ -126,7 +126,8 @@ const float: PartMotion = (part, frame) => {
 const jump: PartMotion = (part, frame) => {
   const boost = wakeBoost(part, frame);
   const t = frame.time + part.phase;
-  part.mesh.position.y = part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
+  part.mesh.position.y =
+    part.position.y + Math.abs(Math.sin(t * 2.2)) * 0.04 + Math.abs(Math.sin(t * 8.5)) * 0.22 * boost;
 };
 
 const catBlink: PartMotion = (part, frame) => {
@@ -146,9 +147,7 @@ const bunnyEar: PartMotion = (part, frame) => {
 
 const deerEar: PartMotion = (part, frame) => {
   const time = (activityTime(part, frame) + (part.startedAt === undefined ? 2.5 : 0)) % 6.2;
-  part.mesh.rotation.z = part.rotation.z
-    + 0.36 * motionPulse(time, 0.1, 0.2)
-    + 0.24 * motionPulse(time, 0.43, 0.24);
+  part.mesh.rotation.z = part.rotation.z + 0.36 * motionPulse(time, 0.1, 0.2) + 0.24 * motionPulse(time, 0.43, 0.24);
 };
 
 const crabStep: PartMotion = (part, frame) => {

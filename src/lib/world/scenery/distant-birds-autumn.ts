@@ -1,0 +1,152 @@
+import { createFlightRuntime, type FlightGroupSpec } from '../distant-birds-motion';
+import { TRACK_LENGTH, stopX } from '../route';
+import { SEASON_BORDERS } from '../seasons';
+import { buildMembers, soar } from './distant-birds-flights';
+
+export function autumnFlights(): FlightGroupSpec[] {
+  return [
+    {
+      mode: 'flock',
+      startX: SEASON_BORDERS.autumn + 2.6,
+      endX: SEASON_BORDERS.winterEnd - 0.3,
+      baseY: 6.55,
+      climb: 0.4,
+      arcY: 0.24,
+      baseZ: -6.95,
+      idleSpeed: 0.45,
+      scrollFollow: 0.92,
+      runtime: createFlightRuntime(),
+      members: buildMembers(
+        [
+          {
+            dx: 0,
+            dy: 0,
+            dz: 0,
+            size: 0.38,
+            wingCycle: 6.6,
+            beats: 3,
+            beatDuration: 0.56,
+            beatAmplitude: 0.56,
+            wingPhase: 0.3,
+          },
+          {
+            dx: -0.76,
+            dy: 0.28,
+            dz: -0.14,
+            size: 0.35,
+            wingCycle: 7.0,
+            beats: 2,
+            beatDuration: 0.58,
+            beatAmplitude: 0.56,
+            wingPhase: 2.1,
+          },
+          {
+            dx: -1.54,
+            dy: 0.52,
+            dz: -0.26,
+            size: 0.33,
+            wingCycle: 7.4,
+            beats: 2,
+            beatDuration: 0.56,
+            beatAmplitude: 0.55,
+            wingPhase: 4.4,
+          },
+          {
+            dx: -2.32,
+            dy: 0.74,
+            dz: -0.38,
+            size: 0.31,
+            wingCycle: 6.8,
+            beats: 3,
+            beatDuration: 0.57,
+            beatAmplitude: 0.55,
+            wingPhase: 1.5,
+          },
+          {
+            dx: -0.7,
+            dy: -0.24,
+            dz: 0.12,
+            size: 0.36,
+            wingCycle: 7.2,
+            beats: 2,
+            beatDuration: 0.58,
+            beatAmplitude: 0.56,
+            wingPhase: 3.6,
+          },
+          {
+            dx: -1.44,
+            dy: -0.46,
+            dz: 0.22,
+            size: 0.34,
+            wingCycle: 6.7,
+            beats: 2,
+            beatDuration: 0.56,
+            beatAmplitude: 0.55,
+            wingPhase: 5.2,
+          },
+          {
+            dx: -2.22,
+            dy: -0.64,
+            dz: 0.32,
+            size: 0.32,
+            wingCycle: 7.6,
+            beats: 2,
+            beatDuration: 0.58,
+            beatAmplitude: 0.55,
+            wingPhase: 0.8,
+          },
+        ],
+        31.2,
+      ),
+    },
+  ];
+}
+
+export function winterEndFlights(): FlightGroupSpec[] {
+  return [
+    soar(
+      {
+        homeX: stopX(7) + 2.8,
+        trackMinX: SEASON_BORDERS.winterEnd + 4.0,
+        trackMaxX: TRACK_LENGTH - 6.0,
+        follow: 0.72,
+        baseY: 5.88,
+        baseZ: -6.9,
+        radiusX: 2.6,
+        radiusY: 0.22,
+        radiusZ: 0.62,
+        orbitPeriod: 36,
+        orbitPhase: 0.6,
+        scrollOrbitGain: 0.18,
+        direction: 1,
+      },
+      [
+        {
+          dx: 0,
+          dy: 0,
+          dz: 0.04,
+          size: 0.43,
+          wingCycle: 7.5,
+          beats: 2,
+          beatDuration: 0.46,
+          beatAmplitude: 0.46,
+          wingPhase: 0.9,
+          glideAngle: 0.08,
+        },
+        {
+          dx: -0.95,
+          dy: 0.26,
+          dz: -0.16,
+          size: 0.4,
+          wingCycle: 8.1,
+          beats: 2,
+          beatDuration: 0.48,
+          beatAmplitude: 0.44,
+          wingPhase: 4.1,
+          glideAngle: 0.08,
+        },
+      ],
+      47.4,
+    ),
+  ];
+}

@@ -56,8 +56,16 @@ test('every scenery object has its own mesh and keeps colors', async () => {
   expect(unnamed).toBeLessThan(60);
 
   // Each story after winter has one fact on either side of its centre.
-  const pairs = [['fox', 'hedgehog'], ['bird', 'frog'], ['duck', 'beaver'], ['bunny', 'squirrel'], ['cat', 'owl']];
-  expect([...set.objects.keys()].sort()).toEqual(['deer', 'snowman', ...pairs.flat(), 'agnar', 'tengu', 'diana'].sort());
+  const pairs = [
+    ['fox', 'hedgehog'],
+    ['bird', 'frog'],
+    ['duck', 'beaver'],
+    ['bunny', 'squirrel'],
+    ['cat', 'owl'],
+  ];
+  expect([...set.objects.keys()].sort()).toEqual(
+    ['deer', 'snowman', ...pairs.flat(), 'agnar', 'tengu', 'diana'].sort(),
+  );
   expect(set.group.getObjectsByProperty('name', 'paper-snowman')).toHaveLength(1);
   set.group.updateMatrixWorld(true);
   for (const [index, pair] of pairs.entries()) {
@@ -80,12 +88,13 @@ test('every animated part can run its motion', async () => {
   const set = await createPaperScenery(createScalarUniform(0));
   for (const part of set.animated) {
     expect(
-      () => part.apply(part, {
-        time: 1,
-        delta: 1 / 60,
-        reduced: false,
-        distance: part.worldX,
-      }),
+      () =>
+        part.apply(part, {
+          time: 1,
+          delta: 1 / 60,
+          reduced: false,
+          distance: part.worldX,
+        }),
       part.kind,
     ).not.toThrow();
   }
@@ -104,7 +113,9 @@ test('perched birds keep two small feet attached while reacting', async () => {
       const size = new THREE.Box3().setFromObject(foot).getSize(new THREE.Vector3());
       expect(size.y, `${key} feet stay small`).toBeLessThan(0.13);
       const branchFace = body.parent.localToWorld(new THREE.Vector3(0, 0, 0.112));
-      expect(new THREE.Box3().setFromObject(foot).max.z, `${key} toes remain visible over the branch`).toBeGreaterThan(branchFace.z);
+      expect(new THREE.Box3().setFromObject(foot).max.z, `${key} toes remain visible over the branch`).toBeGreaterThan(
+        branchFace.z,
+      );
     }
     const before = feet.map(foot => foot.getWorldPosition(new THREE.Vector3()));
     for (const time of [0.05, 0.2, 0.7]) {
@@ -114,7 +125,10 @@ test('perched birds keep two small feet attached while reacting', async () => {
       }
       set.group.updateMatrixWorld(true);
       feet.forEach((foot, index) => {
-        expect(foot.getWorldPosition(new THREE.Vector3()).distanceTo(before[index]), `${key} keeps its grip during a reaction`).toBeLessThan(1e-6);
+        expect(
+          foot.getWorldPosition(new THREE.Vector3()).distanceTo(before[index]),
+          `${key} keeps its grip during a reaction`,
+        ).toBeLessThan(1e-6);
       });
     }
   }
@@ -144,7 +158,6 @@ test('small animals keep their relative size and pond foliage stays clear', asyn
     expect(Math.abs(flowers.position.x - frogX), 'flowers stay outside the pond').toBeGreaterThan(1.5);
   }
 }, 60000);
-
 
 test('river tree canopies stay clear of the autumn trees and the central story', async () => {
   const { PaperDetail } = await import('./paper-brush.ts');
@@ -196,7 +209,8 @@ test('autumn undergrowth stays inside its season and leaves the road and figures
   expect(floor.some(plant => plant.position.z < -0.5)).toBe(true);
 
   const figures = ['paper-bunny', 'paper-squirrel', 'paper-cat'].map(name => ({
-    name, box: new THREE.Box3().setFromObject(set.group.getObjectByName(name)),
+    name,
+    box: new THREE.Box3().setFromObject(set.group.getObjectByName(name)),
   }));
   for (const plant of [...shrubs, ...floor]) {
     const box = new THREE.Box3().setFromObject(plant);
@@ -206,8 +220,10 @@ test('autumn undergrowth stays inside its season and leaves the road and figures
     expect(box.min.z > 0.5 || box.max.z < -0.5, 'plants stay outside the road').toBe(true);
     if (!floor.includes(plant)) continue;
     for (const figure of figures) {
-      expect(box.max.x < figure.box.min.x - 0.05 || box.min.x > figure.box.max.x + 0.05,
-        `${plant.name} at ${plant.position.x}, z ${plant.position.z}, bounds ${box.min.x}..${box.max.x} leaves space around ${figure.name} ${figure.box.min.x}..${figure.box.max.x}`).toBe(true);
+      expect(
+        box.max.x < figure.box.min.x - 0.05 || box.min.x > figure.box.max.x + 0.05,
+        `${plant.name} at ${plant.position.x}, z ${plant.position.z}, bounds ${box.min.x}..${box.max.x} leaves space around ${figure.name} ${figure.box.min.x}..${figure.box.max.x}`,
+      ).toBe(true);
     }
   }
 }, 60000);

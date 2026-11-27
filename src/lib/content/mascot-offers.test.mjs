@@ -10,7 +10,10 @@ test('each mascot gives the requested product code in both languages', () => {
     ['tengu', 'AdGuard VPN', 'NYVPN2026', 'NYVPNRU2026'],
     ['diana', 'AdGuard DNS', 'NYDNS2026', 'NYDNS2026'],
   ]) {
-    for (const [language, code] of [['en', en], ['ru', ru]]) {
+    for (const [language, code] of [
+      ['en', en],
+      ['ru', ru],
+    ]) {
       const card = objectNoteCopy(key, language);
       expect(card.promo.code).toBe(code);
       expect(card.text).toContain(product);

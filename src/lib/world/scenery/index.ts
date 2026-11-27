@@ -107,10 +107,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   const ctx: SceneryContext = { group, cameraX, detail, place, animate };
 
   // Seamless panoramic ground extending back behind the near ridge (-3.35 .. +12.65).
-  const ground = new THREE.Mesh(
-    new THREE.BoxGeometry(TRACK_LENGTH + 90, 0.18, 16),
-    seasonalPaperMaterial(GROUND_RAMP),
-  );
+  const ground = new THREE.Mesh(new THREE.BoxGeometry(TRACK_LENGTH + 90, 0.18, 16), seasonalPaperMaterial(GROUND_RAMP));
   ground.name = 'seasonal-paper-ground';
   ground.position.set(TRACK_LENGTH / 2, 0.17, 4.65);
   group.add(ground);
@@ -161,8 +158,13 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addPondWithFrog(ctx, stopX(3) + 3.05, -1.04);
   await pause();
   const meadowSpots: Array<[number, number]> = [
-    [-5.3, -0.78], [-3.8, -1.3], [-1.4, -0.75], [-0.4, -1.45],
-    [0.75, -0.82], [5.15, -0.85], [5.95, -1.35],
+    [-5.3, -0.78],
+    [-3.8, -1.3],
+    [-1.4, -0.75],
+    [-0.4, -1.45],
+    [0.75, -0.82],
+    [5.15, -0.85],
+    [5.95, -1.35],
   ];
   meadowSpots.forEach(([dx, dz], idx) =>
     addSpringMeadowCluster(ctx, (dx < 0 ? stopX(2) : stopX(3)) + dx, dz, 202604 + idx * 17),

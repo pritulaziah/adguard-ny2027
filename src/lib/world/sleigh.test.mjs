@@ -9,9 +9,13 @@ test('both sleighs are smaller than the minivan at the same route depth', () => 
   const scene = new THREE.Scene();
   const fleet = createSeasonalFleet(scene);
   fleet.update(0, 1 / 60, 0, true);
-  const van = new THREE.Box3().setFromObject(scene.getObjectByName('paper-autumn-minivan')).getSize(new THREE.Vector3());
+  const van = new THREE.Box3()
+    .setFromObject(scene.getObjectByName('paper-autumn-minivan'))
+    .getSize(new THREE.Vector3());
   for (const style of ['winter', 'festive']) {
-    const size = new THREE.Box3().setFromObject(scene.getObjectByName(`paper-sleigh-${style}`)).getSize(new THREE.Vector3());
+    const size = new THREE.Box3()
+      .setFromObject(scene.getObjectByName(`paper-sleigh-${style}`))
+      .getSize(new THREE.Vector3());
     expect(size.x).toBeLessThan(van.x * 0.85);
     expect(size.y).toBeLessThan(van.y * 0.75);
   }
@@ -50,7 +54,10 @@ test('snow trails behind the sleigh, stops emitting at rest, and clears with red
   expect(positions.some(p => p.z < -0.2)).toBe(true);
   expect(positions.some(p => p.z > 0.2)).toBe(true);
   expect(positions.every(p => p.y >= 0.3)).toBe(true);
-  expect(positions.every(p => p.x < 19 / 30 + SLEIGH_REAR_X), 'all snow stays behind the rear of the sleigh').toBe(true);
+  expect(
+    positions.every(p => p.x < 19 / 30 + SLEIGH_REAR_X),
+    'all snow stays behind the rear of the sleigh',
+  ).toBe(true);
   for (let frame = 0; frame < 60; frame++) update(1, 0, 1 / 60, false);
   expect(snow.count).toBe(0);
   update(1, -5, 1 / 60, false);

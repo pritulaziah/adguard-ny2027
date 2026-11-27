@@ -50,10 +50,7 @@ function addSun(parent: THREE.Object3D): void {
 }
 
 /** Soft sky clouds, winter moons & stars, the summer sun, and distant birds. */
-export async function addSkyDetails(
-  ctx: SceneryContext,
-  pause: () => Promise<void>,
-): Promise<void> {
+export async function addSkyDetails(ctx: SceneryContext, pause: () => Promise<void>): Promise<void> {
   addSkyClouds(ctx.group);
   await pause();
 
@@ -61,8 +58,13 @@ export async function addSkyDetails(
   addMoon(ctx.group, stopX(7) + 10.8, 8.8);
 
   const starSpots: Array<[number, number, number]> = [
-    [-9.2, 9.2, 0.14], [-1.8, 9.5, 0.12], [7.8, 9.2, 0.15], [12.5, 9.4, 0.11],
-    [stopX(7) - 5.5, 9.1, 0.15], [stopX(7) + 1.8, 9.5, 0.13], [stopX(7) + 9.2, 8.9, 0.14],
+    [-9.2, 9.2, 0.14],
+    [-1.8, 9.5, 0.12],
+    [7.8, 9.2, 0.15],
+    [12.5, 9.4, 0.11],
+    [stopX(7) - 5.5, 9.1, 0.15],
+    [stopX(7) + 1.8, 9.5, 0.13],
+    [stopX(7) + 9.2, 8.9, 0.14],
   ];
   for (const [sx, sy, sr] of starSpots) addStar(ctx.group, sx, sy, sr);
   await pause();

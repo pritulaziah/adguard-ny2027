@@ -7,13 +7,25 @@ import { SLEIGH_REAR_X } from './sleigh';
 export function createSleighSnow(scene: THREE.Scene, name: string) {
   const capacity = 72;
   const lifetime = 0.65;
-  const snow = new THREE.InstancedMesh(paint(ovalGeometry(0.08, 0.045, 0.012).clone(), '#f7f2e4'), paperSheet(), capacity);
+  const snow = new THREE.InstancedMesh(
+    paint(ovalGeometry(0.08, 0.045, 0.012).clone(), '#f7f2e4'),
+    paperSheet(),
+    capacity,
+  );
   snow.name = name;
   snow.count = 0;
   snow.frustumCulled = false;
   snow.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   scene.add(snow);
-  const particles = Array.from({ length: capacity }, () => ({ age: lifetime, x: 0, z: 0, vx: 0, vz: 0, lift: 0, size: 1 }));
+  const particles = Array.from({ length: capacity }, () => ({
+    age: lifetime,
+    x: 0,
+    z: 0,
+    vx: 0,
+    vz: 0,
+    lift: 0,
+    size: 1,
+  }));
   const dummy = new THREE.Object3D();
   let cursor = 0;
   let untilNext = 0;

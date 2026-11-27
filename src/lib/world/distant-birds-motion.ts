@@ -165,19 +165,12 @@ function burstStroke(local: number, beats: number, beatDuration: number, amplitu
  * Computes wing flap angle and body lift for long gliding with rare beats,
  * blending smoothly into active wingbeats while the reader scrolls.
  */
-export function sampleWingBeat(
-  member: DistantBirdMember,
-  clock: number,
-  reduced: boolean,
-  surge = 0,
-): WingState {
+export function sampleWingBeat(member: DistantBirdMember, clock: number, reduced: boolean, surge = 0): WingState {
   if (reduced) return { flap: member.glideAngle, lift: 0 };
 
   const local = positiveMod(clock + member.wingPhase, member.wingCycle);
   const autonomous = burstStroke(local, member.beats, member.beatDuration, member.beatAmplitude);
-  const glideDrift = autonomous.flap === 0 && surge < 0.08
-    ? Math.sin(clock * 0.7 + member.wingPhase) * 0.028
-    : 0;
+  const glideDrift = autonomous.flap === 0 && surge < 0.08 ? Math.sin(clock * 0.7 + member.wingPhase) * 0.028 : 0;
 
   let flap = member.glideAngle + glideDrift + autonomous.flap;
   let lift = autonomous.lift;
@@ -238,9 +231,8 @@ function updateRuntime(
 ): void {
   const runtime = flight.runtime;
   const dt = THREE.MathUtils.clamp(delta, 1 / 120, 0.1);
-  const rawSpeed = speed !== undefined
-    ? speed
-    : runtime.lastDistance === undefined ? 0 : (distance - runtime.lastDistance) / dt;
+  const rawSpeed =
+    speed !== undefined ? speed : runtime.lastDistance === undefined ? 0 : (distance - runtime.lastDistance) / dt;
   const clampedSpeed = THREE.MathUtils.clamp(rawSpeed, -14, 14);
   runtime.lastDistance = distance;
 
@@ -321,11 +313,11 @@ function sampleSoarPose(
   dorsalTilt: number,
 ): BirdPose {
   const runtime = flight.runtime;
-  const clock = reduced ? 0 : (runtime.beatClock || time);
+  const clock = reduced ? 0 : runtime.beatClock || time;
   const wing = sampleWingBeat(member, clock, reduced, reduced ? 0 : runtime.surge);
 
-  const omega = (Math.PI * 2) / flight.orbitPeriod
-    + (reduced ? 0 : Math.abs(runtime.scrollVel) * flight.scrollOrbitGain);
+  const omega =
+    (Math.PI * 2) / flight.orbitPeriod + (reduced ? 0 : Math.abs(runtime.scrollVel) * flight.scrollOrbitGain);
   const theta = flight.orbitPhase + (reduced ? 0 : runtime.orbitAngle);
   const cosT = Math.cos(theta);
   const sinT = Math.sin(theta);
@@ -336,7 +328,13 @@ function sampleSoarPose(
   const surgeLift = reduced ? 0 : runtime.surge * 0.18;
 
   const x = focusX + member.dx + flight.radiusX * sinT + driftX;
-  const y = flight.baseY + member.dy + flight.radiusY * (0.55 * Math.sin(theta * 2) + 0.45 * cosT) + driftY + surgeLift + wing.lift;
+  const y =
+    flight.baseY +
+    member.dy +
+    flight.radiusY * (0.55 * Math.sin(theta * 2) + 0.45 * cosT) +
+    driftY +
+    surgeLift +
+    wing.lift;
   const z = flight.baseZ + member.dz + flight.radiusZ * cosT;
 
   const vx = (reduced ? 0 : runtime.focusVx) + flight.radiusX * omega * flight.direction * cosT;
@@ -382,7 +380,7 @@ function sampleFlockPose(
     1 - THREE.MathUtils.smoothstep(progress, 0.97, 1),
   );
 
-  const clock = reduced ? 0 : (runtime.beatClock || time);
+  const clock = reduced ? 0 : runtime.beatClock || time;
   const wing = sampleWingBeat(member, clock, reduced, reduced ? 0 : runtime.surge);
 
   const driftX = Math.sin(clock * 0.33 + member.driftSeed) * member.driftX;
@@ -390,19 +388,20 @@ function sampleFlockPose(
   const surgeLift = reduced ? 0 : runtime.surge * 0.16;
 
   const x = leadX + member.dx + driftX;
-  const y = flight.baseY
-    + member.dy
-    + flight.climb * (progress - 0.5)
-    + flight.arcY * Math.sin(progress * Math.PI)
-    + driftY
-    + surgeLift
-    + wing.lift;
+  const y =
+    flight.baseY +
+    member.dy +
+    flight.climb * (progress - 0.5) +
+    flight.arcY * Math.sin(progress * Math.PI) +
+    driftY +
+    surgeLift +
+    wing.lift;
   const z = flight.baseZ + member.dz + Math.sin(progress * Math.PI) * 0.4;
 
   const vx = Math.max(flight.idleSpeed, runtime.flockVx);
   const dProgress = vx / span;
   const vy = (flight.climb + flight.arcY * Math.PI * Math.cos(progress * Math.PI)) * dProgress;
-  const vz = (0.4 * Math.PI * Math.cos(progress * Math.PI)) * dProgress;
+  const vz = 0.4 * Math.PI * Math.cos(progress * Math.PI) * dProgress;
   const yaw = Math.atan2(-vz, vx);
   const pitch = THREE.MathUtils.clamp(Math.atan2(vy, Math.hypot(vx, vz) + 0.05), -0.22, 0.22);
   const roll = dorsalTilt + Math.sin(clock * 0.4 + member.driftSeed) * 0.07;
@@ -493,12 +492,5 @@ export function updateBirdSeason(
 export const distantBirds: PartMotion = (part, frame) => {
   const data = part.mesh.userData.distantBirds as DistantBirdSeasonData | undefined;
   if (!data) return;
-  part.mesh.visible = updateBirdSeason(
-    data,
-    frame.time,
-    frame.delta,
-    frame.distance,
-    frame.reduced,
-    frame.speed,
-  );
+  part.mesh.visible = updateBirdSeason(data, frame.time, frame.delta, frame.distance, frame.reduced, frame.speed);
 };

@@ -20,7 +20,9 @@ beforeEach(() => {
   distance = 0;
   canScroll = true;
   input = new WorldInput({
-    scrollBy: units => { distance += units; },
+    scrollBy: units => {
+      distance += units;
+    },
     setPointer: () => {},
     canScroll: () => canScroll,
   });

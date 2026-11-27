@@ -7,7 +7,12 @@ import type { SceneryContext } from '../../scene-context';
 /** Small clusters of cattails swaying along the river bank. */
 export function addRiverReeds(ctx: SceneryContext): void {
   const center = stopX(4);
-  for (const [dx, z, scale] of [[-5, -0.85, 0.9], [-2.1, -1.15, 0.75], [1.5, -1.25, 0.65], [4.5, -0.95, 1.0]]) {
+  for (const [dx, z, scale] of [
+    [-5, -0.85, 0.9],
+    [-2.1, -1.15, 0.75],
+    [1.5, -1.25, 0.65],
+    [4.5, -0.95, 1.0],
+  ]) {
     const reeds = ctx.place('river-cattails', center + dx, z, scale);
     const batch = new PaperBatch();
     for (let i = 0; i < 5; i++) {

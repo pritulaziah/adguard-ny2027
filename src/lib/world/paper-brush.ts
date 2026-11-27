@@ -93,7 +93,15 @@ export function ovalGeometry(width: number, height: number, depth = FACE_DEPTH):
 
 export function rectGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
   return template(`rect:${width}:${height}:${depth}`, () =>
-    extrude(shapeFrom([[-width / 2, 0], [width / 2, 0], [width / 2, height], [-width / 2, height]]), depth),
+    extrude(
+      shapeFrom([
+        [-width / 2, 0],
+        [width / 2, 0],
+        [width / 2, height],
+        [-width / 2, height],
+      ]),
+      depth,
+    ),
   );
 }
 
@@ -169,7 +177,7 @@ export function shapeGeometry(shape: THREE.Shape, depth = FACE_DEPTH): THREE.Buf
 export function starGeometry(radius: number, depth = FACE_DEPTH): THREE.BufferGeometry {
   return template(`star:${radius}:${depth}`, () => {
     const outline: Outline = Array.from({ length: 10 }, (_, i) => {
-      const angle = Math.PI / 2 + i * Math.PI / 5;
+      const angle = Math.PI / 2 + (i * Math.PI) / 5;
       const r = radius * (i % 2 ? 0.45 : 1);
       return [Math.cos(angle) * r, Math.sin(angle) * r] as [number, number];
     });
@@ -184,9 +192,19 @@ export function strokeGeometry(points: Outline, width: number, depth = STROKE_DE
     const [x, y] = points[i - 1];
     const [xx, yy] = points[i];
     const length = Math.hypot(xx - x, yy - y) || 1;
-    const nx = -(yy - y) / length * width / 2;
-    const ny = (xx - x) / length * width / 2;
-    segments.push(extrude(shapeFrom([[x + nx, y + ny], [x - nx, y - ny], [xx - nx, yy - ny], [xx + nx, yy + ny]]), depth));
+    const nx = ((-(yy - y) / length) * width) / 2;
+    const ny = (((xx - x) / length) * width) / 2;
+    segments.push(
+      extrude(
+        shapeFrom([
+          [x + nx, y + ny],
+          [x - nx, y - ny],
+          [xx - nx, yy - ny],
+          [xx + nx, yy + ny],
+        ]),
+        depth,
+      ),
+    );
   }
   if (segments.length === 1) return segments[0];
   const merged = mergeGeometries(segments, false);
@@ -259,11 +277,7 @@ export class PaperBatch {
     }
 
     const base = new THREE.Color(color);
-    const edge = folded
-      ? side === undefined
-        ? base.clone().multiplyScalar(FOLD)
-        : new THREE.Color(side)
-      : base;
+    const edge = folded ? (side === undefined ? base.clone().multiplyScalar(FOLD) : new THREE.Color(side)) : base;
     const positions = this.positions;
     const colors = this.colors;
     for (let i = 0; i < total; i++) {
@@ -356,53 +370,142 @@ export class PaperDetail {
     return new PaperDetail(this.group, name, x, y, z, scale, frame, this.batch);
   }
 
-  raw(geometry: THREE.BufferGeometry, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+  raw(
+    geometry: THREE.BufferGeometry,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+  ): this {
     this.batch.add(geometry, color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  box(width: number, height: number, depth: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+  box(
+    width: number,
+    height: number,
+    depth: number,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+  ): this {
     return this.raw(new THREE.BoxGeometry(width, height, depth), color, x, y, z, rotate);
   }
 
-  cut(outline: Outline, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+  cut(
+    outline: Outline,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+    depth = FACE_DEPTH,
+  ): this {
     this.batch.add(cutGeometry(outline, depth), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  shape(shape: THREE.Shape, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+  shape(
+    shape: THREE.Shape,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+    depth = FACE_DEPTH,
+  ): this {
     this.batch.add(shapeGeometry(shape, depth), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  oval(width: number, height: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+  oval(
+    width: number,
+    height: number,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+    depth = FACE_DEPTH,
+  ): this {
     this.batch.add(ovalGeometry(width, height, depth), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  rect(width: number, height: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number], depth = FACE_DEPTH): this {
+  rect(
+    width: number,
+    height: number,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+    depth = FACE_DEPTH,
+  ): this {
     this.batch.add(rectGeometry(width, height, depth), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  mapleLeaf(size: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+  mapleLeaf(
+    size: number,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+  ): this {
     this.batch.add(mapleLeafGeometry(size), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  oakLeaf(size: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+  oakLeaf(
+    size: number,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+  ): this {
     this.batch.add(oakLeafGeometry(size), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  birchLeaf(size: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+  birchLeaf(
+    size: number,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+  ): this {
     this.batch.add(birchLeafGeometry(size), color, this.world({ x, y, z, rotate }));
     return this;
   }
 
-  leaf(width: number, height: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0, rotate?: [number, number, number]): this {
+  leaf(
+    width: number,
+    height: number,
+    color: THREE.ColorRepresentation,
+    x = 0,
+    y = 0,
+    z = 0,
+    rotate?: [number, number, number],
+  ): this {
     this.batch.add(leafGeometry(width, height), color, this.world({ x, y, z, rotate }));
-    this.batch.add(strokeGeometry([[0, 0.07], [0, height * 0.86]], 0.012), '#b9b491', this.world({ x, y, z: z + 0.05, rotate }));
+    this.batch.add(
+      strokeGeometry(
+        [
+          [0, 0.07],
+          [0, height * 0.86],
+        ],
+        0.012,
+      ),
+      '#b9b491',
+      this.world({ x, y, z: z + 0.05, rotate }),
+    );
     return this;
   }
 

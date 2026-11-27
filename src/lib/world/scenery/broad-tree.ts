@@ -2,7 +2,8 @@ import type { SceneryContext } from '../scene-context';
 import type { PaperDetail } from '../paper-brush';
 import { shapeFrom } from './palette';
 
-export type TreeVariant = 'spring-green' | 'spring-blossom' | 'summer-alder' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
+export type TreeVariant =
+  'spring-green' | 'spring-blossom' | 'summer-alder' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
 
 interface TreePalette {
   bark: string;
@@ -60,7 +61,12 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
 
   if (p.barkMark) {
     // Horizontal paper dashes on birch trunks.
-    for (const [bx, by, bw] of [[-0.06, 0.32, 0.14], [0.05, 0.62, 0.12], [-0.04, 0.94, 0.13], [0.04, 1.26, 0.11]]) {
+    for (const [bx, by, bw] of [
+      [-0.06, 0.32, 0.14],
+      [0.05, 0.62, 0.12],
+      [-0.04, 0.94, 0.13],
+      [0.04, 1.26, 0.11],
+    ]) {
       tree.rect(bw, 0.028, p.barkMark, bx, by, 0.012, undefined, 0.012);
     }
   }
@@ -91,7 +97,12 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
 
   // Spring blossom accents perched along the canopy edge.
   if (variant === 'spring-blossom') {
-    const blooms: Array<[number, number]> = [[-0.68, 2.24], [0.06, 2.9], [0.62, 2.32], [-0.2, 2.08]];
+    const blooms: Array<[number, number]> = [
+      [-0.68, 2.24],
+      [0.06, 2.9],
+      [0.62, 2.32],
+      [-0.2, 2.08],
+    ];
     for (let b = 0; b < blooms.length; b++) {
       const [bx, by] = blooms[b];
       for (let pt = 0; pt < 5; pt++) {

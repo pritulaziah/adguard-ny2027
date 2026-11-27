@@ -15,23 +15,28 @@ export const paperPortraits = JSON.parse(source) as Record<'agnar' | 'tengu' | '
 
 /** A paper illustration keeps its transparent edge and sits on the scene's ground. */
 export async function addPaperSprite(
-  ctx: SceneryContext, name: MascotInteraction, portrait: PaperPortrait, x: number, z: number, scale: number,
+  ctx: SceneryContext,
+  name: MascotInteraction,
+  portrait: PaperPortrait,
+  x: number,
+  z: number,
+  scale: number,
 ): Promise<void> {
   const url = `${import.meta.env.BASE_URL}mascots/${name}-paper.png`;
   // Geometry checks run without the browser's image loader.
-  const picture = typeof document === 'undefined'
-    ? new THREE.Texture()
-    : await new THREE.TextureLoader().loadAsync(url);
+  const picture =
+    typeof document === 'undefined' ? new THREE.Texture() : await new THREE.TextureLoader().loadAsync(url);
   picture.colorSpace = THREE.SRGBColorSpace;
   picture.anisotropy = 4;
 
   const [left, top, right, bottom] = portrait.crop;
   const height = 1.85;
-  const width = height * (right - left) / (bottom - top);
+  const width = (height * (right - left)) / (bottom - top);
   const geometry = new THREE.PlaneGeometry(width, height);
   const uv = geometry.getAttribute('uv');
   for (let i = 0; i < uv.count; i++) {
-    uv.setXY(i,
+    uv.setXY(
+      i,
       (left + uv.getX(i) * (right - left)) / portrait.width,
       1 - (bottom - uv.getY(i) * (bottom - top)) / portrait.height,
     );

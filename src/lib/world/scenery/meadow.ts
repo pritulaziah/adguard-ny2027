@@ -12,7 +12,19 @@ export function addSpringMeadowCluster(ctx: SceneryContext, x: number, z: number
     const gx = (rng() - 0.5) * 0.55;
     const gh = 0.2 + rng() * 0.16;
     const lean = (rng() - 0.5) * 0.12;
-    cluster.cut([[gx - 0.02, 0], [gx + lean, gh], [gx + 0.02, 0]], g % 2 ? '#84a374' : '#739468', 0, 0, -0.02 + g * 0.006, undefined, 0.016);
+    cluster.cut(
+      [
+        [gx - 0.02, 0],
+        [gx + lean, gh],
+        [gx + 0.02, 0],
+      ],
+      g % 2 ? '#84a374' : '#739468',
+      0,
+      0,
+      -0.02 + g * 0.006,
+      undefined,
+      0.016,
+    );
   }
 
   const stems = 2 + Math.floor(rng() * 2);
@@ -27,7 +39,16 @@ export function addSpringMeadowCluster(ctx: SceneryContext, x: number, z: number
       // Layered 5-petal daisy blossom.
       for (let p = 0; p < 5; p++) {
         const a = (p / 5) * Math.PI * 2;
-        cluster.oval(0.075, 0.11, col, fx + Math.cos(a) * 0.06, fh + Math.sin(a) * 0.06, fz + 0.016, [0, 0, a - Math.PI / 2], 0.014);
+        cluster.oval(
+          0.075,
+          0.11,
+          col,
+          fx + Math.cos(a) * 0.06,
+          fh + Math.sin(a) * 0.06,
+          fz + 0.016,
+          [0, 0, a - Math.PI / 2],
+          0.014,
+        );
       }
       cluster.oval(0.065, 0.065, colors.gold, fx, fh, fz + 0.032, undefined, 0.014);
     } else {

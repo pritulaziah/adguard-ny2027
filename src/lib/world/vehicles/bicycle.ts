@@ -58,13 +58,48 @@ export function createPaperBicycle(scene: THREE.Scene): MovingVehicle {
   });
 
   // Woven front flower basket overflowing with layered spring blooms and leaves.
-  cutout(frame, [[0.36, 0.66], [0.76, 0.66], [0.82, 0.94], [0.34, 0.94]], '#cfa571', 0.08, 0.02);
-  cutout(frame, [[0.37, 0.76], [0.78, 0.76], [0.79, 0.81], [0.36, 0.81]], '#b68c5b', 0.086, 0.025);
-  cutout(frame, [[0.33, 0.91], [0.83, 0.91], [0.83, 0.96], [0.33, 0.96]], '#be9360', 0.09, 0.028);
+  cutout(
+    frame,
+    [
+      [0.36, 0.66],
+      [0.76, 0.66],
+      [0.82, 0.94],
+      [0.34, 0.94],
+    ],
+    '#cfa571',
+    0.08,
+    0.02,
+  );
+  cutout(
+    frame,
+    [
+      [0.37, 0.76],
+      [0.78, 0.76],
+      [0.79, 0.81],
+      [0.36, 0.81],
+    ],
+    '#b68c5b',
+    0.086,
+    0.025,
+  );
+  cutout(
+    frame,
+    [
+      [0.33, 0.91],
+      [0.83, 0.91],
+      [0.83, 0.96],
+      [0.33, 0.96],
+    ],
+    '#be9360',
+    0.09,
+    0.028,
+  );
 
   // Greenery sprigs behind the flowers.
   const leafSpots: Array<[number, number, number, number]> = [
-    [0.41, 0.98, 0.038, 0.45], [0.58, 1.05, 0.042, -0.2], [0.74, 0.98, 0.04, -0.55],
+    [0.41, 0.98, 0.038, 0.45],
+    [0.58, 1.05, 0.042, -0.2],
+    [0.74, 0.98, 0.04, -0.55],
   ];
   for (const [lx, ly, lz, rot] of leafSpots) {
     frame.add(ovalGeometry(0.11, 0.2, 0.02), '#7e9b79', { x: lx, y: ly, z: lz, rotate: [0, 0, rot] });
@@ -91,7 +126,22 @@ export function createPaperBicycle(scene: THREE.Scene): MovingVehicle {
   }
 
   // Small AdGuard shield on the front basket.
-  cutout(frame, [[0, 0.085], [0.07, 0.055], [0.06, -0.02], [0, -0.075], [-0.06, -0.02], [-0.07, 0.055]], '#6b9482', 0.04, 0.076, 0.57, 0.79);
+  cutout(
+    frame,
+    [
+      [0, 0.085],
+      [0.07, 0.055],
+      [0.06, -0.02],
+      [0, -0.075],
+      [-0.06, -0.02],
+      [-0.07, 0.055],
+    ],
+    '#6b9482',
+    0.04,
+    0.076,
+    0.57,
+    0.79,
+  );
 
   const frameGeometry = frame.build();
   if (frameGeometry) {

@@ -28,18 +28,48 @@
   });
 </script>
 
-<main class="experience" class:is-ready={$journey.ready} data-motion={$journey.moving ? 'moving' : 'stopped'} data-stop={$journey.stop} data-settled={$journey.cameraSettled} data-discoveries={$journey.discoveries} aria-label={$copy.scene}>
+<main
+  class="experience"
+  class:is-ready={$journey.ready}
+  data-motion={$journey.moving ? 'moving' : 'stopped'}
+  data-stop={$journey.stop}
+  data-settled={$journey.cameraSettled}
+  data-discoveries={$journey.discoveries}
+  aria-label={$copy.scene}
+>
   <div bind:this={contentLayer} class="world-content"></div>
-  <Stage {journey} layer={contentLayer as HTMLDivElement} onerror={kind => { error = kind; }} />
+  <Stage
+    {journey}
+    layer={contentLayer as HTMLDivElement}
+    onerror={kind => {
+      error = kind;
+    }}
+  />
 
   <header class="masthead">
     <img class="brand-logo" src={`${import.meta.env.BASE_URL}adguard-logo.svg`} alt="AdGuard" width="178" height="42" />
     <div class="masthead-actions">
       <JourneyControls ready={$journey.ready && !error} />
       <div class="language-switch" role="group" aria-label={$copy.language}>
-        <button type="button" lang="en" aria-label="English" aria-pressed={$language === 'en'} onclick={() => setLanguage('en')}>EN</button>
+        <button
+          type="button"
+          lang="en"
+          aria-label="English"
+          aria-pressed={$language === 'en'}
+          onclick={() => setLanguage('en')}
+        >
+          EN
+        </button>
         <span aria-hidden="true">/</span>
-        <button type="button" lang="ru" aria-label="Русский" aria-pressed={$language === 'ru'} onclick={() => setLanguage('ru')}>RU</button>
+        <button
+          type="button"
+          lang="ru"
+          aria-label="Русский"
+          aria-pressed={$language === 'ru'}
+          onclick={() => setLanguage('ru')}
+        >
+          RU
+        </button>
       </div>
     </div>
   </header>
@@ -52,9 +82,11 @@
     </div>
   {/if}
   {#if error}
-    <div class="error-state" role="alert"><p>{$copy[error]}</p><button type="button" onclick={() => window.location.reload()}>{$copy.retry}</button></div>
+    <div class="error-state" role="alert">
+      <p>{$copy[error]}</p>
+      <button type="button" onclick={() => window.location.reload()}>{$copy.retry}</button>
+    </div>
   {/if}
-
 </main>
 
 {#if StoryModal}

@@ -30,7 +30,7 @@ export function addTravelSurfaces(ctx: SceneryContext): void {
   path.box(springLen, 0.055, 0.74, '#dfd5bc', 0, 0.295, 0);
 
   for (let x = SEASON_BORDERS.spring + 0.6; x < SEASON_BORDERS.summer - 0.4; x += 0.95) {
-    path.box(0.42, 0.015, 0.28, '#d1c6aa', x - springCenter, 0.326, ((Math.round(x * 3) % 2) ? 0.09 : -0.09));
+    path.box(0.42, 0.015, 0.28, '#d1c6aa', x - springCenter, 0.326, Math.round(x * 3) % 2 ? 0.09 : -0.09);
   }
 
   // Grass border along garden path.
@@ -68,8 +68,8 @@ export function addTravelSurfaces(ctx: SceneryContext): void {
     for (let dx = 0; dx <= summerLen + 0.2; dx += 0.35) {
       const crest = 0.08 + Math.abs(Math.sin(dx * spec.freq + idx * 1.3)) * spec.amp;
       // Flatten the water at both shores so the low landings stay visible.
-      const shoreFade = THREE.MathUtils.smoothstep(dx, 0.6, 1.2)
-        * THREE.MathUtils.smoothstep(summerLen + 0.2 - dx, 0.6, 1.2);
+      const shoreFade =
+        THREE.MathUtils.smoothstep(dx, 0.6, 1.2) * THREE.MathUtils.smoothstep(summerLen + 0.2 - dx, 0.6, 1.2);
       shape.lineTo(dx, crest * shoreFade);
     }
     shape.lineTo(summerLen + 0.2, -0.08);

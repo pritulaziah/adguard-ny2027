@@ -41,12 +41,13 @@ export function addBunny(ctx: AnimalBuilderContext, x: number, z = -0.98): void 
   const head = cut(bunny.group, headShape, '#e3d7c5', -0.05, 0.88, 0.06, 0.044);
 
   // Long expressive rabbit ears: one tall upright, one gently tilted sideways.
-  const earShape = (w: number, h: number) => shapeFrom(s => {
-    s.moveTo(0, 0);
-    s.bezierCurveTo(-w, h * 0.25, -w * 0.9, h * 0.9, 0, h);
-    s.bezierCurveTo(w * 0.9, h * 0.9, w, h * 0.25, 0, 0);
-    s.closePath();
-  });
+  const earShape = (w: number, h: number) =>
+    shapeFrom(s => {
+      s.moveTo(0, 0);
+      s.bezierCurveTo(-w, h * 0.25, -w * 0.9, h * 0.9, 0, h);
+      s.bezierCurveTo(w * 0.9, h * 0.9, w, h * 0.25, 0, 0);
+      s.closePath();
+    });
 
   const leftEar = cut(head, earShape(0.1, 0.62), '#ddd0bc', -0.1, 0.17, -0.018, 0.03);
   leftEar.rotation.z = 0.12;
@@ -64,9 +65,20 @@ export function addBunny(ctx: AnimalBuilderContext, x: number, z = -0.98): void 
   addSparkleEye(head, -0.12, 0.03, 0.056, 0.04);
   addSparkleEye(head, 0.11, 0.03, 0.056, 0.04);
   oval(head, 0.078, 0.056, '#e2968b', -0.01, -0.06, 0.062, 0.016);
-  stroke(head, [[-0.07, -0.12], [-0.035, -0.15], [-0.01, -0.1], [0.025, -0.15], [0.06, -0.12]], INK, 0.012, 0.064);
+  stroke(
+    head,
+    [
+      [-0.07, -0.12],
+      [-0.035, -0.15],
+      [-0.01, -0.1],
+      [0.025, -0.15],
+      [0.06, -0.12],
+    ],
+    INK,
+    0.012,
+    0.064,
+  );
 
   ctx.animate(head, 'still', 'bunny', 0.64);
   ctx.animate(rightEar, 'bunny-ear', 'bunny');
 }
-

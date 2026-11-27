@@ -10,14 +10,33 @@ function addLantern(detail: PaperDetail): void {
   detail.rect(0.52, 0.08, post, 0.22, 1.45, 0.02);
   detail.oval(0.28, 0.32, frame, 0.42, 1.28, 0.06, undefined, 0.026);
   detail.oval(0.21, 0.25, '#f6dfa4', 0.42, 1.28, 0.089, undefined, 0.014);
-  detail.cut([[0.28, 1.42], [0.42, 1.54], [0.56, 1.42]], frame, 0, 0, 0.11, undefined, 0.025);
+  detail.cut(
+    [
+      [0.28, 1.42],
+      [0.42, 1.54],
+      [0.56, 1.42],
+    ],
+    frame,
+    0,
+    0,
+    0.11,
+    undefined,
+    0.025,
+  );
 }
 
 /** Four short planks connect the land to the river beside the lantern. */
 function addLanding(detail: PaperDetail, direction: -1 | 1): void {
   for (let index = 0; index < 4; index++) {
-    detail.box(0.18, 0.055, 0.88, index % 2 ? '#b69374' : '#c09f7c',
-      direction * 0.08 + (index - 1.5) * 0.19, -0.015, 0.58);
+    detail.box(
+      0.18,
+      0.055,
+      0.88,
+      index % 2 ? '#b69374' : '#c09f7c',
+      direction * 0.08 + (index - 1.5) * 0.19,
+      -0.015,
+      0.58,
+    );
   }
 }
 

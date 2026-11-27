@@ -5,11 +5,7 @@ import { paperSheet } from '../paper-materials';
  * Merges the static child meshes of one object into a single mesh. Animated
  * parts, interaction anchors, and instanced meshes stay separate.
  */
-export function mergeStaticChildren(
-  root: THREE.Object3D,
-  keep: Set<THREE.Object3D>,
-  includeRoot = true,
-): void {
+export function mergeStaticChildren(root: THREE.Object3D, keep: Set<THREE.Object3D>, includeRoot = true): void {
   root.updateWorldMatrix(true, true);
   const inverseRoot = root.matrixWorld.clone().invert();
   const meshes: THREE.Mesh[] = [];

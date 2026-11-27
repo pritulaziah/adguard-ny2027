@@ -43,10 +43,14 @@ interface Story {
 
 const stories: Story[] = [
   {
-    id: 'ios-pqc', slug: 'adguard-for-ios-v4-5-15', color: '#526c84',
-    stat: '4.5.15', image: `${base}blog/ios-pqc.jpg`,
+    id: 'ios-pqc',
+    slug: 'adguard-for-ios-v4-5-15',
+    color: '#526c84',
+    stat: '4.5.15',
+    image: `${base}blog/ios-pqc.jpg`,
     ru: {
-      station: 'Защищённая', title: 'iOS 4.5.15: постквантовая защита',
+      station: 'Защищённая',
+      title: 'iOS 4.5.15: постквантовая защита',
       summary: 'AdGuard для iOS 4.5.15 добавил постквантовую криптографию в DNS и обновил SafariConverterLib.',
       statLabel: 'постквантовая защита DNS',
       facts: ['Постквантовая криптография в DNS', 'Обновлённый SafariConverterLib'],
@@ -54,7 +58,8 @@ const stories: Story[] = [
       imageAlt: 'Иллюстрация AdGuard для iOS',
     },
     en: {
-      station: 'Secure', title: 'iOS v4.5.15: post-quantum',
+      station: 'Secure',
+      title: 'iOS v4.5.15: post-quantum',
       summary: 'AdGuard for iOS 4.5.15 adds post-quantum cryptography to DNS and updates SafariConverterLib.',
       statLabel: 'post-quantum DNS protection',
       facts: ['Post-quantum cryptography in DNS', 'Updated SafariConverterLib'],
@@ -63,19 +68,26 @@ const stories: Story[] = [
     },
   },
   {
-    id: 'quest', slug: 'adguard-adblocker-vr-meta-quest', color: '#876447',
-    stat: 'Meta Quest', image: `${base}blog/quest.jpg`,
+    id: 'quest',
+    slug: 'adguard-adblocker-vr-meta-quest',
+    color: '#876447',
+    stat: 'Meta Quest',
+    image: `${base}blog/quest.jpg`,
     ru: {
-      station: 'Виртуальная', title: 'AdGuard на Meta Quest',
-      summary: 'AdGuard появился на Meta Quest как одно из первых расширений для блокировки рекламы в Meta Quest Browser.',
+      station: 'Виртуальная',
+      title: 'AdGuard на Meta Quest',
+      summary:
+        'AdGuard появился на Meta Quest как одно из первых расширений для блокировки рекламы в Meta Quest Browser.',
       statLabel: 'блокировка рекламы на Meta Quest',
       facts: ['Одно из первых расширений-блокировщиков для Meta Quest Browser', 'Расширение для браузера Meta Quest'],
       hiddenFact: 'Это одно из первых расширений для блокировки рекламы в Meta Quest Browser.',
       imageAlt: 'Иллюстрация AdGuard на Meta Quest',
     },
     en: {
-      station: 'Virtual', title: 'AdGuard on Meta Quest',
-      summary: 'AdGuard comes to Meta Quest as one of the first ad-blocking browser extensions for the Meta Quest Browser.',
+      station: 'Virtual',
+      title: 'AdGuard on Meta Quest',
+      summary:
+        'AdGuard comes to Meta Quest as one of the first ad-blocking browser extensions for the Meta Quest Browser.',
       statLabel: 'ad blocking on Meta Quest',
       facts: ['One of the first ad-blocking extensions for Meta Quest Browser', 'A browser extension for Meta Quest'],
       hiddenFact: 'The extension is one of the first ad blockers built for the Meta Quest Browser.',
@@ -83,19 +95,26 @@ const stories: Story[] = [
     },
   },
   {
-    id: 'extension', slug: 'adguard-browser-extension-v5-4', color: '#56744e',
-    stat: '5.4', image: `${base}blog/extension.jpg`,
+    id: 'extension',
+    slug: 'adguard-browser-extension-v5-4',
+    color: '#56744e',
+    stat: '5.4',
+    image: `${base}blog/extension.jpg`,
     ru: {
-      station: 'Браузерная', title: 'Браузерное расширение 5.4',
-      summary: 'Браузерное расширение AdGuard 5.4 делает фильтрацию надёжнее и предсказуемее, добавляет общие настройки и более понятный интерфейс.',
+      station: 'Браузерная',
+      title: 'Браузерное расширение 5.4',
+      summary:
+        'Браузерное расширение AdGuard 5.4 делает фильтрацию надёжнее и предсказуемее, добавляет общие настройки и более понятный интерфейс.',
       statLabel: 'стабильная фильтрация и общие настройки',
       facts: ['Надёжная и предсказуемая фильтрация', 'Общие настройки и понятный интерфейс'],
       hiddenFact: 'В версии 5.4 настройками можно поделиться.',
       imageAlt: 'Иллюстрация Браузерного расширения AdGuard',
     },
     en: {
-      station: 'Browser', title: 'Browser Extension v5.4',
-      summary: 'AdGuard Browser Extension 5.4 makes filtering more reliable and predictable, adds shareable settings, and clears up the interface.',
+      station: 'Browser',
+      title: 'Browser Extension v5.4',
+      summary:
+        'AdGuard Browser Extension 5.4 makes filtering more reliable and predictable, adds shareable settings, and clears up the interface.',
       statLabel: 'steadier filtering and shared settings',
       facts: ['More reliable and predictable filtering', 'Shareable settings and a clearer interface'],
       hiddenFact: 'Version 5.4 lets you share your settings.',
@@ -103,19 +122,26 @@ const stories: Story[] = [
     },
   },
   {
-    id: 'windows', slug: 'adguard-for-windows-v8-0', color: '#43745b',
-    stat: '8.0', image: `${base}blog/windows.jpg`,
+    id: 'windows',
+    slug: 'adguard-for-windows-v8-0',
+    color: '#43745b',
+    stat: '8.0',
+    image: `${base}blog/windows.jpg`,
     ru: {
-      station: 'Настольная', title: 'Windows 8.0',
-      summary: 'AdGuard для Windows 8.0 получил полностью новый дизайн, общесистемную сетевую фильтрацию и контроль над трафиком приложений и трекингом.',
+      station: 'Настольная',
+      title: 'Windows 8.0',
+      summary:
+        'AdGuard для Windows 8.0 получил полностью новый дизайн, общесистемную сетевую фильтрацию и контроль над трафиком приложений и трекингом.',
       statLabel: 'обновлённое приложение для Windows',
       facts: ['Полностью новый дизайн', 'Общесистемная фильтрация и контроль трафика приложений'],
       hiddenFact: 'В версии 8.0 фильтрация работает на уровне всей системы.',
       imageAlt: 'Иллюстрация AdGuard для Windows',
     },
     en: {
-      station: 'Windows', title: 'Windows v8.0',
-      summary: 'AdGuard for Windows 8.0 brings a full redesign, system-wide network filtering, and control over app traffic and tracking.',
+      station: 'Windows',
+      title: 'Windows v8.0',
+      summary:
+        'AdGuard for Windows 8.0 brings a full redesign, system-wide network filtering, and control over app traffic and tracking.',
       statLabel: 'a redesigned Windows app',
       facts: ['Full redesign', 'System-wide filtering and control over app traffic'],
       hiddenFact: 'Version 8.0 filters traffic across the whole system.',
@@ -123,19 +149,26 @@ const stories: Story[] = [
     },
   },
   {
-    id: 'mini-android', slug: 'adguard-mini-v3-0-for-android', color: '#56744e',
-    stat: '3.0', image: `${base}blog/mini-android.png`,
+    id: 'mini-android',
+    slug: 'adguard-mini-v3-0-for-android',
+    color: '#56744e',
+    stat: '3.0',
+    image: `${base}blog/mini-android.png`,
     ru: {
-      station: 'Мобильная', title: 'Больше, чем браузер',
-      summary: 'AdGuard Content Blocker стал AdGuard Mini для Android. В версии 3.0 защита вышла за пределы браузерных вкладок.',
+      station: 'Мобильная',
+      title: 'Больше, чем браузер',
+      summary:
+        'AdGuard Content Blocker стал AdGuard Mini для Android. В версии 3.0 защита вышла за пределы браузерных вкладок.',
       statLabel: 'AdGuard Mini для Android',
       facts: ['DNS-защита для всего устройства', 'Видеобраузер и статистика'],
       hiddenFact: 'AdGuard Mini доступен в Google Play.',
       imageAlt: 'AdGuard Mini для Android',
     },
     en: {
-      station: 'Mobile', title: 'Beyond the browser',
-      summary: 'AdGuard Content Blocker became AdGuard Mini for Android. Version 3.0 takes protection beyond browser tabs.',
+      station: 'Mobile',
+      title: 'Beyond the browser',
+      summary:
+        'AdGuard Content Blocker became AdGuard Mini for Android. Version 3.0 takes protection beyond browser tabs.',
       statLabel: 'AdGuard Mini for Android',
       facts: ['Device-wide DNS protection', 'Video browser and statistics'],
       hiddenFact: 'AdGuard Mini is available on Google Play.',
@@ -143,19 +176,27 @@ const stories: Story[] = [
     },
   },
   {
-    id: 'home', slug: 'adguard-home-v-1-0', ruSlug: 'adguard-home-v1-0', color: '#43745b',
-    stat: '1.0', image: `${base}blog/home.jpg`,
+    id: 'home',
+    slug: 'adguard-home-v-1-0',
+    ruSlug: 'adguard-home-v1-0',
+    color: '#43745b',
+    stat: '1.0',
+    image: `${base}blog/home.jpg`,
     ru: {
-      station: 'Домашняя', title: 'AdGuard Home 1.0',
-      summary: 'Большой шаг для домашней сети: стабильная версия, обновлённый интерфейс и привычный контроль над защитой всех устройств.',
+      station: 'Домашняя',
+      title: 'AdGuard Home 1.0',
+      summary:
+        'Большой шаг для домашней сети: стабильная версия, обновлённый интерфейс и привычный контроль над защитой всех устройств.',
       statLabel: 'первая стабильная версия',
       facts: ['Обновлённый интерфейс', 'Новая система нумерации версий'],
       hiddenFact: 'Путь AdGuard Home начался с прототипа в 2018 году.',
       imageAlt: 'Иллюстрация AdGuard Home',
     },
     en: {
-      station: 'Home', title: 'AdGuard Home 1.0',
-      summary: 'A big step for your home network: a stable release, a refreshed interface, and control over protection for every device.',
+      station: 'Home',
+      title: 'AdGuard Home 1.0',
+      summary:
+        'A big step for your home network: a stable release, a refreshed interface, and control over protection for every device.',
       statLabel: 'the first stable release',
       facts: ['Refreshed interface', 'New version numbering'],
       hiddenFact: 'AdGuard Home began as a prototype in 2018.',
@@ -165,7 +206,7 @@ const stories: Story[] = [
 ];
 
 function blogSlug(story: Story, language: Language): string {
-  return language === 'ru' ? story.ruSlug ?? story.slug : story.slug;
+  return language === 'ru' ? (story.ruSlug ?? story.slug) : story.slug;
 }
 
 function toArticle(story: Story, language: Language): Article {

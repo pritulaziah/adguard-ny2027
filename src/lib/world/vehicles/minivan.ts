@@ -37,7 +37,18 @@ export function createPaperMinivan(scene: THREE.Scene): MovingVehicle {
   shapedCutout(shell, roofShape, '#f4ebd4', 0.072, 0.002);
 
   // Cream lower accent stripe wrapping the minivan body.
-  cutout(shell, [[-0.88, 0.34], [0.89, 0.34], [0.89, 0.46], [-0.88, 0.46]], '#f3e7cc', 0.074, 0.006);
+  cutout(
+    shell,
+    [
+      [-0.88, 0.34],
+      [0.89, 0.34],
+      [0.89, 0.46],
+      [-0.88, 0.46],
+    ],
+    '#f3e7cc',
+    0.074,
+    0.006,
+  );
 
   // Dark wheel-well backing arches.
   for (const wx of [-0.52, 0.54]) {
@@ -49,15 +60,64 @@ export function createPaperMinivan(scene: THREE.Scene): MovingVehicle {
   }
 
   // Three passenger minivan windows (rear, middle, and sloped cab windshield side).
-  cutout(shell, [[-0.78, 0.6], [-0.78, 0.9], [-0.43, 0.9], [-0.43, 0.6]], '#f5edd6', 0.074, 0.012);
-  cutout(shell, [[-0.35, 0.6], [-0.35, 0.9], [-0.01, 0.9], [-0.01, 0.6]], '#f5edd6', 0.074, 0.012);
-  cutout(shell, [[0.08, 0.6], [0.08, 0.9], [0.32, 0.9], [0.47, 0.65], [0.47, 0.6]], '#f5edd6', 0.074, 0.012);
+  cutout(
+    shell,
+    [
+      [-0.78, 0.6],
+      [-0.78, 0.9],
+      [-0.43, 0.9],
+      [-0.43, 0.6],
+    ],
+    '#f5edd6',
+    0.074,
+    0.012,
+  );
+  cutout(
+    shell,
+    [
+      [-0.35, 0.6],
+      [-0.35, 0.9],
+      [-0.01, 0.9],
+      [-0.01, 0.6],
+    ],
+    '#f5edd6',
+    0.074,
+    0.012,
+  );
+  cutout(
+    shell,
+    [
+      [0.08, 0.6],
+      [0.08, 0.9],
+      [0.32, 0.9],
+      [0.47, 0.65],
+      [0.47, 0.6],
+    ],
+    '#f5edd6',
+    0.074,
+    0.012,
+  );
 
   // Delicate diagonal paper window glints.
   const glints: Array<number[][]> = [
-    [[-0.68, 0.62], [-0.59, 0.88], [-0.53, 0.88], [-0.62, 0.62]],
-    [[-0.25, 0.62], [-0.16, 0.88], [-0.1, 0.88], [-0.19, 0.62]],
-    [[0.15, 0.62], [0.24, 0.88], [0.3, 0.88], [0.21, 0.62]],
+    [
+      [-0.68, 0.62],
+      [-0.59, 0.88],
+      [-0.53, 0.88],
+      [-0.62, 0.62],
+    ],
+    [
+      [-0.25, 0.62],
+      [-0.16, 0.88],
+      [-0.1, 0.88],
+      [-0.19, 0.62],
+    ],
+    [
+      [0.15, 0.62],
+      [0.24, 0.88],
+      [0.3, 0.88],
+      [0.21, 0.62],
+    ],
   ];
   for (const pts of glints) cutout(shell, pts, '#fffbf0', 0.018, 0.052);
 
@@ -76,7 +136,18 @@ export function createPaperMinivan(scene: THREE.Scene): MovingVehicle {
   const lampShape = new THREE.Shape();
   lampShape.absellipse(0, 0, 0.06, 0.068, 0, Math.PI * 2, false, 0);
   shapedCutout(shell, lampShape, '#fce8ae', 0.044, 0.026, 0.87, 0.5);
-  cutout(shell, [[-0.9, 0.48], [-0.83, 0.48], [-0.83, 0.59], [-0.9, 0.59]], '#d5685a', 0.052, 0.02);
+  cutout(
+    shell,
+    [
+      [-0.9, 0.48],
+      [-0.83, 0.48],
+      [-0.83, 0.59],
+      [-0.9, 0.59],
+    ],
+    '#d5685a',
+    0.052,
+    0.02,
+  );
 
   // Full-length minivan roof rack carrying cozy road-trip luggage.
   bar(shell, -0.76, 1.09, 0.24, 1.09, 0.028, '#5c786c', 0.008, 0.034);
@@ -85,13 +156,68 @@ export function createPaperMinivan(scene: THREE.Scene): MovingVehicle {
   bar(shell, 0.14, 1.02, 0.14, 1.09, 0.024, '#5c786c', 0.008, 0.034);
 
   // Vintage leather suitcase + small sage travel bag on the roof rack.
-  cutout(shell, [[-0.68, 1.1], [-0.22, 1.1], [-0.22, 1.3], [-0.68, 1.3]], '#cfa06e', 0.064, 0.008);
+  cutout(
+    shell,
+    [
+      [-0.68, 1.1],
+      [-0.22, 1.1],
+      [-0.22, 1.3],
+      [-0.68, 1.3],
+    ],
+    '#cfa06e',
+    0.064,
+    0.008,
+  );
   for (const sx of [-0.57, -0.33]) {
-    cutout(shell, [[sx - 0.022, 1.1], [sx + 0.022, 1.1], [sx + 0.022, 1.3], [sx - 0.022, 1.3]], '#efe2c6', 0.072, 0.012);
+    cutout(
+      shell,
+      [
+        [sx - 0.022, 1.1],
+        [sx + 0.022, 1.1],
+        [sx + 0.022, 1.3],
+        [sx - 0.022, 1.3],
+      ],
+      '#efe2c6',
+      0.072,
+      0.012,
+    );
   }
-  cutout(shell, [[-0.51, 1.3], [-0.39, 1.3], [-0.39, 1.35], [-0.51, 1.35]], '#8c6548', 0.044, 0.006);
-  cutout(shell, [[-0.16, 1.1], [0.18, 1.1], [0.16, 1.25], [-0.14, 1.25]], '#789886', 0.058, 0.006);
-  cutout(shell, [[-0.03, 1.1], [0.04, 1.1], [0.04, 1.25], [-0.03, 1.25]], '#eadfc4', 0.066, 0.01);
+  cutout(
+    shell,
+    [
+      [-0.51, 1.3],
+      [-0.39, 1.3],
+      [-0.39, 1.35],
+      [-0.51, 1.35],
+    ],
+    '#8c6548',
+    0.044,
+    0.006,
+  );
+  cutout(
+    shell,
+    [
+      [-0.16, 1.1],
+      [0.18, 1.1],
+      [0.16, 1.25],
+      [-0.14, 1.25],
+    ],
+    '#789886',
+    0.058,
+    0.006,
+  );
+  cutout(
+    shell,
+    [
+      [-0.03, 1.1],
+      [0.04, 1.1],
+      [0.04, 1.25],
+      [-0.03, 1.25],
+    ],
+    '#eadfc4',
+    0.066,
+    0.01,
+  );
 
   const shellGeometry = shell.build();
   if (shellGeometry) {

@@ -9,8 +9,34 @@ export function addDeer(ctx: AnimalBuilderContext, x: number, z = -1.08): void {
   addGroundShadow(deer, 0.92, 0.26, '#849099');
 
   // Back legs (darker warm tan, gracefully tapered and tucked behind body).
-  deer.cut([[-0.34, 0.02], [-0.26, 0.02], [-0.21, 0.56], [-0.35, 0.56]], '#9e7c64', 0, 0, -0.06, undefined, 0.032);
-  deer.cut([[0.17, 0.02], [0.25, 0.02], [0.26, 0.56], [0.13, 0.56]], '#9e7c64', 0, 0, -0.06, undefined, 0.032);
+  deer.cut(
+    [
+      [-0.34, 0.02],
+      [-0.26, 0.02],
+      [-0.21, 0.56],
+      [-0.35, 0.56],
+    ],
+    '#9e7c64',
+    0,
+    0,
+    -0.06,
+    undefined,
+    0.032,
+  );
+  deer.cut(
+    [
+      [0.17, 0.02],
+      [0.25, 0.02],
+      [0.26, 0.56],
+      [0.13, 0.56],
+    ],
+    '#9e7c64',
+    0,
+    0,
+    -0.06,
+    undefined,
+    0.032,
+  );
   deer.rect(0.09, 0.065, '#584c45', -0.3, 0.0, -0.055, undefined, 0.036);
   deer.rect(0.09, 0.065, '#584c45', 0.21, 0.0, -0.055, undefined, 0.036);
 
@@ -44,21 +70,76 @@ export function addDeer(ctx: AnimalBuilderContext, x: number, z = -1.08): void {
   deer.shape(tail, CREAM, 0, 0, -0.02, undefined, 0.03);
 
   // Front legs (brighter tan, gracefully tapered and standing cleanly in front).
-  deer.cut([[-0.22, 0.02], [-0.14, 0.02], [-0.09, 0.52], [-0.23, 0.52]], '#b58d6f', 0, 0, 0.035, undefined, 0.034);
-  deer.cut([[0.27, 0.02], [0.35, 0.02], [0.35, 0.56], [0.22, 0.56]], '#b58d6f', 0, 0, 0.035, undefined, 0.034);
+  deer.cut(
+    [
+      [-0.22, 0.02],
+      [-0.14, 0.02],
+      [-0.09, 0.52],
+      [-0.23, 0.52],
+    ],
+    '#b58d6f',
+    0,
+    0,
+    0.035,
+    undefined,
+    0.034,
+  );
+  deer.cut(
+    [
+      [0.27, 0.02],
+      [0.35, 0.02],
+      [0.35, 0.56],
+      [0.22, 0.56],
+    ],
+    '#b58d6f',
+    0,
+    0,
+    0.035,
+    undefined,
+    0.034,
+  );
   deer.rect(0.09, 0.07, '#4e433d', -0.18, 0.0, 0.04, undefined, 0.038);
   deer.rect(0.09, 0.07, '#4e433d', 0.31, 0.0, 0.04, undefined, 0.038);
 
   // Delicate fawn spots on the back.
   const spots: Array<[number, number, number]> = [
-    [-0.24, 0.72, 0.065], [-0.11, 0.74, 0.075], [0.02, 0.69, 0.06],
-    [-0.17, 0.62, 0.055], [-0.03, 0.6, 0.062],
+    [-0.24, 0.72, 0.065],
+    [-0.11, 0.74, 0.075],
+    [0.02, 0.69, 0.06],
+    [-0.17, 0.62, 0.055],
+    [-0.03, 0.6, 0.062],
   ];
   for (const [sx, sy, sr] of spots) deer.oval(sr * 1.15, sr, '#f3e7ce', sx, sy, 0.052, undefined, 0.012);
 
   // Warm knitted winter scarf around the neck.
-  deer.cut([[0.16, 0.82], [0.46, 0.83], [0.47, 0.95], [0.15, 0.94]], '#be6e62', 0, 0, 0.062, undefined, 0.028);
-  deer.cut([[0.15, 0.85], [0.25, 0.85], [0.2, 0.58], [0.09, 0.6]], '#b06156', 0, 0, 0.076, undefined, 0.024);
+  deer.cut(
+    [
+      [0.16, 0.82],
+      [0.46, 0.83],
+      [0.47, 0.95],
+      [0.15, 0.94],
+    ],
+    '#be6e62',
+    0,
+    0,
+    0.062,
+    undefined,
+    0.028,
+  );
+  deer.cut(
+    [
+      [0.15, 0.85],
+      [0.25, 0.85],
+      [0.2, 0.58],
+      [0.09, 0.6],
+    ],
+    '#b06156',
+    0,
+    0,
+    0.076,
+    undefined,
+    0.024,
+  );
   deer.rect(0.29, 0.024, '#efd9b3', 0.31, 0.87, 0.092, undefined, 0.01);
 
   // Deer head facing right with leaf-shaped ears and antlers.
@@ -112,10 +193,48 @@ export function addDeer(ctx: AnimalBuilderContext, x: number, z = -1.08): void {
   cut(head, rightEar, '#b88f70', 0, 0, -0.022, 0.026);
 
   // Delicate branched antlers.
-  stroke(head, [[-0.08, 0.19], [-0.16, 0.46], [-0.26, 0.62]], '#7d6756', 0.032, -0.01);
-  stroke(head, [[-0.14, 0.41], [-0.04, 0.56]], '#7d6756', 0.026, -0.01);
-  stroke(head, [[0.03, 0.19], [0.1, 0.47], [0.22, 0.63]], '#7d6756', 0.032, 0.01);
-  stroke(head, [[0.09, 0.41], [0.01, 0.57]], '#7d6756', 0.026, 0.01);
+  stroke(
+    head,
+    [
+      [-0.08, 0.19],
+      [-0.16, 0.46],
+      [-0.26, 0.62],
+    ],
+    '#7d6756',
+    0.032,
+    -0.01,
+  );
+  stroke(
+    head,
+    [
+      [-0.14, 0.41],
+      [-0.04, 0.56],
+    ],
+    '#7d6756',
+    0.026,
+    -0.01,
+  );
+  stroke(
+    head,
+    [
+      [0.03, 0.19],
+      [0.1, 0.47],
+      [0.22, 0.63],
+    ],
+    '#7d6756',
+    0.032,
+    0.01,
+  );
+  stroke(
+    head,
+    [
+      [0.09, 0.41],
+      [0.01, 0.57],
+    ],
+    '#7d6756',
+    0.026,
+    0.01,
+  );
 
   ctx.animate(head, 'still', 'deer', 0.62);
   ctx.animate(ear, 'deer-ear', 'deer');

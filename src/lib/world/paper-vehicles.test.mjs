@@ -37,7 +37,13 @@ test('the fleet merges still parts instead of drawing every detail', () => {
   // A regression guard with room for a new vehicle detail or two.
   expect(meshes).toBeLessThan(64);
   // Each sleigh is now one mesh, without separate team limbs or lanterns.
-  for (const name of ['paper-sleigh-winter', 'paper-sleigh-festive', 'paper-bicycle', 'paper-autumn-minivan', 'paper-hero-punt']) {
+  for (const name of [
+    'paper-sleigh-winter',
+    'paper-sleigh-festive',
+    'paper-bicycle',
+    'paper-autumn-minivan',
+    'paper-hero-punt',
+  ]) {
     expect(scene.getObjectByName(name), name).toBeTruthy();
   }
   expect(geometries).toBeLessThan(meshes);
@@ -75,7 +81,6 @@ test('every fleet mesh has baked vertex colors', () => {
   });
 });
 
-
 test('the punt interior covers the hull seam at a wide-screen viewing angle', () => {
   const scene = new THREE.Scene();
   const fleet = createSeasonalFleet(scene);
@@ -86,14 +91,13 @@ test('the punt interior covers the hull seam at a wide-screen viewing angle', ()
   for (let i = 1; i <= 39; i++) {
     const t = i / 40;
     for (const offset of [-0.02, -0.01, 0, 0.01, 0.02, 0.03]) {
-    const point = new THREE.Vector3(1.4 * t - 0.32 * t * t, 0.25 + 0.31 * t * t + offset, 0.04);
-    boat.localToWorld(point);
-    const ray = new THREE.Raycaster(point.clone().addScaledVector(direction, 5), direction.clone().negate());
-    expect(ray.intersectObject(boat, true).length, `bow seam at ${t}, ${offset} is opaque`).toBeGreaterThan(0);
+      const point = new THREE.Vector3(1.4 * t - 0.32 * t * t, 0.25 + 0.31 * t * t + offset, 0.04);
+      boat.localToWorld(point);
+      const ray = new THREE.Raycaster(point.clone().addScaledVector(direction, 5), direction.clone().negate());
+      expect(ray.intersectObject(boat, true).length, `bow seam at ${t}, ${offset} is opaque`).toBeGreaterThan(0);
     }
   }
 });
-
 
 test('the rear and front rims meet across the stern', () => {
   const scene = new THREE.Scene();
@@ -112,7 +116,6 @@ test('the rear and front rims meet across the stern', () => {
   }
 });
 
-
 test('the stern wall blocks the scenery below the connecting rim', () => {
   const scene = new THREE.Scene();
   const fleet = createSeasonalFleet(scene);
@@ -126,7 +129,10 @@ test('the stern wall blocks the scenery below the connecting rim', () => {
         const point = new THREE.Vector3(-1.1 - 0.04 * t + drop * 0.12, 0.5 - 0.04 * t - drop, 0.004 + 0.06 * t);
         boat.localToWorld(point);
         const ray = new THREE.Raycaster(point.clone().addScaledVector(direction, 5), direction.clone().negate());
-        expect(ray.intersectObject(boat, true).length, `stern wall: view ${horizontal}, depth ${t}, drop ${drop}`).toBeGreaterThan(0);
+        expect(
+          ray.intersectObject(boat, true).length,
+          `stern wall: view ${horizontal}, depth ${t}, drop ${drop}`,
+        ).toBeGreaterThan(0);
       }
     }
   }

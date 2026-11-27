@@ -28,7 +28,10 @@ export class WorldInput {
   }
 
   update(delta: number): void {
-    if (this.blocked || !this.handlers.canScroll()) { this.reset(); return; }
+    if (this.blocked || !this.handlers.canScroll()) {
+      this.reset();
+      return;
+    }
     const direction = Number(this.heldKeys.has('ArrowRight')) - Number(this.heldKeys.has('ArrowLeft'));
     if (direction) this.handlers.scrollBy(direction * KEY_SPEED * Math.max(0, Math.min(delta, 0.05)));
   }
@@ -41,8 +44,12 @@ export class WorldInput {
     window.addEventListener('blur', this.reset);
     document.addEventListener('visibilitychange', this.reset);
     this.subscriptions = [
-      openStoryId.subscribe(value => { if (value) this.reset(); }),
-      controlsHelpOpen.subscribe(value => { if (value) this.reset(); }),
+      openStoryId.subscribe(value => {
+        if (value) this.reset();
+      }),
+      controlsHelpOpen.subscribe(value => {
+        if (value) this.reset();
+      }),
     ];
     window.addEventListener('touchstart', this.onTouchStart, { passive: true });
     window.addEventListener('touchmove', this.onTouchMove, { passive: false });
@@ -69,7 +76,10 @@ export class WorldInput {
   private movePointer = (event: PointerEvent): void => {
     if (this.blocked) return;
     if (event.pointerType === 'touch') return;
-    this.handlers.setPointer(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+    this.handlers.setPointer(
+      (event.clientX / window.innerWidth) * 2 - 1,
+      -(event.clientY / window.innerHeight) * 2 + 1,
+    );
   };
 
   private onWheel = (event: WheelEvent): void => {
@@ -120,8 +130,14 @@ export class WorldInput {
   };
 
   private onTouchMove = (event: TouchEvent): void => {
-    if (this.blocked) { this.touchActive = false; return; }
-    if (!this.handlers.canScroll()) { this.touchActive = false; return; }
+    if (this.blocked) {
+      this.touchActive = false;
+      return;
+    }
+    if (!this.handlers.canScroll()) {
+      this.touchActive = false;
+      return;
+    }
     if (!this.touchActive || event.touches.length !== 1) return;
     event.preventDefault();
     const touch = event.touches[0];
@@ -131,7 +147,7 @@ export class WorldInput {
     this.touchLastY = touch.clientY;
 
     const span = Math.max(window.innerWidth, 320);
-    this.handlers.scrollBy((-(dx) * 1.15 - dy * 0.75) / span * 3.2);
+    this.handlers.scrollBy(((-dx * 1.15 - dy * 0.75) / span) * 3.2);
   };
 
   private onTouchEnd = (): void => {

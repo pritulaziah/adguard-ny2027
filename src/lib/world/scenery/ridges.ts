@@ -28,10 +28,7 @@ function buildRidge(
   shape.lineTo(endX, heights(endX));
   shape.lineTo(endX, -1.2);
   shape.closePath();
-  const mesh = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(shape, { depth: 0.045, bevelEnabled: false }),
-    material,
-  );
+  const mesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.045, bevelEnabled: false }), material);
   mesh.name = name;
   mesh.position.set(0, yBase, z);
   parent.add(mesh);

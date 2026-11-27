@@ -29,7 +29,9 @@ export function objectNoteCopy(key: Interaction, language: Language) {
         code: offer.code[language],
         copy: ru ? 'Скопировать' : 'Copy code',
         copied: ru ? 'Скопировано!' : 'Copied!',
-        error: ru ? 'Не удалось скопировать. Выделите код и скопируйте вручную.' : 'Could not copy. Select the code and copy it manually.',
+        error: ru
+          ? 'Не удалось скопировать. Выделите код и скопируйте вручную.'
+          : 'Could not copy. Select the code and copy it manually.',
       },
     };
   }

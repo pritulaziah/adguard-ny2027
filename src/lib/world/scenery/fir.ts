@@ -27,12 +27,21 @@ export function addFir(
     const bottom = 0.38 + tier * 0.5;
     const width = 1.7 - tier * 0.33;
     batch.add(
-      cutGeometry([[-width / 2, bottom], [0, bottom + 1.18], [width / 2, bottom], [0.02, bottom + 0.14]]),
+      cutGeometry([
+        [-width / 2, bottom],
+        [0, bottom + 1.18],
+        [width / 2, bottom],
+        [0.02, bottom + 0.14],
+      ]),
       tier % 2 ? '#7b9888' : '#658376',
       at(0, 0, tier * 0.035),
     );
     batch.add(
-      cutGeometry([[0, bottom + 1.18], [width / 2, bottom], [0.02, bottom + 0.14]]),
+      cutGeometry([
+        [0, bottom + 1.18],
+        [width / 2, bottom],
+        [0.02, bottom + 0.14],
+      ]),
       '#567469',
       at(0, 0, tier * 0.035 + 0.048),
     );
@@ -50,8 +59,16 @@ export function addFir(
       );
     }
     if (festive && tier < 3) {
-      batch.add(ovalGeometry(0.14, 0.16), tier % 2 ? '#cf8572' : colors.gold, at(-0.18 + tier * 0.14, bottom + 0.28, 0.22));
-      batch.add(ovalGeometry(0.12, 0.14), tier % 2 ? colors.gold : '#cf8572', at(0.24 - tier * 0.09, bottom + 0.44, 0.22));
+      batch.add(
+        ovalGeometry(0.14, 0.16),
+        tier % 2 ? '#cf8572' : colors.gold,
+        at(-0.18 + tier * 0.14, bottom + 0.28, 0.22),
+      );
+      batch.add(
+        ovalGeometry(0.12, 0.14),
+        tier % 2 ? colors.gold : '#cf8572',
+        at(0.24 - tier * 0.09, bottom + 0.44, 0.22),
+      );
     }
   }
   if (festive) batch.add(starGeometry(0.24), colors.gold, at(0, 3.12, 0.2));

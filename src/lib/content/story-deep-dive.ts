@@ -2,9 +2,22 @@ import type { Language } from './i18n';
 
 const base = import.meta.env ? import.meta.env.BASE_URL : '';
 
-export interface StoryShot { label: string; title: string; image: string; alt: string }
-export interface StoryPassage { heading: string; body: string }
-export interface StoryTimeline { from: string; fromLabel: string; to: string; toLabel: string }
+export interface StoryShot {
+  label: string;
+  title: string;
+  image: string;
+  alt: string;
+}
+export interface StoryPassage {
+  heading: string;
+  body: string;
+}
+export interface StoryTimeline {
+  from: string;
+  fromLabel: string;
+  to: string;
+  toLabel: string;
+}
 export interface StoryDeepDive {
   lead: string;
   timeline: StoryTimeline;
@@ -169,7 +182,12 @@ export const deepDives: Record<string, Record<Language, StoryDeepDive>> = {
   'mini-android': {
     en: {
       lead: 'AdGuard Content Blocker becomes AdGuard Mini for Android 3.0, with device-wide DNS protection, a video browser, and statistics.',
-      timeline: { from: 'Content Blocker', fromLabel: 'browser-only protection', to: '3.0', toLabel: 'protection for the device' },
+      timeline: {
+        from: 'Content Blocker',
+        fromLabel: 'browser-only protection',
+        to: '3.0',
+        toLabel: 'protection for the device',
+      },
       passages: [
         {
           heading: 'A new name, new scope',
@@ -188,7 +206,12 @@ export const deepDives: Record<string, Record<Language, StoryDeepDive>> = {
     },
     ru: {
       lead: 'AdGuard Content Blocker стал AdGuard Mini для Android 3.0: DNS-защита на всём устройстве, видеобраузер и статистика.',
-      timeline: { from: 'Content Blocker', fromLabel: 'защита только в браузере', to: '3.0', toLabel: 'защита всего устройства' },
+      timeline: {
+        from: 'Content Blocker',
+        fromLabel: 'защита только в браузере',
+        to: '3.0',
+        toLabel: 'защита всего устройства',
+      },
       passages: [
         {
           heading: 'Новое имя, новая область',

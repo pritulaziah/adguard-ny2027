@@ -14,7 +14,9 @@ export class FinaleDeparture {
   private targetOffset = 0;
   private finished = false;
 
-  get complete(): boolean { return this.finished; }
+  get complete(): boolean {
+    return this.finished;
+  }
 
   update(delta: number, arrived: boolean, reduced: boolean, exitOffset: number): number {
     const dt = Number.isFinite(delta) ? Math.max(0, delta) : 0;

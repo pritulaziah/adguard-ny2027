@@ -73,9 +73,13 @@ export class YearWorld {
     this.renderer = host.renderer;
     this.journey = host.journey;
     this.onerror = host.onerror;
-    this.loaded = new Promise<void>(resolve => { this.resolveLoaded = resolve; });
+    this.loaded = new Promise<void>(resolve => {
+      this.resolveLoaded = resolve;
+    });
     this.state = get(host.journey);
-    this.unsubscribe = host.journey.subscribe(state => { this.state = state; });
+    this.unsubscribe = host.journey.subscribe(state => {
+      this.state = state;
+    });
     this.cssRenderer = new CSS3DRenderer();
     this.cssRenderer.domElement.style.pointerEvents = 'none';
     // Focus must not scroll the layer away from its WebGL geometry.
@@ -232,7 +236,8 @@ export class YearWorld {
       }
       const atFinale = this.motion.finished && !this.motion.moving && this.state.cameraSettled;
       // Leave room for the entire sleigh beyond the right edge.
-      const halfView = (this.camera.position.z + 0.7) * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.aspect;
+      const halfView =
+        (this.camera.position.z + 0.7) * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.aspect;
       const exitOffset = Math.max(0, this.camera.position.x + halfView + 5 - FINALE_SLEIGH_X);
       const sleighOffset = this.departure.update(step, this.motion.committedToFinale, this.reduced, exitOffset);
       this.fleet?.update(this.motion.distance, step, this.time, this.reduced, sleighOffset);
@@ -256,7 +261,13 @@ export class YearWorld {
     const materials = new Set<THREE.Material>();
     const textures = new Set<THREE.Texture>();
     this.scene.traverse(object => {
-      if (!(object instanceof THREE.Mesh || object instanceof THREE.Points || object instanceof THREE.Line || object instanceof THREE.Sprite)) return;
+      if (!(
+        object instanceof THREE.Mesh ||
+        object instanceof THREE.Points ||
+        object instanceof THREE.Line ||
+        object instanceof THREE.Sprite
+      ))
+        return;
       if ('geometry' in object && object.geometry) geometries.add(object.geometry);
       const mats = Array.isArray(object.material) ? object.material : [object.material];
       for (const material of mats) {

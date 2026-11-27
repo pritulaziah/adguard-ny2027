@@ -8,7 +8,11 @@
   import { openStoryId } from '../content/story-modal';
   import { controlsHelpOpen } from '../content/controls-help';
 
-  let { layer, journey, onerror }: {
+  let {
+    layer,
+    journey,
+    onerror,
+  }: {
     layer: HTMLDivElement;
     journey: JourneyStore;
     onerror: (kind: 'loadError' | 'webglError') => void;

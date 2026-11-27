@@ -15,10 +15,42 @@ interface DistantTree {
 function addTree(ctx: SceneryContext, item: DistantTree, baseY: number): void {
   const batch = new PaperBatch();
   if (item.kind === 'fir') {
-    batch.add(cutGeometry([[-0.34, 0], [0, 0.92], [0.34, 0]], 0.025), item.color);
-    batch.add(cutGeometry([[-0.26, 0.42], [0, 1.18], [0.26, 0.42]], 0.025), item.color, { z: 0.03 });
+    batch.add(
+      cutGeometry(
+        [
+          [-0.34, 0],
+          [0, 0.92],
+          [0.34, 0],
+        ],
+        0.025,
+      ),
+      item.color,
+    );
+    batch.add(
+      cutGeometry(
+        [
+          [-0.26, 0.42],
+          [0, 1.18],
+          [0.26, 0.42],
+        ],
+        0.025,
+      ),
+      item.color,
+      { z: 0.03 },
+    );
   } else {
-    batch.add(cutGeometry([[-0.07, -0.05], [0.07, -0.05], [0.05, 0.45], [-0.05, 0.45]], 0.02), '#7d695b');
+    batch.add(
+      cutGeometry(
+        [
+          [-0.07, -0.05],
+          [0.07, -0.05],
+          [0.05, 0.45],
+          [-0.05, 0.45],
+        ],
+        0.02,
+      ),
+      '#7d695b',
+    );
     batch.add(ovalGeometry(0.68, 0.66, 0.025), item.color, { y: 0.52, z: 0.03 });
     batch.add(ovalGeometry(0.46, 0.46, 0.025), item.color, { x: 0.25, y: 0.36, z: 0.05 });
     batch.add(ovalGeometry(0.42, 0.42, 0.025), item.color, { x: -0.23, y: 0.34, z: 0.05 });

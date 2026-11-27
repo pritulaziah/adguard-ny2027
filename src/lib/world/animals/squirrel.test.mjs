@@ -6,13 +6,22 @@ import { motionFor } from '../part-motion.ts';
 test('the squirrel tail overlaps the body at rest and throughout its motion', () => {
   const group = new THREE.Group();
   const parts = [];
-  addSquirrel({
-    detail: () => ({ group, oval: () => {} }),
-    animate: (mesh, kind) => parts.push({
-      mesh, kind, position: mesh.position.clone(), rotation: mesh.rotation.clone(),
-      scale: mesh.scale.clone(), phase: 0, startedAt: 0,
-    }),
-  }, 0);
+  addSquirrel(
+    {
+      detail: () => ({ group, oval: () => {} }),
+      animate: (mesh, kind) =>
+        parts.push({
+          mesh,
+          kind,
+          position: mesh.position.clone(),
+          rotation: mesh.rotation.clone(),
+          scale: mesh.scale.clone(),
+          phase: 0,
+          startedAt: 0,
+        }),
+    },
+    0,
+  );
   const body = parts.find(part => part.kind === 'sway').mesh;
   const tail = parts.find(part => part.kind === 'cat-tail').mesh;
   const vertices = tail.geometry.attributes.position;

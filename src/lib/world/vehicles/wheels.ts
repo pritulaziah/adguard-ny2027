@@ -6,7 +6,12 @@ import { paperSheet } from '../paper-materials';
 // type. This keeps the tire, rim, spokes, hub, and cap in one draw call.
 const wheelTemplates = new Map<string, THREE.BufferGeometry>();
 
-function spokedWheelGeometry(radius: number, tireColor: string, rimColor: string, spokeColor: string): THREE.BufferGeometry {
+function spokedWheelGeometry(
+  radius: number,
+  tireColor: string,
+  rimColor: string,
+  spokeColor: string,
+): THREE.BufferGeometry {
   const key = `${radius}:${tireColor}:${rimColor}:${spokeColor}`;
   const cached = wheelTemplates.get(key);
   if (cached) return cached;

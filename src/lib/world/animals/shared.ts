@@ -20,7 +20,14 @@ export function addGroundShadow(target: PaperDetail, width: number, depth = 0.28
   target.oval(width, depth, color, 0, 0.015, -0.02, [-Math.PI / 2, 0, 0], 0.012);
 }
 
-export function addSparkleEye(parent: THREE.Object3D, x: number, y: number, z: number, radius = 0.048, iris?: string): void {
+export function addSparkleEye(
+  parent: THREE.Object3D,
+  x: number,
+  y: number,
+  z: number,
+  radius = 0.048,
+  iris?: string,
+): void {
   if (iris) {
     oval(parent, radius * 2.25, radius * 2.25, iris, x, y, z, 0.014);
     oval(parent, radius * 1.35, radius * 1.5, INK, x, y, z + 0.014, 0.014);

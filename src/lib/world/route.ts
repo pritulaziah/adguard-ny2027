@@ -65,14 +65,17 @@ export class JourneyMotion {
   speed = 0;
   moving = false;
 
-  get finished(): boolean { return this.distance >= JOURNEY_END; }
+  get finished(): boolean {
+    return this.distance >= JOURNEY_END;
+  }
 
   get committedToFinale(): boolean {
     return this.target >= JOURNEY_END && this.distance >= JOURNEY_END - FINALE_HANDOFF;
   }
 
   scroll(deltaUnits: number): boolean {
-    if (this.committedToFinale || this.finished || !Number.isFinite(deltaUnits) || Math.abs(deltaUnits) < 1e-5) return false;
+    if (this.committedToFinale || this.finished || !Number.isFinite(deltaUnits) || Math.abs(deltaUnits) < 1e-5)
+      return false;
     const next = clampDistance(this.target + deltaUnits);
     if (Math.abs(next - this.target) < 1e-6) return false;
     this.target = next;

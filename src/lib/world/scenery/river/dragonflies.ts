@@ -46,12 +46,20 @@ export function addRiverDragonflies(ctx: SceneryContext): void {
     // Every body layer is centred on z = 0 so both flight directions show the same details.
     cut(insect, ABDOMEN, '#b9744d', 0, 0, -0.012, 0.024);
     for (const [sx, sy, height] of STRIPES) {
-      cut(insect, [
-        [sx - 0.008, sy + height / 2],
-        [sx + 0.008, sy + height / 2],
-        [sx + 0.012, sy - height / 2],
-        [sx - 0.004, sy - height / 2],
-      ], '#f1e5c6', 0, 0, -0.015, 0.03);
+      cut(
+        insect,
+        [
+          [sx - 0.008, sy + height / 2],
+          [sx + 0.008, sy + height / 2],
+          [sx + 0.012, sy - height / 2],
+          [sx - 0.004, sy - height / 2],
+        ],
+        '#f1e5c6',
+        0,
+        0,
+        -0.015,
+        0.03,
+      );
     }
     oval(insect, 0.13, 0.092, '#cc8c5a', 0.06, 0.005, -0.018, 0.036);
     oval(insect, 0.074, 0.072, '#a86544', 0.145, 0.02, -0.02, 0.04);
@@ -71,12 +79,20 @@ export function addRiverDragonflies(ctx: SceneryContext): void {
 
         cut(wing, fore ? FOREWING : HINDWING, fore ? '#f4ead4' : '#dfe7ce', 0, 0, -0.004, 0.008);
         const veinTip = fore ? [-0.23, 0.25] : [-0.28, 0.15];
-        cut(wing, [
-          [-0.015, 0.02],
-          [-0.005, 0.012],
-          [veinTip[0] + 0.006, veinTip[1] - 0.006],
-          [veinTip[0], veinTip[1]],
-        ], fore ? '#c4c5ab' : '#b2bea8', 0, 0, -0.005, 0.01);
+        cut(
+          wing,
+          [
+            [-0.015, 0.02],
+            [-0.005, 0.012],
+            [veinTip[0] + 0.006, veinTip[1] - 0.006],
+            [veinTip[0], veinTip[1]],
+          ],
+          fore ? '#c4c5ab' : '#b2bea8',
+          0,
+          0,
+          -0.005,
+          0.01,
+        );
         ctx.animate(wing, 'dragonfly-wing');
       }
     }

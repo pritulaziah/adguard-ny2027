@@ -14,7 +14,7 @@ function ink(batch: PaperBatch, shape: THREE.Shape, color: string, z: number, x 
 
 function inkPolygon(batch: PaperBatch, points: number[][], color: string, z: number, x = 0, y = 0): void {
   const shape = new THREE.Shape();
-  points.forEach(([px, py], i) => i ? shape.lineTo(px, py) : shape.moveTo(px, py));
+  points.forEach(([px, py], i) => (i ? shape.lineTo(px, py) : shape.moveTo(px, py)));
   shape.closePath();
   ink(batch, shape, color, z, x, y);
 }
@@ -49,10 +49,58 @@ function sideShape(): THREE.Shape {
 
 function gift(batch: PaperBatch, x: number, width: number, height: number, color: string): void {
   const base = 0.79;
-  inkPolygon(batch, [[-width / 2, 0], [width / 2, 0], [width / 2, height], [-width / 2, height]], color, -0.02, x, base);
-  inkPolygon(batch, [[-width / 2 - 0.015, height - 0.04], [width / 2 + 0.015, height - 0.04], [width / 2 + 0.015, height + 0.015], [-width / 2 - 0.015, height + 0.015]], color, 0, x, base);
-  inkPolygon(batch, [[-0.025, 0], [0.025, 0], [0.025, height + 0.015], [-0.025, height + 0.015]], '#f0dfb6', 0.02, x, base);
-  inkPolygon(batch, [[-width / 2, -0.02], [width / 2, -0.02], [width / 2, 0.02], [-width / 2, 0.02]], '#f0dfb6', 0.04, x, base + height * 0.48);
+  inkPolygon(
+    batch,
+    [
+      [-width / 2, 0],
+      [width / 2, 0],
+      [width / 2, height],
+      [-width / 2, height],
+    ],
+    color,
+    -0.02,
+    x,
+    base,
+  );
+  inkPolygon(
+    batch,
+    [
+      [-width / 2 - 0.015, height - 0.04],
+      [width / 2 + 0.015, height - 0.04],
+      [width / 2 + 0.015, height + 0.015],
+      [-width / 2 - 0.015, height + 0.015],
+    ],
+    color,
+    0,
+    x,
+    base,
+  );
+  inkPolygon(
+    batch,
+    [
+      [-0.025, 0],
+      [0.025, 0],
+      [0.025, height + 0.015],
+      [-0.025, height + 0.015],
+    ],
+    '#f0dfb6',
+    0.02,
+    x,
+    base,
+  );
+  inkPolygon(
+    batch,
+    [
+      [-width / 2, -0.02],
+      [width / 2, -0.02],
+      [width / 2, 0.02],
+      [-width / 2, 0.02],
+    ],
+    '#f0dfb6',
+    0.04,
+    x,
+    base + height * 0.48,
+  );
   const bow = new THREE.Shape();
   bow.moveTo(0, 0);
   bow.bezierCurveTo(-0.26, 0.02, -0.19, 0.18, -0.07, 0.11);
@@ -75,7 +123,12 @@ export function createPaperSleigh(scene: THREE.Scene, style: SleighStyle): Movin
 
   // The far runner is hidden in profile, as with the far wheels of the other vehicles.
   const runnerColor = festive ? '#ba9659' : darkWood;
-  batch.add(new THREE.ExtrudeGeometry(runnerShape(), { depth: 0.055, bevelEnabled: false, curveSegments: 64 }), runnerColor, { z: 0.25 }, runnerColor);
+  batch.add(
+    new THREE.ExtrudeGeometry(runnerShape(), { depth: 0.055, bevelEnabled: false, curveSegments: 64 }),
+    runnerColor,
+    { z: 0.25 },
+    runnerColor,
+  );
   for (const x of [-0.58, 0.52]) {
     bar(batch, x - 0.07, 0.12, x + 0.06, 0.53, 0.085, darkWood, 0.27, 0.045);
   }
@@ -89,7 +142,12 @@ export function createPaperSleigh(scene: THREE.Scene, style: SleighStyle): Movin
   cushion.closePath();
   ink(batch, cushion, festive ? '#657a62' : '#687e72', 0.1);
   // More curve samples keep the enlarged inspection view smooth as well.
-  batch.add(new THREE.ExtrudeGeometry(sideShape(), { depth: 0.04, bevelEnabled: false, curveSegments: 64 }), wood, { z: 0.3 }, wood);
+  batch.add(
+    new THREE.ExtrudeGeometry(sideShape(), { depth: 0.04, bevelEnabled: false, curveSegments: 64 }),
+    wood,
+    { z: 0.3 },
+    wood,
+  );
   const trim = new THREE.Shape();
   trim.moveTo(-0.57, 0.66);
   trim.quadraticCurveTo(0, 0.62, 0.55, 0.68);
@@ -113,7 +171,17 @@ export function createPaperSleigh(scene: THREE.Scene, style: SleighStyle): Movin
     blanket.closePath();
     ink(batch, blanket, '#768f86', 0.405);
     for (const x of [-0.2, -0.02, 0.16]) {
-      inkPolygon(batch, [[x - 0.012, 0.45], [x + 0.012, 0.45], [x + 0.035, 0.82], [x + 0.011, 0.82]], '#e2d6b9', 0.45);
+      inkPolygon(
+        batch,
+        [
+          [x - 0.012, 0.45],
+          [x + 0.012, 0.45],
+          [x + 0.035, 0.82],
+          [x + 0.011, 0.82],
+        ],
+        '#e2d6b9',
+        0.45,
+      );
     }
     for (let i = 0; i < 9; i++) {
       const x = -0.22 + i * 0.055;

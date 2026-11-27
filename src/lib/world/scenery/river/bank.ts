@@ -16,5 +16,16 @@ export function addRiverBank(ctx: SceneryContext): void {
   edge.lineTo(span / 2, -0.08);
   edge.closePath();
   bank.shape(edge, '#718f68', 0, 0, 0, undefined, 0.09);
-  bank.stroke([[-span / 2, 0.01], [-2.6, 0.06], [0, 0.01], [2.5, 0.08], [span / 2, 0.02]], '#b3c399', 0.045, 0.12);
+  bank.stroke(
+    [
+      [-span / 2, 0.01],
+      [-2.6, 0.06],
+      [0, 0.01],
+      [2.5, 0.08],
+      [span / 2, 0.02],
+    ],
+    '#b3c399',
+    0.045,
+    0.12,
+  );
 }

@@ -1,7 +1,7 @@
 name: Feature request
 description: Propose a change to the page or its content
-title: "[Feature]: "
-labels: ["enhancement"]
+title: '[Feature]: '
+labels: ['enhancement']
 body:
   - type: textarea
     id: problem

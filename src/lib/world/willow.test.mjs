@@ -16,9 +16,11 @@ test('willow moving strands have separate depth ranges', async () => {
     const boxes = strands.map(strand => new THREE.Box3().setFromObject(strand));
     for (let i = 0; i < boxes.length; i++) {
       for (let j = i + 1; j < boxes.length; j++) {
-        const a = boxes[i], b = boxes[j];
-        expect(a.max.z < b.min.z || b.max.z < a.min.z,
-          `strands ${i} and ${j} need a depth gap at time ${time}`).toBe(true);
+        const a = boxes[i],
+          b = boxes[j];
+        expect(a.max.z < b.min.z || b.max.z < a.min.z, `strands ${i} and ${j} need a depth gap at time ${time}`).toBe(
+          true,
+        );
       }
     }
   }

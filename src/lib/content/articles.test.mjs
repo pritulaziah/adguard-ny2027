@@ -1,10 +1,5 @@
 import { expect, test } from 'vitest';
-import {
-  articles,
-  articlesByLanguage,
-  findHomeArticle,
-  homeStoryStop,
-} from './articles.ts';
+import { articles, articlesByLanguage, findHomeArticle, homeStoryStop } from './articles.ts';
 import { translations } from './i18n.ts';
 
 const routeOrder = ['ios-pqc', 'quest', 'extension', 'windows', 'mini-android', 'home'];
@@ -19,7 +14,18 @@ test('every story carries a unique complete record', () => {
     const list = articlesByLanguage[language];
     expect(new Set(list.map(article => article.id)).size).toBe(list.length);
     for (const article of list) {
-      for (const field of ['id', 'station', 'title', 'summary', 'stat', 'statLabel', 'hiddenFact', 'image', 'imageAlt', 'color']) {
+      for (const field of [
+        'id',
+        'station',
+        'title',
+        'summary',
+        'stat',
+        'statLabel',
+        'hiddenFact',
+        'image',
+        'imageAlt',
+        'color',
+      ]) {
         expect(typeof article[field], `${language} ${article.id}.${field} is a string`).toBe('string');
         expect(article[field].length, `${language} ${article.id}.${field} is not empty`).toBeGreaterThan(0);
       }

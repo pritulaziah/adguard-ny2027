@@ -31,8 +31,12 @@ export class SparkLayer {
     private readonly camera: THREE.PerspectiveCamera,
     private readonly renderer: WebGPURenderer,
   ) {
-    this.unsubscribeLanguage = language.subscribe(value => { this.labels = translations[value].interactions; });
-    this.unsubscribeFact = objectFact.subscribe(value => { this.fact = value; });
+    this.unsubscribeLanguage = language.subscribe(value => {
+      this.labels = translations[value].interactions;
+    });
+    this.unsubscribeFact = objectFact.subscribe(value => {
+      this.fact = value;
+    });
   }
 
   create(paper: PaperSet, onActivate: (key: Interaction) => void): void {
@@ -43,13 +47,7 @@ export class SparkLayer {
     }
   }
 
-  private spark(
-    anchor: THREE.Object3D,
-    key: Interaction,
-    onclick: () => void,
-    lift = 0.16,
-    offsetX = 0,
-  ): void {
+  private spark(anchor: THREE.Object3D, key: Interaction, onclick: () => void, lift = 0.16, offsetX = 0): void {
     const label = this.labels[key].label;
     const button = document.createElement('button');
     button.className = 'object-spark';
@@ -92,9 +90,17 @@ export class SparkLayer {
     const point = this.projection.copy(spark.position).project(this.camera);
     const width = this.renderer.domElement.clientWidth;
     const height = this.renderer.domElement.clientHeight;
-    const next = { key: spark.key, x: (point.x + 1) * width / 2, y: (1 - point.y) * height / 2, width, height };
+    const next = { key: spark.key, x: ((point.x + 1) * width) / 2, y: ((1 - point.y) * height) / 2, width, height };
     const previous = this.fact;
-    if (!previous || previous.key !== next.key || Math.abs(previous.x - next.x) > 0.75 || Math.abs(previous.y - next.y) > 0.75 || previous.width !== width || previous.height !== height) objectFact.set(next);
+    if (
+      !previous ||
+      previous.key !== next.key ||
+      Math.abs(previous.x - next.x) > 0.75 ||
+      Math.abs(previous.y - next.y) > 0.75 ||
+      previous.width !== width ||
+      previous.height !== height
+    )
+      objectFact.set(next);
   }
 
   update(distance: number, portrait: boolean): void {
@@ -111,8 +117,9 @@ export class SparkLayer {
         const view = this.camera.matrixWorldInverse.elements;
         const point = spark.position;
         const depth = -(view[2] * point.x + view[6] * point.y + view[10] * point.z + view[14]);
-        const pixel = 2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) / this.renderer.domElement.clientHeight;
-        spark.object.scale.setScalar(Math.max(depth, 0.1) * pixel * 44 / 42);
+        const pixel =
+          (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))) / this.renderer.domElement.clientHeight;
+        spark.object.scale.setScalar((Math.max(depth, 0.1) * pixel * 44) / 42);
       } else {
         spark.object.scale.setScalar(0.0075);
       }

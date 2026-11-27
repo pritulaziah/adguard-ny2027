@@ -85,14 +85,18 @@ test('the final handoff blocks input in both directions while travel continues',
   const motion = new JourneyMotion();
   reachFinalHandoff(motion);
   const committedState = {
-    distance: motion.distance, target: motion.target,
-    moving: motion.moving, speed: motion.speed,
+    distance: motion.distance,
+    target: motion.target,
+    moving: motion.moving,
+    speed: motion.speed,
   };
   for (const delta of [-0.01, -1.6, -TRACK_LENGTH * 3, 0.01, 1.6, TRACK_LENGTH * 3]) {
     expect(motion.scroll(delta), `scroll ${delta} cannot interrupt the final handoff`).toBe(false);
     expect({
-      distance: motion.distance, target: motion.target,
-      moving: motion.moving, speed: motion.speed,
+      distance: motion.distance,
+      target: motion.target,
+      moving: motion.moving,
+      speed: motion.speed,
     }).toEqual(committedState);
   }
   motion.step(1 / 60);
@@ -138,16 +142,20 @@ test('reaching the final destination blocks scrolling in both directions', () =>
   expect(motion.finished).toBe(true);
   expect(motion.committedToFinale).toBe(true);
   const finalState = {
-    distance: motion.distance, target: motion.target,
-    moving: motion.moving, speed: motion.speed,
+    distance: motion.distance,
+    target: motion.target,
+    moving: motion.moving,
+    speed: motion.speed,
   };
   expect(finalState).toEqual({ distance: JOURNEY_END, target: JOURNEY_END, moving: false, speed: 0 });
   for (const delta of [-0.01, -1.6, -TRACK_LENGTH * 3, 0.01, 1.6, TRACK_LENGTH * 3]) {
     expect(motion.scroll(delta), `scroll ${delta} cannot leave the final screen`).toBe(false);
     expect(motion.step(1 / 60)).toBe(false);
     expect({
-      distance: motion.distance, target: motion.target,
-      moving: motion.moving, speed: motion.speed,
+      distance: motion.distance,
+      target: motion.target,
+      moving: motion.moving,
+      speed: motion.speed,
     }).toEqual(finalState);
     expect(motion.finished).toBe(true);
   }
@@ -222,16 +230,7 @@ test('the route continues through the finale after the stories', () => {
 });
 
 test('each stop sits inside its named season', () => {
-  const expected = [
-    'winter-start',
-    'winter-start',
-    'spring',
-    'spring',
-    'summer',
-    'autumn',
-    'autumn',
-    'winter-end',
-  ];
+  const expected = ['winter-start', 'winter-start', 'spring', 'spring', 'summer', 'autumn', 'autumn', 'winter-end'];
   expected.forEach((season, index) => {
     expect(seasonAt(stopX(index)), `stop ${index}`).toBe(season);
   });
@@ -257,7 +256,6 @@ test('season centers land inside their own season', () => {
     expect(seasonAt(seasonCenter(id)), id).toBe(id);
   }
 });
-
 
 test('summer gains distance while the other seasons retain their length', () => {
   close(SEASON_BORDERS.autumn - SEASON_BORDERS.summer, STOP_SPACING + SUMMER_EXTENSION);

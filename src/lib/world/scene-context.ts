@@ -8,13 +8,7 @@ import type { PartKind } from './part-motion';
 export interface BuilderContext {
   detail: (name: string, x: number, z?: number, scale?: number, y?: number) => PaperDetail;
   place: (name: string, x: number, z?: number, scale?: number, y?: number) => THREE.Group;
-  animate: (
-    mesh: THREE.Object3D,
-    kind: PartKind,
-    key?: Interaction,
-    sparkLift?: number,
-    sparkOffsetX?: number,
-  ) => void;
+  animate: (mesh: THREE.Object3D, kind: PartKind, key?: Interaction, sparkLift?: number, sparkOffsetX?: number) => void;
 }
 
 /** The scenery context adds the root group and the camera uniform. */

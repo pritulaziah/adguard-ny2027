@@ -22,7 +22,9 @@ export function createPaperPunt(scene: THREE.Scene): MovingVehicle {
     const left: THREE.Vector2[] = [];
     const right: THREE.Vector2[] = [];
     for (let i = 0; i < points.length; i++) {
-      const tangent = points[Math.min(i + 1, points.length - 1)]!.clone().sub(points[Math.max(0, i - 1)]!).normalize();
+      const tangent = points[Math.min(i + 1, points.length - 1)]!.clone()
+        .sub(points[Math.max(0, i - 1)]!)
+        .normalize();
       const normal = new THREE.Vector2(-tangent.y, tangent.x).multiplyScalar(width / 2);
       left.push(points[i]!.clone().add(normal));
       right.push(points[i]!.clone().sub(normal));
@@ -40,16 +42,48 @@ export function createPaperPunt(scene: THREE.Scene): MovingVehicle {
   opening.quadraticCurveTo(0, -0.08, -0.98, 0.02);
   opening.closePath();
   shapedCutout(wood, opening, '#887253', 0.018, -0.025);
-  curvedStrip(new THREE.QuadraticBezierCurve(new THREE.Vector2(-1.1, 0.5), new THREE.Vector2(0, 0.68), new THREE.Vector2(1.15, 0.62)), 0.035, '#ceb28b', 0);
+  curvedStrip(
+    new THREE.QuadraticBezierCurve(
+      new THREE.Vector2(-1.1, 0.5),
+      new THREE.Vector2(0, 0.68),
+      new THREE.Vector2(1.15, 0.62),
+    ),
+    0.035,
+    '#ceb28b',
+    0,
+  );
 
   // Two simple bench tops make the opening readable without loose props.
   for (const x of [-0.5, 0.35]) {
-    cutout(wood, [[x - 0.15, 0.39], [x + 0.15, 0.4], [x + 0.11, 0.55], [x - 0.13, 0.54]], '#d7bc94', 0.018, 0.012);
+    cutout(
+      wood,
+      [
+        [x - 0.15, 0.39],
+        [x + 0.15, 0.4],
+        [x + 0.11, 0.55],
+        [x - 0.13, 0.54],
+      ],
+      '#d7bc94',
+      0.018,
+      0.012,
+    );
   }
 
   const sheer = new THREE.CurvePath<THREE.Vector2>();
-  sheer.add(new THREE.QuadraticBezierCurve(new THREE.Vector2(-1.14, 0.46), new THREE.Vector2(-0.6, 0.36), new THREE.Vector2(0, 0.38)));
-  sheer.add(new THREE.QuadraticBezierCurve(new THREE.Vector2(0, 0.38), new THREE.Vector2(0.75, 0.38), new THREE.Vector2(1.16, 0.62)));
+  sheer.add(
+    new THREE.QuadraticBezierCurve(
+      new THREE.Vector2(-1.14, 0.46),
+      new THREE.Vector2(-0.6, 0.36),
+      new THREE.Vector2(0, 0.38),
+    ),
+  );
+  sheer.add(
+    new THREE.QuadraticBezierCurve(
+      new THREE.Vector2(0, 0.38),
+      new THREE.Vector2(0.75, 0.38),
+      new THREE.Vector2(1.16, 0.62),
+    ),
+  );
   const hull = new THREE.Shape(sheer.getPoints(64));
   hull.quadraticCurveTo(1.07, 0.08, 0.7, -0.015);
   hull.quadraticCurveTo(0, -0.09, -0.92, 0.015);
@@ -58,8 +92,20 @@ export function createPaperPunt(scene: THREE.Scene): MovingVehicle {
   shapedCutout(wood, hull, '#b78d63', 0.022, 0.04);
 
   // Fine curved plank joints stay inside the rounded hull.
-  for (const [y, width] of [[0.26, 1.94], [0.13, 1.67]]) {
-    curvedStrip(new THREE.QuadraticBezierCurve(new THREE.Vector2(-width / 2, y + 0.035), new THREE.Vector2(0, y - 0.04), new THREE.Vector2(width / 2, y + 0.06)), 0.009, '#956e4e', 0.066);
+  for (const [y, width] of [
+    [0.26, 1.94],
+    [0.13, 1.67],
+  ]) {
+    curvedStrip(
+      new THREE.QuadraticBezierCurve(
+        new THREE.Vector2(-width / 2, y + 0.035),
+        new THREE.Vector2(0, y - 0.04),
+        new THREE.Vector2(width / 2, y + 0.06),
+      ),
+      0.009,
+      '#956e4e',
+      0.066,
+    );
   }
   curvedStrip(sheer, 0.045, '#e3cba5', 0.082);
 
@@ -83,19 +129,43 @@ export function createPaperPunt(scene: THREE.Scene): MovingVehicle {
   sternWall.lineTo(-0.84, 0.02);
   sternWall.lineTo(-0.99, 0.5);
   sternWall.closePath();
-  wood.add(new THREE.ExtrudeGeometry(sternWall, { depth: 0.11, bevelEnabled: false }), '#a07c56', { z: -0.035 }, '#a07c56');
+  wood.add(
+    new THREE.ExtrudeGeometry(sternWall, { depth: 0.11, bevelEnabled: false }),
+    '#a07c56',
+    { z: -0.035 },
+    '#a07c56',
+  );
 
   // Two supports and a continuous curved canvas roof keep a quiet silhouette.
   for (const x of [-0.67, 0.66]) {
     bar(wood, x, 0.4, x, 0.99, 0.026, '#907553', 0.025, 0.014);
   }
-  curvedStrip(new THREE.QuadraticBezierCurve(new THREE.Vector2(-0.89, 0.98), new THREE.Vector2(0, 1.24), new THREE.Vector2(0.89, 0.98)), 0.078, '#f4ead4', 0.058);
+  curvedStrip(
+    new THREE.QuadraticBezierCurve(
+      new THREE.Vector2(-0.89, 0.98),
+      new THREE.Vector2(0, 1.24),
+      new THREE.Vector2(0.89, 0.98),
+    ),
+    0.078,
+    '#f4ead4',
+    0.058,
+  );
 
   const geometry = wood.build();
   if (geometry) body.add(new THREE.Mesh(geometry, paperSheet()));
 
   // Foam trails behind the stern and stays behind the near wall.
-  const wake = cutoutMesh([[-1.5, 0.05], [-1.16, 0.065], [-0.92, 0.03], [-1.1, 0], [-1.52, 0.012]], '#e8f2dc', 0.012);
+  const wake = cutoutMesh(
+    [
+      [-1.5, 0.05],
+      [-1.16, 0.065],
+      [-0.92, 0.03],
+      [-1.1, 0],
+      [-1.52, 0.012],
+    ],
+    '#e8f2dc',
+    0.012,
+  );
   wake.name = 'paper-punt-wake';
   wake.position.z = -0.02;
   group.add(wake);
