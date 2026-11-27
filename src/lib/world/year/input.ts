@@ -1,9 +1,11 @@
 import { get } from 'svelte/store';
 import { openStoryId } from '../../content/story-modal';
-import { JOURNEY_END, STOP_COUNT, routeProgress, stopX } from '../route';
+import { controlsHelpOpen } from '../../content/controls-help';
 
 // One wheel notch or drag event moves at most a fraction of a station.
 export const STEP_LIMIT = 1.6;
+export const KEY_SPEED = 4;
+export const KEY_STEP = 0.36;
 
 export interface WorldInputHandlers {
   scrollBy: (units: number, limit?: number) => void;
@@ -16,16 +18,32 @@ export class WorldInput {
   private touchActive = false;
   private touchLastX = 0;
   private touchLastY = 0;
+  private heldKeys = new Set<string>();
+  private subscriptions: (() => void)[] = [];
 
-  constructor(
-    private readonly getTarget: () => number,
-    private readonly handlers: WorldInputHandlers,
-  ) {}
+  constructor(private readonly handlers: WorldInputHandlers) {}
+
+  private get blocked(): boolean {
+    return !!get(openStoryId) || get(controlsHelpOpen);
+  }
+
+  update(delta: number): void {
+    if (this.blocked || !this.handlers.canScroll()) { this.reset(); return; }
+    const direction = Number(this.heldKeys.has('ArrowRight')) - Number(this.heldKeys.has('ArrowLeft'));
+    if (direction) this.handlers.scrollBy(direction * KEY_SPEED * Math.max(0, Math.min(delta, 0.05)));
+  }
 
   bind(): void {
     window.addEventListener('pointermove', this.movePointer);
     window.addEventListener('wheel', this.onWheel, { passive: false });
     window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('blur', this.reset);
+    document.addEventListener('visibilitychange', this.reset);
+    this.subscriptions = [
+      openStoryId.subscribe(value => { if (value) this.reset(); }),
+      controlsHelpOpen.subscribe(value => { if (value) this.reset(); }),
+    ];
     window.addEventListener('touchstart', this.onTouchStart, { passive: true });
     window.addEventListener('touchmove', this.onTouchMove, { passive: false });
     window.addEventListener('touchend', this.onTouchEnd, { passive: true });
@@ -36,6 +54,12 @@ export class WorldInput {
     window.removeEventListener('pointermove', this.movePointer);
     window.removeEventListener('wheel', this.onWheel);
     window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('blur', this.reset);
+    document.removeEventListener('visibilitychange', this.reset);
+    this.subscriptions.forEach(unsubscribe => unsubscribe());
+    this.subscriptions = [];
+    this.reset();
     window.removeEventListener('touchstart', this.onTouchStart);
     window.removeEventListener('touchmove', this.onTouchMove);
     window.removeEventListener('touchend', this.onTouchEnd);
@@ -43,13 +67,13 @@ export class WorldInput {
   }
 
   private movePointer = (event: PointerEvent): void => {
-    if (get(openStoryId)) return;
+    if (this.blocked) return;
     if (event.pointerType === 'touch') return;
     this.handlers.setPointer(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
   };
 
   private onWheel = (event: WheelEvent): void => {
-    if (get(openStoryId)) return;
+    if (this.blocked) return;
     if (!this.handlers.canScroll()) return;
     event.preventDefault();
     const raw = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
@@ -58,17 +82,26 @@ export class WorldInput {
   };
 
   private onKeyDown = (event: KeyboardEvent): void => {
-    if (get(openStoryId)) return;
+    if (this.blocked) return;
     if (!this.handlers.canScroll()) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const target = event.target as HTMLElement | null;
-    if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+    if (target && (target.isContentEditable || target.closest('input, textarea, select, [role="slider"]'))) return;
     if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
       event.preventDefault();
-      const next = routeProgress(this.getTarget()) + (event.key === 'ArrowRight' ? 1 : -1);
-      const destination = next >= STOP_COUNT ? JOURNEY_END : stopX(next);
-      this.handlers.scrollBy(destination - this.getTarget(), Number.POSITIVE_INFINITY);
+      if (event.repeat || this.heldKeys.has(event.key)) return;
+      this.heldKeys.add(event.key);
+      this.handlers.scrollBy((event.key === 'ArrowRight' ? 1 : -1) * KEY_STEP);
     }
+  };
+
+  private onKeyUp = (event: KeyboardEvent): void => {
+    this.heldKeys.delete(event.key);
+  };
+
+  private reset = (): void => {
+    this.heldKeys.clear();
+    this.touchActive = false;
   };
 
   private isInteractiveTarget(target: EventTarget | null): boolean {
@@ -77,7 +110,7 @@ export class WorldInput {
   }
 
   private onTouchStart = (event: TouchEvent): void => {
-    if (get(openStoryId)) return;
+    if (this.blocked) return;
     if (!this.handlers.canScroll() || event.touches.length !== 1) return;
     if (this.isInteractiveTarget(event.target)) return;
     const touch = event.touches[0];
@@ -87,7 +120,7 @@ export class WorldInput {
   };
 
   private onTouchMove = (event: TouchEvent): void => {
-    if (get(openStoryId)) { this.touchActive = false; return; }
+    if (this.blocked) { this.touchActive = false; return; }
     if (!this.handlers.canScroll()) { this.touchActive = false; return; }
     if (!this.touchActive || event.touches.length !== 1) return;
     event.preventDefault();

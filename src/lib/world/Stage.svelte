@@ -6,6 +6,7 @@
   import { YearWorld } from './YearWorld';
   import type { JourneyStore } from './journey-state';
   import { openStoryId } from '../content/story-modal';
+  import { controlsHelpOpen } from '../content/controls-help';
 
   let { layer, journey, onerror }: {
     layer: HTMLDivElement;
@@ -56,7 +57,7 @@
       const delta = Math.min((time - last) / 1000, 0.05);
       last = time;
       // Keep the canvas still while the reader uses the story dialog.
-      if (get(openStoryId)) return;
+      if (get(openStoryId) || get(controlsHelpOpen)) return;
       world?.tick(delta);
       renderer.render(scene, camera);
     };

@@ -48,6 +48,7 @@ button:focus-visible, a:focus-visible { outline: 2px dashed #fff5ce; outline-off
 .object-spark:hover, .object-spark:focus-visible { background: #fff4d66b; color: #fffdf1; }
 .masthead { position: absolute; z-index: 3; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 27px 34px; pointer-events: none; }
 .brand-logo { display: block; width: 178px; height: auto; }
+.masthead-actions { display: flex; align-items: center; gap: 10px; }
 .language-switch { display: flex; align-items: center; gap: 2px; color: #fff4df80; pointer-events: auto; }
 .language-switch button { min-width: 44px; min-height: 44px; padding: 8px; border: 0; background: transparent; color: #fff4dfa6; font-size: 13px; font-weight: 500; }
 .language-switch button[aria-pressed='true'] { color: #fff6e4; text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }

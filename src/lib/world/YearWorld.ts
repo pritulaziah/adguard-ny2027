@@ -89,7 +89,7 @@ export class YearWorld {
     createWalls(this.scene, this.rig.cameraX);
     this.weatherFields = createWeather(this.scene, this.reduced);
     this.fireworks = new FinaleFireworks(this.scene, this.camera, this.reduced);
-    this.input = new WorldInput(() => this.motion.target, {
+    this.input = new WorldInput({
       scrollBy: (units, limit) => this.scrollBy(units, limit),
       setPointer: (x, y) => this.rig.setPointer(x, y),
       canScroll: () => this.ready && !this.disposed && !this.motion.committedToFinale,
@@ -214,6 +214,7 @@ export class YearWorld {
     const step = Math.min(delta, 0.05);
     this.time += step;
     if (this.ready) {
+      this.input.update(step);
       const arrived = this.motion.step(step);
       const liveStop = stopIndexAt(this.motion.distance);
 

@@ -5,6 +5,7 @@
   import { language, copy, setLanguage } from './lib/content/i18n';
   import { openStoryId } from './lib/content/story-modal';
   import ObjectFact from './lib/ui/ObjectFact.svelte';
+  import JourneyControls from './lib/ui/JourneyControls.svelte';
 
   const journey = createJourneyState();
   let contentLayer = $state<HTMLDivElement>();
@@ -33,15 +34,22 @@
 
   <header class="masthead">
     <img class="brand-logo" src={`${import.meta.env.BASE_URL}adguard-logo.svg`} alt="AdGuard" width="178" height="42" />
-    <div class="language-switch" role="group" aria-label={$copy.language}>
-      <button type="button" lang="en" aria-label="English" aria-pressed={$language === 'en'} onclick={() => setLanguage('en')}>EN</button>
-      <span aria-hidden="true">/</span>
-      <button type="button" lang="ru" aria-label="Русский" aria-pressed={$language === 'ru'} onclick={() => setLanguage('ru')}>RU</button>
+    <div class="masthead-actions">
+      <JourneyControls ready={$journey.ready && !error} />
+      <div class="language-switch" role="group" aria-label={$copy.language}>
+        <button type="button" lang="en" aria-label="English" aria-pressed={$language === 'en'} onclick={() => setLanguage('en')}>EN</button>
+        <span aria-hidden="true">/</span>
+        <button type="button" lang="ru" aria-label="Русский" aria-pressed={$language === 'ru'} onclick={() => setLanguage('ru')}>RU</button>
+      </div>
     </div>
   </header>
 
   {#if !$journey.ready && !error}
-    <div class="loading-state" role="status"><span class="loading-paper">✦</span><span class="loading-track"><i></i></span><p>{$copy.loading}</p></div>
+    <div class="loading-state" role="status">
+      <span class="loading-paper">✦</span>
+      <span class="loading-track"><i></i></span>
+      <p>{$copy.loading}</p>
+    </div>
   {/if}
   {#if error}
     <div class="error-state" role="alert"><p>{$copy[error]}</p><button type="button" onclick={() => window.location.reload()}>{$copy.retry}</button></div>
