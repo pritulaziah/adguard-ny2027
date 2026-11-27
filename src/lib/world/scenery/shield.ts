@@ -1,4 +1,4 @@
-import type { PaperDetail } from '../paper-brush';
+import type { PaperDetail } from '../paper-detail';
 import { colors } from './palette';
 
 /** A small AdGuard shield badge on a house or a basket. */

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ovalGeometry, paint } from '../paper-brush';
+import { ovalGeometry, paint } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 import { VAN_REAR_X } from './retro-van';
 

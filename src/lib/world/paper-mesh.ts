@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { paint } from './paper-brush';
+import { paint } from './paper-geometry';
 import { paperSheet } from './paper-materials';
 
 /**

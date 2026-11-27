@@ -1,4 +1,4 @@
-import type { PaperDetail } from '../paper-brush';
+import type { PaperDetail } from '../paper-detail';
 import { SEASON_BORDERS } from '../seasons';
 import type { SceneryContext } from '../scene-context';
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PaperBatch } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
 import { shapeFrom } from './palette';
 import { BIRD_SPECIES, type BirdSpecies, type BirdSpeciesSpec } from './bird-species';
 import { buildWingGeometry } from './bird-wings';

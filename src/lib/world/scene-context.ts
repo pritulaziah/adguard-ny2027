@@ -1,6 +1,6 @@
 import type * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
-import type { PaperDetail } from './paper-brush';
+import type { PaperDetail } from './paper-detail';
 import type { ScalarUniform } from './paper-materials';
 import type { PartKind } from './part-motion';
 

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { PaperBatch, ovalGeometry } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
+import { ovalGeometry } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 
 /** One folded-paper cloud: a soft shadow layer and five lighter puffs. */

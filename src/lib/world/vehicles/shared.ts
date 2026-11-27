@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { PaperBatch, paint } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
+import { paint } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 
 export const CUT_SIDE = '#e5d6ba';

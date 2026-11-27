@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { PaperBatch, rectGeometry, starGeometry } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
+import { rectGeometry, starGeometry } from '../paper-geometry';
 import { transparentPaperSheet } from '../paper-materials';
 import { STORY_END } from '../route';
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PaperBatch } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
 import { shapeFrom } from './palette';
 import type { BirdSpeciesSpec } from './bird-species';
 

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import { PaperBatch, cutGeometry, ovalGeometry, rectGeometry, starGeometry, type Placement } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
+import { cutGeometry, ovalGeometry, rectGeometry, starGeometry } from '../paper-geometry';
+import type { Placement } from '../paper-placement';
 import { paperSheet } from '../paper-materials';
 import type { SceneryContext } from '../scene-context';
 import { colors } from './palette';

@@ -146,7 +146,8 @@ Expected: rendered triangles fall sharply. Draw calls rise by roughly
 Risk: medium. More draw calls and more build code. Opaque materials and
 depth testing keep the visual result the same. Effort: M. Priority: P1.
 
-Files: `paper-brush.ts`, `paper-scenery.ts`, `paper-backdrop.ts`.
+Files: `paper-batch.ts`, `paper-geometry.ts`, `paper-scenery.ts`,
+`paper-backdrop.ts`.
 
 ### 2. Remove empty groups
 
@@ -162,11 +163,11 @@ Expected: 36 percent fewer scene nodes. Small CPU gain. Cleaner graph.
 
 Risk: low. Effort: S. Priority: P1.
 
-Files: `paper-brush.ts`, `paper-scenery.ts`.
+Files: `paper-detail.ts`, `paper-scenery.ts`.
 
 ### 3. Dispose module-level caches
 
-Evidence: `templates` in `paper-brush.ts` and `wheelTemplates` in
+Evidence: `templates` in `paper-geometry.ts` and `wheelTemplates` in
 `paper-train.ts` and `paper-vehicles.ts` are module-level maps.
 `YearWorld.destroy` resets materials but not these maps. A remount or a
 hot update keeps the geometries alive.
@@ -178,7 +179,7 @@ Expected: no leak across remounts and hot updates.
 
 Risk: low. Effort: S. Priority: P1.
 
-Files: `paper-brush.ts`, `paper-train.ts`, `paper-vehicles.ts`,
+Files: `paper-geometry.ts`, `paper-train.ts`, `paper-vehicles.ts`,
 `YearWorld.ts`.
 
 ### 4. Replace dimension-keyed templates with unit shapes
@@ -202,7 +203,7 @@ is handled. Check the leaves, blossoms, and clouds at all stops.
 
 Effort: M. Priority: P1.
 
-Files: `paper-brush.ts`, `paper-shapes.ts`, `paper-scenery.ts`,
+Files: `paper-geometry.ts`, `paper-shapes.ts`, `paper-scenery.ts`,
 `paper-backdrop.ts`.
 
 ### 5. Compute route state once per frame
@@ -286,7 +287,7 @@ Expected: lower build time and less garbage. No visual change.
 
 Risk: low. Effort: M. Priority: P2.
 
-Files: `paper-brush.ts`.
+Files: `paper-batch.ts`, `paper-geometry.ts`.
 
 ### 9. Reduce the remaining fleet draw calls
 
@@ -437,7 +438,8 @@ Expected: fewer mistakes and less duplicate code. No direct frame gain.
 
 Risk: medium. It touches every scenery file. Effort: L. Priority: P3.
 
-Files: `paper-brush.ts`, `paper-shapes.ts`, `paper-mesh.ts`, scene files.
+Files: `paper-batch.ts`, `paper-detail.ts`, `paper-geometry.ts`,
+`paper-placement.ts`, `paper-shapes.ts`, `paper-mesh.ts`, scene files.
 
 ### 17. Move the scene build to a worker
 

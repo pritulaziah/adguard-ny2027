@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PaperBatch } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
 import { paperSheet } from '../paper-materials';
 
 // Wheel geometry never changes, so one merged buffer serves all wheels of a

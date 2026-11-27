@@ -1,5 +1,5 @@
 import type { SceneryContext } from '../scene-context';
-import type { PaperDetail } from '../paper-brush';
+import type { PaperDetail } from '../paper-detail';
 import { shapeFrom } from './palette';
 
 export type TreeVariant =

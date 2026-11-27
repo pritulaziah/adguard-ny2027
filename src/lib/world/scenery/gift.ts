@@ -1,4 +1,4 @@
-import type { PaperDetail } from '../paper-brush';
+import type { PaperDetail } from '../paper-detail';
 import { addGroundShadow } from '../animals/shared';
 import { shapeFrom } from './palette';
 

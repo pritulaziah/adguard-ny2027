@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { PaperBatch, cutGeometry, ovalGeometry } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
+import { cutGeometry, ovalGeometry } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 import { stopX } from '../route';
 import type { SceneryContext } from '../scene-context';

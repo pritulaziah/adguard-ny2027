@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Interaction } from '../../content/i18n';
 import { STORY_END, TRACK_LENGTH, stopX } from '../route';
 import { paperSheet, seasonalPaperMaterial } from '../paper-materials';
-import { PaperDetail } from '../paper-brush';
+import { PaperDetail } from '../paper-detail';
 import { GROUND_RAMP } from '../seasons';
 import {
   addBeehive,

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { PaperDetail } from '../paper-brush';
+import type { PaperDetail } from '../paper-detail';
 import { oval } from '../paper-shapes';
 import type { BuilderContext } from '../scene-context';
 

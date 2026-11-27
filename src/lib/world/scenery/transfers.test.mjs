@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
-import { PaperDetail } from '../paper-brush.ts';
+import { PaperDetail } from '../paper-detail.ts';
 import { SEASON_BORDERS } from '../seasons.ts';
 import { TRACK_LENGTH } from '../route.ts';
 import { addTravelSurfaces } from './surfaces.ts';

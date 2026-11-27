@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ovalGeometry } from '../paper-brush';
+import { ovalGeometry } from '../paper-geometry';
 import { carded } from '../paper-mesh';
 
 export function createVanExhaust(

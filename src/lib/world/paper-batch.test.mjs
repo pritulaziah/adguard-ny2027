@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
-import { PaperBatch } from './paper-brush.ts';
+import { PaperBatch } from './paper-batch.ts';
 
 function numberOf(geometry, name) {
   return geometry.getAttribute(name).count;

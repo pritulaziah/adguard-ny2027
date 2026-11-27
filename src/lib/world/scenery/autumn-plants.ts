@@ -1,4 +1,4 @@
-import type { PaperDetail } from '../paper-brush';
+import type { PaperDetail } from '../paper-detail';
 import type { SceneryContext } from '../scene-context';
 import { seeded, shapeFrom } from './palette';
 

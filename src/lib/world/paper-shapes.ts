@@ -1,8 +1,16 @@
 import * as THREE from 'three';
 import { carded } from './paper-mesh';
-import { cutGeometry, ovalGeometry, rectGeometry, leafGeometry, starGeometry, strokeGeometry } from './paper-brush';
+import {
+  cutGeometry,
+  ovalGeometry,
+  rectGeometry,
+  leafGeometry,
+  starGeometry,
+  strokeGeometry,
+  type Outline,
+} from './paper-geometry';
 
-export type Outline = Array<[number, number]>;
+export type { Outline };
 
 function place(
   parent: THREE.Object3D,

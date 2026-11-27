@@ -160,7 +160,7 @@ test('small animals keep their relative size and pond foliage stays clear', asyn
 }, 60000);
 
 test('summer meadow trees stay clear of the autumn trees and the central story', async () => {
-  const { PaperDetail } = await import('./paper-brush.ts');
+  const { PaperDetail } = await import('./paper-detail.ts');
   const { addSummerMeadow } = await import('./scenery/summer/index.ts');
   const root = new THREE.Group();
   const details = [];

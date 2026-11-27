@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PaperBatch } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
 import { paperSheet } from '../paper-materials';
 import { bar, cutout, shapedCutout, type MovingVehicle } from './shared';
 import { retroCarWheel } from './wheels';

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { PaperBatch, ovalGeometry, starGeometry } from '../paper-brush';
+import { PaperBatch } from '../paper-batch';
+import { ovalGeometry, starGeometry } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 import { stopX } from '../route';
 import { seasonCenter } from '../seasons';
