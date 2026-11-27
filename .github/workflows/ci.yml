@@ -20,6 +20,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Check the formatting
+        run: npm run format:check
       - name: Run the tests
         run: npm test
       - name: Run the type check
