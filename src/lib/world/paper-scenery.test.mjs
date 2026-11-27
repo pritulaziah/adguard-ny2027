@@ -85,7 +85,6 @@ test('every animated part can run its motion', async () => {
         delta: 1 / 60,
         reduced: false,
         distance: part.worldX,
-        gullArrivalAt: 0,
       }),
       part.kind,
     ).not.toThrow();

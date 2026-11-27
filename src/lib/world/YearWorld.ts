@@ -10,7 +10,7 @@ import { resetPaperMaterials, type WeatherField } from './paper-materials';
 import { createPaperScenery, type PaperSet } from './scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './vehicles';
 import type { MotionFrame } from './part-motion';
-import { JourneyMotion, stopIndexAt, stopX } from './route';
+import { JourneyMotion, stopIndexAt } from './route';
 import { FINALE_SLEIGH_X } from './finale';
 import { createYieldPacer } from './schedule';
 import { CameraRig } from './year/camera';
@@ -66,7 +66,6 @@ export class YearWorld {
   private observer: ResizeObserver;
   private found = new Set<string>();
   private frame: MotionFrame = { time: 0, delta: 0, reduced: false, distance: 0 };
-  private gullArrivalAt?: number;
 
   constructor(host: WorldHost) {
     this.scene = host.scene;
@@ -193,16 +192,12 @@ export class YearWorld {
     frame.delta = delta;
     frame.reduced = this.reduced;
     frame.distance = this.motion.distance;
-
-    const summerDistance = Math.abs(this.motion.distance - stopX(4));
-    if (!this.reduced && summerDistance < 5.5) this.gullArrivalAt ??= this.time;
-    if (summerDistance > 7) this.gullArrivalAt = undefined;
-    frame.gullArrivalAt = this.gullArrivalAt;
+    frame.speed = this.motion.speed;
 
     // The motion was bound to each part at build time, so this loop has no
     // branch on the part kind. Parts outside the view skip their math.
     for (const part of this.paper.animated) {
-      if (Math.abs(part.worldX - frame.distance) > MOTION_SPAN) continue;
+      if (Math.abs(part.worldX - frame.distance) > (part.span ?? MOTION_SPAN)) continue;
       part.apply(part, frame);
     }
   }

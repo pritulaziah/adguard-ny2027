@@ -21,8 +21,7 @@ export function mergeStaticChildren(
       if (keep.has(child)) continue;
       if (child instanceof THREE.InstancedMesh) continue;
       if (child instanceof THREE.Mesh) {
-        // Named meshes stay separate. A motion can address them by index,
-        // as the gull motion does with its two wings.
+        // Named meshes stay separate so motions and tests can address them directly.
         const mergeable = child.children.length === 0 && ((includeRoot && child.name === rootMesh) || !child.name);
         if (mergeable && child.material === paperSheet() && child.geometry.getAttribute('color')) meshes.push(child);
         visit(child);

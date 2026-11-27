@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
-import { SEASON_BORDERS } from './seasons';
+import { distantBirds } from './distant-birds-motion';
 import { dragonfly, dragonflyWing } from './dragonfly-motion';
 
 /**
@@ -22,7 +22,7 @@ export const PART_KINDS = [
   'deer-ear',
   'crab-step',
   'crab-claw',
-  'gull',
+  'distant-birds',
   'dragonfly',
   'dragonfly-wing',
   'spin',
@@ -41,6 +41,8 @@ export interface PaperPart {
   phase: number;
   /** World x at build time, used to skip parts far from the camera. */
   worldX: number;
+  /** Optional override for the camera distance cull span. */
+  span?: number;
   /** Scene time of the last click, if the part reacts to one. */
   startedAt?: number;
   key?: Interaction;
@@ -56,7 +58,7 @@ export interface MotionFrame {
   delta: number;
   reduced: boolean;
   distance: number;
-  gullArrivalAt?: number;
+  speed?: number;
 }
 
 export type PartMotion = (part: PaperPart, frame: MotionFrame) => void;
@@ -163,29 +165,6 @@ const crabClaw: PartMotion = (part, frame) => {
   part.mesh.rotation.z = part.rotation.z + 0.35 * motionPulse(time, 0.55, 0.52);
 };
 
-const gull: PartMotion = (part, frame) => {
-  const mesh = part.mesh;
-  // Scale and visibility depend on the route, not on motion preference.
-  mesh.visible = frame.distance >= SEASON_BORDERS.summer && frame.distance < SEASON_BORDERS.autumn;
-  const scale = Math.min(
-    THREE.MathUtils.smoothstep(frame.distance, SEASON_BORDERS.summer, SEASON_BORDERS.summer + 1.5),
-    1 - THREE.MathUtils.smoothstep(frame.distance, SEASON_BORDERS.autumn - 1.5, SEASON_BORDERS.autumn),
-  );
-  mesh.scale.setScalar(scale);
-  if (frame.reduced) return;
-
-  const t = frame.time + part.phase;
-  const angle = t * Math.PI / 4;
-  const arrival = frame.gullArrivalAt === undefined ? 0 : frame.time - frame.gullArrivalAt;
-  const approach = THREE.MathUtils.smoothstep(arrival, 0, 3);
-  mesh.position.x = part.position.x + 2 * (1 - approach) + 1.15 * Math.sin(angle);
-  mesh.position.y = part.position.y + 0.27 * Math.cos(angle);
-  mesh.position.z = part.position.z + 0.55 * Math.cos(angle);
-  const flap = 0.48 * Math.sin(arrival * 9 + part.phase) * motionPulse(arrival, 0.7, 1.4);
-  mesh.children[0].rotation.z = -flap;
-  mesh.children[1].rotation.z = flap;
-};
-
 const spin: PartMotion = (part, frame) => {
   const boost = wakeBoost(part, frame);
   part.mesh.rotation.z = part.rotation.z + frame.time * 0.35;
@@ -213,7 +192,7 @@ const motions: Record<PartKind, PartMotion> = {
   'deer-ear': deerEar,
   'crab-step': crabStep,
   'crab-claw': crabClaw,
-  gull,
+  'distant-birds': distantBirds,
   dragonfly,
   'dragonfly-wing': dragonflyWing,
   spin,

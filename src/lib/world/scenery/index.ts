@@ -89,6 +89,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
       scale: mesh.scale.clone(),
       phase: parts.length * 0.73,
       worldX: mesh.matrixWorld.elements[12],
+      span: typeof mesh.userData.motionSpan === 'number' ? mesh.userData.motionSpan : undefined,
       key,
       sparkLift,
       sparkOffsetX,
@@ -119,7 +120,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   await addPanoramaRidges(ctx, pause);
   await addDistantRidgeTrees(ctx, pause);
   await pause();
-  await addSkyDetails(ctx, pause, gull => animate(gull, 'gull'));
+  await addSkyDetails(ctx, pause);
   await pause();
 
   addTravelSurfaces(ctx);

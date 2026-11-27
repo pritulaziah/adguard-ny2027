@@ -5,7 +5,7 @@ import { stopX } from '../route';
 import { seasonCenter } from '../seasons';
 import type { SceneryContext } from '../scene-context';
 import { addSkyClouds } from './clouds';
-import { addFlyingGull } from './gull';
+import { addDistantBirds } from './distant-birds';
 import { shapeFrom } from './palette';
 
 function addObject(parent: THREE.Object3D, name: string, batch: PaperBatch, x: number, y: number, z: number): void {
@@ -49,11 +49,10 @@ function addSun(parent: THREE.Object3D): void {
   addObject(parent, 'paper-sun', batch, seasonCenter('summer') - 0.1, 8.65, -6.85);
 }
 
-/** Soft sky clouds, winter moons & stars, the summer sun, and distant gulls. */
+/** Soft sky clouds, winter moons & stars, the summer sun, and distant birds. */
 export async function addSkyDetails(
   ctx: SceneryContext,
   pause: () => Promise<void>,
-  addGull: (bird: THREE.Group) => void,
 ): Promise<void> {
   addSkyClouds(ctx.group);
   await pause();
@@ -69,9 +68,7 @@ export async function addSkyDetails(
   await pause();
 
   addSun(ctx.group);
-
-  addFlyingGull(ctx.group, stopX(4) + 5.4, 6.2, 0.43, addGull);
-  addFlyingGull(ctx.group, stopX(4) + 6.55, 6.72, 0.35, addGull);
+  addDistantBirds(ctx);
 
   await pause();
 }
