@@ -43,15 +43,18 @@ export function clampDistance(distance: number): number {
   return Math.max(0, Math.min(JOURNEY_END, distance));
 }
 
-export function stopIndexAt(distance: number): number {
-  for (let index = 0; index < STOP_COUNT; index++) {
-    if (distance < (stopX(index) + stopX(index + 1)) / 2) return index;
-  }
-  return STOP_COUNT;
-}
-
 export function stopX(index: number): number {
   return routeDistance(index * STOP_SPACING);
+}
+
+// The stops never move, so the halfway points are computed once.
+const STOP_MIDPOINTS = Array.from({ length: STOP_COUNT }, (_, index) => (stopX(index) + stopX(index + 1)) / 2);
+
+export function stopIndexAt(distance: number): number {
+  for (let index = 0; index < STOP_COUNT; index++) {
+    if (distance < STOP_MIDPOINTS[index]) return index;
+  }
+  return STOP_COUNT;
 }
 
 /**

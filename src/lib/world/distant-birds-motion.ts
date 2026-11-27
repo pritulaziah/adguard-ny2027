@@ -140,6 +140,11 @@ const wingQuat = new THREE.Quaternion();
 const wingMatrix = new THREE.Matrix4();
 const instanceMatrix = new THREE.Matrix4();
 
+// Frame scratch, so a full flock update allocates nothing.
+const burstScratch: WingState = { flap: 0, lift: 0 };
+const wingScratch: WingState = { flap: 0, lift: 0 };
+const poseScratch: BirdPose = { x: 0, y: 0, z: 0, scale: 1, yaw: 0, pitch: 0, roll: 0, flap: 0 };
+
 function positiveMod(value: number, period: number): number {
   return ((value % period) + period) % period;
 }
@@ -148,28 +153,41 @@ function angleDelta(from: number, to: number): number {
   return Math.atan2(Math.sin(to - from), Math.cos(to - from));
 }
 
-function burstStroke(local: number, beats: number, beatDuration: number, amplitude: number): WingState {
+function burstStroke(local: number, beats: number, beatDuration: number, amplitude: number, out: WingState): WingState {
   const duration = beats * beatDuration;
-  if (local <= 0 || local >= duration) return { flap: 0, lift: 0 };
+  if (local <= 0 || local >= duration) {
+    out.flap = 0;
+    out.lift = 0;
+    return out;
+  }
   const u = local / duration;
   const envelope = THREE.MathUtils.smoothstep(u, 0, 0.22) * (1 - THREE.MathUtils.smoothstep(u, 0.78, 1));
   const strokePhase = (local / beatDuration) * Math.PI * 2;
   const stroke = Math.sin(strokePhase) - 0.18 * Math.sin(strokePhase * 2);
-  return {
-    flap: envelope * stroke * amplitude,
-    lift: envelope * -Math.cos(strokePhase) * 0.035,
-  };
+  out.flap = envelope * stroke * amplitude;
+  out.lift = envelope * -Math.cos(strokePhase) * 0.035;
+  return out;
 }
 
 /**
  * Computes wing flap angle and body lift for long gliding with rare beats,
  * blending smoothly into active wingbeats while the reader scrolls.
  */
-export function sampleWingBeat(member: DistantBirdMember, clock: number, reduced: boolean, surge = 0): WingState {
-  if (reduced) return { flap: member.glideAngle, lift: 0 };
+function sampleWingBeatInto(
+  member: DistantBirdMember,
+  clock: number,
+  reduced: boolean,
+  surge: number,
+  out: WingState,
+): WingState {
+  if (reduced) {
+    out.flap = member.glideAngle;
+    out.lift = 0;
+    return out;
+  }
 
   const local = positiveMod(clock + member.wingPhase, member.wingCycle);
-  const autonomous = burstStroke(local, member.beats, member.beatDuration, member.beatAmplitude);
+  const autonomous = burstStroke(local, member.beats, member.beatDuration, member.beatAmplitude, burstScratch);
   const glideDrift = autonomous.flap === 0 && surge < 0.08 ? Math.sin(clock * 0.7 + member.wingPhase) * 0.028 : 0;
 
   let flap = member.glideAngle + glideDrift + autonomous.flap;
@@ -185,7 +203,13 @@ export function sampleWingBeat(member: DistantBirdMember, clock: number, reduced
     }
   }
 
-  return { flap, lift };
+  out.flap = flap;
+  out.lift = lift;
+  return out;
+}
+
+export function sampleWingBeat(member: DistantBirdMember, clock: number, reduced: boolean, surge = 0): WingState {
+  return sampleWingBeatInto(member, clock, reduced, surge, { flap: 0, lift: 0 });
 }
 
 /** Creates an empty runtime state for one flight group. */
@@ -311,10 +335,11 @@ function sampleSoarPose(
   seasonFade: number,
   reduced: boolean,
   dorsalTilt: number,
+  out: BirdPose,
 ): BirdPose {
   const runtime = flight.runtime;
   const clock = reduced ? 0 : runtime.beatClock || time;
-  const wing = sampleWingBeat(member, clock, reduced, reduced ? 0 : runtime.surge);
+  const wing = sampleWingBeatInto(member, clock, reduced, reduced ? 0 : runtime.surge, wingScratch);
 
   const omega =
     (Math.PI * 2) / flight.orbitPeriod + (reduced ? 0 : Math.abs(runtime.scrollVel) * flight.scrollOrbitGain);
@@ -346,16 +371,15 @@ function sampleSoarPose(
   const turnBank = reduced ? 0 : THREE.MathUtils.clamp(-runtime.yawRate * 0.3, -0.42, 0.42);
   const roll = Math.cos(yaw) * dorsalTilt + turnBank - sinT * flight.direction * (dorsalTilt * 0.45);
 
-  return {
-    x,
-    y,
-    z,
-    scale: member.size * seasonFade,
-    yaw,
-    pitch,
-    roll,
-    flap: wing.flap,
-  };
+  out.x = x;
+  out.y = y;
+  out.z = z;
+  out.scale = member.size * seasonFade;
+  out.yaw = yaw;
+  out.pitch = pitch;
+  out.roll = roll;
+  out.flap = wing.flap;
+  return out;
 }
 
 function sampleFlockPose(
@@ -366,6 +390,7 @@ function sampleFlockPose(
   seasonFade: number,
   reduced: boolean,
   dorsalTilt: number,
+  out: BirdPose,
 ): BirdPose {
   const runtime = flight.runtime;
   const span = Math.max(0.01, flight.endX - flight.startX);
@@ -381,7 +406,7 @@ function sampleFlockPose(
   );
 
   const clock = reduced ? 0 : runtime.beatClock || time;
-  const wing = sampleWingBeat(member, clock, reduced, reduced ? 0 : runtime.surge);
+  const wing = sampleWingBeatInto(member, clock, reduced, reduced ? 0 : runtime.surge, wingScratch);
 
   const driftX = Math.sin(clock * 0.33 + member.driftSeed) * member.driftX;
   const driftY = Math.sin(clock * 0.45 + member.driftSeed * 1.7) * member.driftY;
@@ -406,16 +431,30 @@ function sampleFlockPose(
   const pitch = THREE.MathUtils.clamp(Math.atan2(vy, Math.hypot(vx, vz) + 0.05), -0.22, 0.22);
   const roll = dorsalTilt + Math.sin(clock * 0.4 + member.driftSeed) * 0.07;
 
-  return {
-    x,
-    y,
-    z,
-    scale: member.size * edgeFade * seasonFade,
-    yaw,
-    pitch,
-    roll,
-    flap: wing.flap,
-  };
+  out.x = x;
+  out.y = y;
+  out.z = z;
+  out.scale = member.size * edgeFade * seasonFade;
+  out.yaw = yaw;
+  out.pitch = pitch;
+  out.roll = roll;
+  out.flap = wing.flap;
+  return out;
+}
+
+function sampleFlightBirdPoseInto(
+  flight: FlightGroupSpec,
+  member: DistantBirdMember,
+  time: number,
+  distance: number,
+  seasonFade: number,
+  reduced: boolean,
+  dorsalTilt: number,
+  out: BirdPose,
+): BirdPose {
+  return flight.mode === 'soar'
+    ? sampleSoarPose(flight, member, time, distance, seasonFade, reduced, dorsalTilt, out)
+    : sampleFlockPose(flight, member, time, distance, seasonFade, reduced, dorsalTilt, out);
 }
 
 /** Computes world 3D pose for one bird inside a flight group. */
@@ -428,9 +467,16 @@ export function sampleFlightBirdPose(
   reduced: boolean,
   dorsalTilt = 0.34,
 ): BirdPose {
-  return flight.mode === 'soar'
-    ? sampleSoarPose(flight, member, time, distance, seasonFade, reduced, dorsalTilt)
-    : sampleFlockPose(flight, member, time, distance, seasonFade, reduced, dorsalTilt);
+  return sampleFlightBirdPoseInto(flight, member, time, distance, seasonFade, reduced, dorsalTilt, {
+    x: 0,
+    y: 0,
+    z: 0,
+    scale: 1,
+    yaw: 0,
+    pitch: 0,
+    roll: 0,
+    flap: 0,
+  });
 }
 
 /** Writes all 3D body and wing matrices for one season group. */
@@ -455,7 +501,16 @@ export function updateBirdSeason(
   for (const flight of data.flights) {
     updateRuntime(flight, delta, distance, speed, reduced);
     for (const member of flight.members) {
-      const pose = sampleFlightBirdPose(flight, member, time, distance, seasonFade, reduced, data.dorsalTilt);
+      const pose = sampleFlightBirdPoseInto(
+        flight,
+        member,
+        time,
+        distance,
+        seasonFade,
+        reduced,
+        data.dorsalTilt,
+        poseScratch,
+      );
       posVec.set(pose.x - data.centerX, pose.y, pose.z);
       bodyEuler.set(pose.roll, pose.yaw, pose.pitch, 'YZX');
       bodyQuat.setFromEuler(bodyEuler);

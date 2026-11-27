@@ -31,6 +31,20 @@ function burstGeometry(index: number): THREE.BufferGeometry {
   return batch.build()!;
 }
 
+type BurstPosition = readonly [x: number, y: number];
+
+const PORTRAIT_POSITIONS: readonly BurstPosition[] = [
+  [-0.72, 0.04],
+  [0.72, 0.04],
+  [0, 0.86],
+];
+
+const LANDSCAPE_POSITIONS: readonly BurstPosition[] = [
+  [-0.72, 0.25],
+  [0.72, 0.4],
+  [-0.55, 0.73],
+];
+
 /** Quiet paper bursts frame the greeting. Reduced motion uses small still stars. */
 export class FinaleFireworks {
   readonly group = new THREE.Group();
@@ -76,19 +90,10 @@ export class FinaleFireworks {
       this.entered = true;
       this.elapsed = 0;
     } else this.elapsed += delta;
-    const positions = portrait
-      ? [
-          [-0.72, 0.04],
-          [0.72, 0.04],
-          [0, 0.86],
-        ]
-      : [
-          [-0.72, 0.25],
-          [0.72, 0.4],
-          [-0.55, 0.73],
-        ];
+    const positions = portrait ? PORTRAIT_POSITIONS : LANDSCAPE_POSITIONS;
     const halfHeight = 12 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
-    this.bursts.forEach((burst, index) => {
+    for (let index = 0; index < this.bursts.length; index++) {
+      const burst = this.bursts[index];
       const age = (this.elapsed % 9.5) - burst.delay;
       const progress = THREE.MathUtils.clamp(age / 1.9, 0, 1);
       const [x, y] = positions[index];
@@ -109,6 +114,6 @@ export class FinaleFireworks {
         const spread = 0.18 + 0.82 * (1 - (1 - progress) ** 2);
         burst.mesh.scale.setScalar(halfHeight * radius * spread);
       }
-    });
+    }
   }
 }

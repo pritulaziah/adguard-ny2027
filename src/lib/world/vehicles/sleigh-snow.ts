@@ -65,6 +65,8 @@ export function createSleighSnow(scene: THREE.Scene, name: string) {
       snow.setMatrixAt(count++, dummy.matrix);
     }
     snow.count = count;
-    snow.instanceMatrix.needsUpdate = true;
+    // An empty trail needs no upload, and a hidden mesh needs no draw.
+    if (count > 0) snow.instanceMatrix.needsUpdate = true;
+    snow.visible = count > 0;
   };
 }

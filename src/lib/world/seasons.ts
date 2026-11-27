@@ -95,7 +95,22 @@ export const FLOOR_RAMP: SeasonalRamp = scale({
   ],
 });
 
-const scratchColor = new THREE.Color();
+interface RampColors {
+  base: THREE.Color;
+  stops: THREE.Color[];
+}
+
+// The ramps never change, so each colour string is parsed once on first use.
+const rampColors = new WeakMap<SeasonalRamp, RampColors>();
+
+function colorsFor(ramp: SeasonalRamp): RampColors {
+  let colors = rampColors.get(ramp);
+  if (!colors) {
+    colors = { base: new THREE.Color(ramp.base), stops: ramp.stops.map(stop => new THREE.Color(stop.color)) };
+    rampColors.set(ramp, colors);
+  }
+  return colors;
+}
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
   const t = THREE.MathUtils.clamp((x - edge0) / (edge1 - edge0), 0, 1);
@@ -103,13 +118,12 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
 }
 
 export function sampleRampColor(ramp: SeasonalRamp, x: number, target: THREE.Color): THREE.Color {
-  target.set(ramp.base);
-  for (const stop of ramp.stops) {
+  const colors = colorsFor(ramp);
+  target.copy(colors.base);
+  for (let index = 0; index < ramp.stops.length; index++) {
+    const stop = ramp.stops[index];
     const t = smoothstep(stop.from, stop.to, x);
-    if (t > 0) {
-      scratchColor.set(stop.color);
-      target.lerp(scratchColor, t);
-    }
+    if (t > 0) target.lerp(colors.stops[index], t);
   }
   return target;
 }
