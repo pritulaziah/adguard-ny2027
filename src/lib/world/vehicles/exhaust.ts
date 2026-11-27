@@ -21,7 +21,7 @@ export function createVanExhaust(
       const progress = entry.age / lifetime;
       entry.puff.visible = !reduced && progress < 1;
       if (!entry.puff.visible) continue;
-      entry.puff.position.set(entry.x + entry.drift * progress, 0.63 + 0.29 * progress, 0.1);
+      entry.puff.position.set(entry.x + entry.drift * progress, 0.57 + 0.29 * progress, 0.1);
       const scale = 1.25 * Math.sin(Math.PI * progress) + 0.38 * (1 - progress);
       entry.puff.scale.setScalar(scale);
     }

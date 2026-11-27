@@ -2,7 +2,7 @@ import { JOURNEY_END, STORY_END } from './route';
 
 export const FINALE_STORY_X = JOURNEY_END;
 export const FINALE_TREE_X = FINALE_STORY_X - 1;
-export const FINALE_SLEIGH_X = JOURNEY_END;
+export const FINALE_CAR_X = JOURNEY_END;
 export const FINALE_MASCOTS = {
   agnar: FINALE_TREE_X - 1.5,
   tengu: FINALE_TREE_X,

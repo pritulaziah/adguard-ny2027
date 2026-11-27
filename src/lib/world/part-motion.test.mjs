@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PART_KINDS, isAnimated, motionFor } from './part-motion.ts';
 import { stopX } from './route.ts';
 import { SEASON_BORDERS } from './seasons.ts';
-import { addRiverDragonflies } from './scenery/river/dragonflies.ts';
+import { addSummerButterflies } from './scenery/summer/butterflies.ts';
 
 test('every part kind resolves to a motion', () => {
   for (const kind of PART_KINDS) {
@@ -72,10 +72,10 @@ test('a dragonfly faces its flight direction instead of sliding sideways', () =>
   expect(flights).toBeGreaterThan(30);
 });
 
-test('river dragonflies stay symmetric, clear of the story and punt, and fade at season borders', () => {
+test('summer butterflies stay symmetric, clear of the story and road, and fade at season borders', () => {
   const root = new THREE.Group();
   const parts = [];
-  addRiverDragonflies({
+  addSummerButterflies({
     group: root,
     cameraX: null,
     detail: () => {
@@ -120,7 +120,7 @@ test('river dragonflies stay symmetric, clear of the story and punt, and fade at
     part.apply(part, { time: 1, delta: 1 / 60, reduced: false, distance: stopX(4) });
     expect(part.mesh.scale.x).toBeCloseTo(part.scale.x);
 
-    // Flight path stays outside the central story corridor and clear of the punt lane.
+    // Flight path stays outside the central story corridor and clear of the road lane.
     for (let t = 0; t < 36; t += 0.15) {
       part.apply(part, { time: t, delta: 1 / 60, reduced: false, distance: stopX(4) });
       expect(Math.abs(part.mesh.position.x - stopX(4))).toBeGreaterThan(2);

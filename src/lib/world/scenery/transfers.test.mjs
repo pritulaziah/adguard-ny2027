@@ -1,10 +1,12 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { PaperDetail } from '../paper-brush.ts';
+import { SEASON_BORDERS } from '../seasons.ts';
+import { TRACK_LENGTH } from '../route.ts';
 import { addTravelSurfaces } from './surfaces.ts';
 import { addTransferStations } from './transfers.ts';
 
-test('river waves stay below both landings throughout their motion', () => {
+test('one continuous road spans the route with four border lanterns clear of the lane', () => {
   const group = new THREE.Group();
   const details = [];
   const ctx = {
@@ -22,26 +24,26 @@ test('river waves stay below both landings throughout their motion', () => {
     detail.group.add(new THREE.Mesh(detail.buildGeometry()));
   }
   group.updateMatrixWorld(true);
-  const point = new THREE.Vector3();
-  for (const name of ['transfer-spring-summer', 'transfer-summer-autumn']) {
-    const landing = group.getObjectByName(name);
-    const bounds = new THREE.Box3();
-    landing.traverse(object => {
-      if (!(object instanceof THREE.Mesh)) return;
-      const position = object.geometry.getAttribute('position');
-      for (let i = 0; i < position.count; i++) {
-        point.fromBufferAttribute(position, i).applyMatrix4(object.matrixWorld);
-        if (point.y < 0.6) bounds.expandByPoint(point);
-      }
-    });
-    for (const wave of group.getObjectsByProperty('name', 'paper-river-wave')) {
-      const position = wave.geometry.getAttribute('position');
-      for (let i = 0; i < position.count; i++) {
-        point.fromBufferAttribute(position, i).applyMatrix4(wave.matrixWorld);
-        // Wave motion moves the ribbon by up to .14 horizontally and .025 vertically.
-        if (point.x < bounds.min.x - 0.14 || point.x > bounds.max.x + 0.14) continue;
-        expect(point.y + 0.025, `${name} stays above the moving water`).toBeLessThan(bounds.max.y - 0.005);
-      }
-    }
+
+  const road = group.getObjectByName('paper-continuous-road');
+  expect(road).toBeTruthy();
+  const roadBox = new THREE.Box3().setFromObject(road);
+  expect(roadBox.min.x).toBeLessThanOrEqual(-9);
+  expect(roadBox.max.x).toBeGreaterThanOrEqual(TRACK_LENGTH + 9);
+  expect(group.getObjectByName('paper-river')).toBeUndefined();
+  expect(group.getObjectsByProperty('name', 'paper-river-wave')).toHaveLength(0);
+
+  const expectedBorders = [
+    ['transfer-winter-spring', SEASON_BORDERS.spring],
+    ['transfer-spring-summer', SEASON_BORDERS.summer],
+    ['transfer-summer-autumn', SEASON_BORDERS.autumn],
+    ['transfer-autumn-winter', SEASON_BORDERS.winterEnd],
+  ];
+  for (const [name, borderX] of expectedBorders) {
+    const lantern = group.getObjectByName(name);
+    expect(lantern, name).toBeTruthy();
+    expect(lantern.position.x).toBeCloseTo(borderX, 5);
+    const box = new THREE.Box3().setFromObject(lantern);
+    expect(box.max.z, `${name} stays behind the road lane`).toBeLessThan(roadBox.min.z);
   }
 });

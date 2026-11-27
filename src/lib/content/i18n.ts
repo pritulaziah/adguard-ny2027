@@ -2,7 +2,7 @@ import { derived, writable } from 'svelte/store';
 
 export type Language = 'en' | 'ru';
 export type FactInteraction =
-  'deer' | 'snowman' | 'fox' | 'hedgehog' | 'bird' | 'frog' | 'duck' | 'beaver' | 'bunny' | 'squirrel' | 'cat' | 'owl';
+  'deer' | 'snowman' | 'fox' | 'hedgehog' | 'bird' | 'frog' | 'cow' | 'beehive' | 'bunny' | 'squirrel' | 'cat' | 'owl';
 export type MascotInteraction = 'agnar' | 'tengu' | 'diana';
 export type Interaction = FactInteraction | MascotInteraction;
 
@@ -35,7 +35,7 @@ export const translations: Record<Language, Copy> = {
     title: 'AdGuard · 2026 in Review',
     description: 'A paper journey through the AdGuard 2026 highlights.',
     scene: 'AdGuard 2026 journey through a paper world',
-    canvas: 'A paper world with sleighs, four seasons, and stories on the walls',
+    canvas: 'A paper world with a retro van, four seasons, and stories on the walls',
     loading: 'Unfolding a paper world…',
     loadError: 'The paper world could not load. Refresh the page to try again.',
     webglError: 'The 3D scene could not open. Refresh the page in a browser with WebGPU or WebGL2 support.',
@@ -65,8 +65,8 @@ export const translations: Record<Language, Copy> = {
       hedgehog: { label: 'Say hello to the hedgehog' },
       bird: { label: 'Listen to the bird' },
       frog: { label: 'Call the frog' },
-      beaver: { label: 'Say hello to the beaver' },
-      duck: { label: 'Say hello to the duck' },
+      cow: { label: 'Say hello to the cow' },
+      beehive: { label: 'Look inside the beehive' },
       cat: { label: 'Call the cat' },
       bunny: { label: 'Say hello to the bunny' },
       squirrel: { label: 'Call the squirrel' },
@@ -80,7 +80,7 @@ export const translations: Record<Language, Copy> = {
     title: 'AdGuard · Итоги 2026',
     description: 'Бумажное путешествие AdGuard: шесть историй 2026 года.',
     scene: 'Бумажное путешествие AdGuard по итогам 2026 года',
-    canvas: 'Бумажный мир: сани, четыре времени года, истории на стенах',
+    canvas: 'Бумажный мир: ретро-минивэн, четыре времени года, истории на стенах',
     loading: 'Раскрываем бумажный мир…',
     loadError: 'Не удалось загрузить бумажный мир. Обновите страницу, чтобы попробовать ещё раз.',
     webglError: 'Не удалось открыть 3D-сцену. Обновите страницу в браузере с поддержкой WebGPU или WebGL2.',
@@ -111,8 +111,8 @@ export const translations: Record<Language, Copy> = {
       hedgehog: { label: 'Поздороваться с ежом' },
       bird: { label: 'Послушать птицу' },
       frog: { label: 'Позвать лягушку' },
-      beaver: { label: 'Поздороваться с бобром' },
-      duck: { label: 'Поздороваться с уткой' },
+      cow: { label: 'Поздороваться с коровой' },
+      beehive: { label: 'Заглянуть к улью' },
       cat: { label: 'Позвать кота' },
       bunny: { label: 'Поздороваться с зайцем' },
       squirrel: { label: 'Позвать белку' },

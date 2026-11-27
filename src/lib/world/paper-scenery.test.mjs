@@ -59,7 +59,7 @@ test('every scenery object has its own mesh and keeps colors', async () => {
   const pairs = [
     ['fox', 'hedgehog'],
     ['bird', 'frog'],
-    ['duck', 'beaver'],
+    ['cow', 'beehive'],
     ['bunny', 'squirrel'],
     ['cat', 'owl'],
   ];
@@ -159,12 +159,13 @@ test('small animals keep their relative size and pond foliage stays clear', asyn
   }
 }, 60000);
 
-test('river tree canopies stay clear of the autumn trees and the central story', async () => {
+test('summer meadow trees stay clear of the autumn trees and the central story', async () => {
   const { PaperDetail } = await import('./paper-brush.ts');
-  const { addSummerRiver } = await import('./scenery/river/index.ts');
+  const { addSummerMeadow } = await import('./scenery/summer/index.ts');
   const root = new THREE.Group();
   const details = [];
-  addSummerRiver({
+  addSummerMeadow({
+    group: root,
     detail: (name, x, z = 0, scale = 1, y = 0.34) => {
       const detail = new PaperDetail(root, name, x, y, z, scale);
       details.push(detail);
@@ -180,7 +181,7 @@ test('river tree canopies stay clear of the autumn trees and the central story',
     },
     animate: () => {},
   });
-  const trees = details.filter(detail => ['river-weeping-willow', 'river-alder'].includes(detail.group.name));
+  const trees = details.filter(detail => ['summer-meadow-linden', 'summer-meadow-birch'].includes(detail.group.name));
   expect(trees).toHaveLength(2);
   for (const detail of trees) {
     const geometry = detail.buildGeometry();

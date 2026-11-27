@@ -1,8 +1,11 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { createSeasonalFleet } from './vehicles/index.ts';
+import { createSnowTrail } from './vehicles/snow-trail.ts';
+import { VAN_REAR_X } from './vehicles/retro-van.ts';
 import { JOURNEY_END, stopX } from './route.ts';
-import { FINALE_SLEIGH_X } from './finale.ts';
+import { SEASON_BORDERS } from './seasons.ts';
+import { FINALE_CAR_X } from './finale.ts';
 
 function inventory(scene) {
   let meshes = 0;
@@ -15,58 +18,52 @@ function inventory(scene) {
   return { meshes, geometries: geometries.size };
 }
 
-test('the festive sleigh drives through the final scene before stopping', () => {
+test('one retro van drives continuously from start through every season and finale', () => {
   const scene = new THREE.Scene();
   const fleet = createSeasonalFleet(scene);
-  const sleigh = scene.getObjectByName('paper-sleigh-festive');
-  fleet.update(stopX(7) - 3, 1 / 60, 0, true);
-  const startX = sleigh.position.x;
-  fleet.update(stopX(7), 1 / 60, 0, true);
-  expect(sleigh.position.x).toBeCloseTo(stopX(7), 5);
-  fleet.update(JOURNEY_END, 1 / 60, 0, true);
-  expect(Math.abs(sleigh.position.x - FINALE_SLEIGH_X)).toBeLessThan(0.15);
-  expect(sleigh.position.x - startX).toBeGreaterThan(7.5);
+  const van = scene.getObjectByName('paper-retro-van');
+  expect(van).toBeTruthy();
+
+  for (const distance of [0, stopX(1), stopX(2), stopX(4), stopX(5), stopX(7), JOURNEY_END]) {
+    fleet.update(distance, 1 / 60, 0, true);
+    expect(van.position.x).toBeCloseTo(distance, 5);
+  }
+
+  fleet.update(JOURNEY_END, 1 / 60, 1, false);
+  const parkedX = van.position.x;
+  expect(parkedX).toBeCloseTo(FINALE_CAR_X, 5);
+  fleet.update(JOURNEY_END, 1 / 60, 1, false, 9);
+  expect(van.position.x - parkedX).toBeCloseTo(9);
 });
 
-test('the fleet merges still parts instead of drawing every detail', () => {
+test('the single-car fleet merges still parts and removes legacy seasonal vehicles', () => {
   const scene = new THREE.Scene();
   createSeasonalFleet(scene);
   const { meshes, geometries } = inventory(scene);
 
-  // Before the merge every vehicle detail was its own draw call: 261 meshes.
-  // A regression guard with room for a new vehicle detail or two.
-  expect(meshes).toBeLessThan(64);
-  // Each sleigh is now one mesh, without separate team limbs or lanterns.
-  for (const name of [
+  expect(meshes).toBeLessThan(20);
+  expect(scene.getObjectByName('paper-retro-van')).toBeTruthy();
+  for (const legacy of [
     'paper-sleigh-winter',
     'paper-sleigh-festive',
     'paper-bicycle',
     'paper-autumn-minivan',
     'paper-hero-punt',
   ]) {
-    expect(scene.getObjectByName(name), name).toBeTruthy();
+    expect(scene.getObjectByName(legacy), legacy).toBeUndefined();
   }
   expect(geometries).toBeLessThan(meshes);
 });
 
-test('the summer craft stays a visible hero above the water line', () => {
+test('the retro van stays a thin, clearly visible paper silhouette', () => {
   const scene = new THREE.Scene();
   const fleet = createSeasonalFleet(scene);
   fleet.update(stopX(4), 1 / 60, 1, false);
   scene.updateMatrixWorld(true);
 
-  let boat = null;
-  scene.traverse(object => {
-    if (!boat && object.name.startsWith('paper-hero-')) boat = object;
-  });
-  expect(boat, 'the summer vehicle is part of the fleet').toBeTruthy();
-
-  const box = new THREE.Box3().setFromObject(boat);
-  // The craft carries the reader through the stop. A low hull alone reads as a
-  // plank at the bottom edge, so the silhouette keeps a tall element.
-  expect(box.max.y - box.min.y).toBeGreaterThan(1);
-  // The rest of the fleet is thin paper. A deep stack of planes smears the boat
-  // when the camera has perspective.
+  const van = scene.getObjectByName('paper-retro-van');
+  const box = new THREE.Box3().setFromObject(van);
+  expect(box.max.y - box.min.y).toBeGreaterThan(1.1);
   expect(box.max.z - box.min.z).toBeLessThan(0.3);
 });
 
@@ -81,59 +78,31 @@ test('every fleet mesh has baked vertex colors', () => {
   });
 });
 
-test('the punt interior covers the hull seam at a wide-screen viewing angle', () => {
+test('winter snow trail follows behind the van only on snowy road sections', () => {
   const scene = new THREE.Scene();
-  const fleet = createSeasonalFleet(scene);
-  fleet.update(stopX(4), 1 / 60, 0, true);
-  scene.updateMatrixWorld(true);
-  const boat = scene.getObjectByName('paper-hero-punt');
-  const direction = new THREE.Vector3(0, 0.32, 1).normalize();
-  for (let i = 1; i <= 39; i++) {
-    const t = i / 40;
-    for (const offset of [-0.02, -0.01, 0, 0.01, 0.02, 0.03]) {
-      const point = new THREE.Vector3(1.4 * t - 0.32 * t * t, 0.25 + 0.31 * t * t + offset, 0.04);
-      boat.localToWorld(point);
-      const ray = new THREE.Raycaster(point.clone().addScaledVector(direction, 5), direction.clone().negate());
-      expect(ray.intersectObject(boat, true).length, `bow seam at ${t}, ${offset} is opaque`).toBeGreaterThan(0);
-    }
-  }
-});
+  const update = createSnowTrail(scene, 'test-van-snow');
+  const snow = scene.getObjectByName('test-van-snow');
+  update(0, 0, 1 / 60, false);
+  expect(snow.count).toBe(0);
+  for (let frame = 0; frame < 20; frame++) update(frame / 30, 2, 1 / 60, false);
+  expect(snow.count).toBeGreaterThan(8);
+  const positions = Array.from({ length: snow.count }, (_, i) => {
+    const matrix = new THREE.Matrix4();
+    snow.getMatrixAt(i, matrix);
+    return new THREE.Vector3().setFromMatrixPosition(matrix);
+  });
+  expect(positions.every(p => p.y >= 0.3)).toBe(true);
+  expect(positions.every(p => p.x < 19 / 30 + VAN_REAR_X)).toBe(true);
+  update(1, -5, 1 / 60, true);
+  expect(snow.count).toBe(0);
 
-test('the rear and front rims meet across the stern', () => {
-  const scene = new THREE.Scene();
-  const fleet = createSeasonalFleet(scene);
-  fleet.update(stopX(4), 1 / 60, 0, true);
-  scene.updateMatrixWorld(true);
-  const boat = scene.getObjectByName('paper-hero-punt');
-  for (const slope of [0.15, 0.32, 0.5]) {
-    const direction = new THREE.Vector3(0, slope, 1).normalize();
-    for (const t of [0.2, 0.4, 0.6, 0.8]) {
-      const point = new THREE.Vector3(-1.1 - 0.04 * t, 0.5 - 0.04 * t, 0.004 + 0.082 * t);
-      boat.localToWorld(point);
-      const ray = new THREE.Raycaster(point.clone().addScaledVector(direction, 5), direction.clone().negate());
-      expect(ray.intersectObject(boat, true).length, `stern rim at ${t}, view ${slope}`).toBeGreaterThan(0);
-    }
-  }
-});
-
-test('the stern wall blocks the scenery below the connecting rim', () => {
-  const scene = new THREE.Scene();
-  const fleet = createSeasonalFleet(scene);
-  fleet.update(stopX(4), 1 / 60, 0, true);
-  scene.updateMatrixWorld(true);
-  const boat = scene.getObjectByName('paper-hero-punt');
-  for (const horizontal of [-0.6, -0.2, 0, 0.2, 0.6]) {
-    const direction = new THREE.Vector3(horizontal, 0.32, 1).normalize();
-    for (const t of [0.2, 0.4, 0.6, 0.8]) {
-      for (const drop of [0.025, 0.05, 0.08]) {
-        const point = new THREE.Vector3(-1.1 - 0.04 * t + drop * 0.12, 0.5 - 0.04 * t - drop, 0.004 + 0.06 * t);
-        boat.localToWorld(point);
-        const ray = new THREE.Raycaster(point.clone().addScaledVector(direction, 5), direction.clone().negate());
-        expect(
-          ray.intersectObject(boat, true).length,
-          `stern wall: view ${horizontal}, depth ${t}, drop ${drop}`,
-        ).toBeGreaterThan(0);
-      }
-    }
-  }
+  // Verify the fleet emits snow in winter and suppresses it in summer.
+  const fleetScene = new THREE.Scene();
+  const fleet = createSeasonalFleet(fleetScene);
+  const fleetSnow = fleetScene.getObjectByName('paper-van-snow');
+  for (let frame = 0; frame < 15; frame++) fleet.update(frame * 0.25, 1 / 60, frame / 60, false);
+  expect(fleetSnow.count).toBeGreaterThan(0);
+  const summerX = (SEASON_BORDERS.summer + SEASON_BORDERS.autumn) / 2;
+  for (let frame = 0; frame < 60; frame++) fleet.update(summerX + frame * 0.1, 1 / 60, frame / 60, false);
+  expect(fleetSnow.count).toBe(0);
 });

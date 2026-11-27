@@ -1,95 +1,101 @@
 import * as THREE from 'three';
-import { paint } from '../paper-brush';
-import { carded } from '../paper-mesh';
-import { paperSheet } from '../paper-materials';
-import { SEASON_BORDERS } from '../seasons';
+import { seasonalPaperMaterial } from '../paper-materials';
+import { ROAD_RAMP, SEASON_BORDERS } from '../seasons';
 import { TRACK_LENGTH } from '../route';
 import type { SceneryContext } from '../scene-context';
 
-/** Winter snow trails, the spring garden path, the summer river, and the autumn road. */
-export function addTravelSurfaces(ctx: SceneryContext): void {
-  const addSnowTrail = (startX: number, endX: number): void => {
-    const span = endX - startX;
-    const center = (startX + endX) / 2;
-
-    const trail = ctx.detail('paper-snow-trail', center, 0, 1, 0);
-    trail.box(span, 0.025, 0.94, '#e7e9e3', 0, 0.292, 0);
-    for (const z of [-0.18, 0.18]) {
-      trail.box(span, 0.008, 0.035, '#cbd5d6', 0, 0.309, z);
-      trail.box(span, 0.013, 0.045, '#f5f2e7', 0, 0.315, z + 0.035);
-    }
-  };
-
-  addSnowTrail(-10, SEASON_BORDERS.spring - 0.15);
-  addSnowTrail(SEASON_BORDERS.winterEnd, TRACK_LENGTH + 10);
-
-  // Spring garden path.
-  const springLen = SEASON_BORDERS.summer - SEASON_BORDERS.spring;
-  const springCenter = (SEASON_BORDERS.spring + SEASON_BORDERS.summer) / 2;
-  const path = ctx.detail('paper-garden-path', springCenter, 0, 1, 0);
-  path.box(springLen, 0.055, 0.74, '#dfd5bc', 0, 0.295, 0);
-
-  for (let x = SEASON_BORDERS.spring + 0.6; x < SEASON_BORDERS.summer - 0.4; x += 0.95) {
-    path.box(0.42, 0.015, 0.28, '#d1c6aa', x - springCenter, 0.326, Math.round(x * 3) % 2 ? 0.09 : -0.09);
-  }
-
-  // Grass border along garden path.
-  for (const zEdge of [-0.42, 0.42]) {
+function addGrassVerge(
+  ctx: SceneryContext,
+  name: string,
+  startX: number,
+  endX: number,
+  backColor: string,
+  frontColor: string,
+  heightScale = 1,
+): void {
+  const span = endX - startX;
+  const center = (startX + endX) / 2;
+  const verge = ctx.detail(name, center, 0, 1, 0);
+  for (const zEdge of [-0.44, 0.44]) {
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
-    for (let dx = 0; dx <= springLen; dx += 0.55) {
-      shape.lineTo(dx, 0.08 + Math.abs(Math.sin(dx * 2.1 + zEdge)) * 0.12);
+    for (let dx = 0; dx <= span; dx += 0.55) {
+      const fade = THREE.MathUtils.smoothstep(dx, 0, 1.1) * THREE.MathUtils.smoothstep(span - dx, 0, 1.1);
+      const crest = (0.075 + Math.abs(Math.sin(dx * 2.1 + zEdge)) * 0.11) * heightScale;
+      shape.lineTo(dx, crest * fade);
     }
-    shape.lineTo(springLen, 0);
+    shape.lineTo(span, 0);
     shape.closePath();
-    path.raw(
-      new THREE.ExtrudeGeometry(shape, { depth: 0.025, bevelEnabled: false }),
-      zEdge < 0 ? '#93aa7e' : '#a3b88d',
-      SEASON_BORDERS.spring - springCenter,
+    verge.raw(
+      new THREE.ExtrudeGeometry(shape, { depth: 0.024, bevelEnabled: false }),
+      zEdge < 0 ? backColor : frontColor,
+      startX - center,
       0.28,
       zEdge,
     );
   }
+}
 
-  // Calm river current.
-  const summerLen = SEASON_BORDERS.autumn - SEASON_BORDERS.summer;
-  const summerCenter = (SEASON_BORDERS.summer + SEASON_BORDERS.autumn) / 2;
-  const sea = ctx.detail('paper-river', summerCenter, 0, 1, 0);
-  sea.box(summerLen + 0.1, 0.06, 1.44, '#7eaaa0', 0, 0.29, -0.08);
+/** One continuous road from start to finale with seamless seasonal surfaces and verges. */
+export function addTravelSurfaces(ctx: SceneryContext): void {
+  const totalLength = TRACK_LENGTH + 20;
+  const roadMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(totalLength, 0.055, 0.84),
+    seasonalPaperMaterial(ROAD_RAMP, { grainStrength: 0.075 }),
+  );
+  roadMesh.name = 'paper-continuous-road';
+  roadMesh.position.set(TRACK_LENGTH / 2, 0.295, 0);
+  ctx.group.add(roadMesh);
 
-  const waveSpecs: Array<{ z: number; y: number; color: string; amp: number; freq: number }> = [
-    { z: -0.5, y: 0.31, color: '#70988d', amp: 0.13, freq: 1.45 },
-    { z: -0.08, y: 0.31, color: '#8bb4a6', amp: 0.14, freq: 1.75 },
-    { z: 0.35, y: 0.3, color: '#abc9b4', amp: 0.12, freq: 2.0 },
-  ];
-  waveSpecs.forEach((spec, idx) => {
-    const shape = new THREE.Shape();
-    shape.moveTo(0, -0.08);
-    for (let dx = 0; dx <= summerLen + 0.2; dx += 0.35) {
-      const crest = 0.08 + Math.abs(Math.sin(dx * spec.freq + idx * 1.3)) * spec.amp;
-      // Flatten the water at both shores so the low landings stay visible.
-      const shoreFade =
-        THREE.MathUtils.smoothstep(dx, 0.6, 1.2) * THREE.MathUtils.smoothstep(summerLen + 0.2 - dx, 0.6, 1.2);
-      shape.lineTo(dx, crest * shoreFade);
+  // Winter snow tire ruts and soft snowbank edges at start and finale.
+  const addWinterRoadDetails = (startX: number, endX: number): void => {
+    const span = endX - startX;
+    const center = (startX + endX) / 2;
+    const snow = ctx.detail('paper-snow-road', center, 0, 1, 0);
+    for (const z of [-0.2, 0.2]) {
+      snow.box(span, 0.008, 0.042, '#ccd6d8', 0, 0.326, z);
     }
-    shape.lineTo(summerLen + 0.2, -0.08);
-    shape.closePath();
-    const ribbon = carded(new THREE.ExtrudeGeometry(shape, { depth: 0.03, bevelEnabled: false }), spec.color);
-    ribbon.name = 'paper-river-wave';
-    ribbon.position.set(SEASON_BORDERS.summer - 0.1, spec.y, spec.z);
-    ctx.group.add(ribbon);
-    ctx.animate(ribbon, 'wave');
-  });
+    for (const zEdge of [-0.44, 0.44]) {
+      snow.box(span, 0.022, 0.075, '#f2f1e8', 0, 0.312, zEdge);
+    }
+  };
+  addWinterRoadDetails(-10, SEASON_BORDERS.spring - 0.6);
+  addWinterRoadDetails(SEASON_BORDERS.winterEnd + 0.6, TRACK_LENGTH + 10);
 
-  // Autumn country road.
-  const autumnLen = SEASON_BORDERS.winterEnd - SEASON_BORDERS.autumn;
-  const autumnCenter = (SEASON_BORDERS.autumn + SEASON_BORDERS.winterEnd) / 2;
-  const road = ctx.detail('paper-road', autumnCenter, 0, 1, 0);
-  road.box(autumnLen, 0.055, 0.78, '#968b7e', 0, 0.295, 0);
+  // Spring damp country lane pebbles and fresh green grass edges.
+  const springStart = SEASON_BORDERS.spring + 0.5;
+  const springEnd = SEASON_BORDERS.summer - 0.5;
+  const springCenter = (springStart + springEnd) / 2;
+  const springRoad = ctx.detail('paper-spring-road', springCenter, 0, 1, 0);
+  for (let x = springStart + 0.45; x < springEnd - 0.35; x += 0.95) {
+    springRoad.box(0.4, 0.012, 0.24, '#c7bca2', x - springCenter, 0.326, Math.round(x * 3) % 2 ? 0.1 : -0.1);
+  }
+  addGrassVerge(ctx, 'paper-spring-verge', springStart, springEnd, '#88a679', '#9cb78a', 0.95);
 
-  for (const zCurb of [-0.41, 0.41]) road.box(autumnLen, 0.065, 0.07, '#b99770', 0, 0.3, zCurb);
+  // Summer sunlit dirt road tire tracks and warm golden-green meadow edges.
+  const summerStart = SEASON_BORDERS.summer + 0.5;
+  const summerEnd = SEASON_BORDERS.autumn - 0.5;
+  const summerLen = summerEnd - summerStart;
+  const summerCenter = (summerStart + summerEnd) / 2;
+  const summerRoad = ctx.detail('paper-summer-road', summerCenter, 0, 1, 0);
+  for (const z of [-0.19, 0.19]) {
+    summerRoad.box(summerLen, 0.008, 0.06, '#c7b07f', 0, 0.326, z);
+  }
+  for (let x = summerStart + 0.6; x < summerEnd - 0.4; x += 1.25) {
+    summerRoad.box(0.28, 0.009, 0.12, '#ccb98c', x - summerCenter, 0.326, Math.round(x * 5) % 2 ? 0.03 : -0.04);
+  }
+  addGrassVerge(ctx, 'paper-summer-verge', summerStart, summerEnd, '#a5b56d', '#c6ba70', 1.2);
 
-  for (let x = SEASON_BORDERS.autumn + 0.75; x < SEASON_BORDERS.winterEnd - 0.6; x += 1.35) {
-    road.box(0.58, 0.012, 0.055, '#eee2c8', x - autumnCenter, 0.326, 0);
+  // Autumn asphalt curbs and cream dashed road markings.
+  const autumnStart = SEASON_BORDERS.autumn + 0.5;
+  const autumnEnd = SEASON_BORDERS.winterEnd - 0.5;
+  const autumnLen = autumnEnd - autumnStart;
+  const autumnCenter = (autumnStart + autumnEnd) / 2;
+  const autumnRoad = ctx.detail('paper-autumn-road', autumnCenter, 0, 1, 0);
+  for (const zCurb of [-0.43, 0.43]) {
+    autumnRoad.box(autumnLen, 0.062, 0.068, '#b99770', 0, 0.3, zCurb);
+  }
+  for (let x = autumnStart + 0.7; x < autumnEnd - 0.55; x += 1.35) {
+    autumnRoad.box(0.58, 0.012, 0.055, '#eee2c8', x - autumnCenter, 0.326, 0);
   }
 }

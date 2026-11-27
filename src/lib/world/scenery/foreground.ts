@@ -24,7 +24,7 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
   }
   await pause();
 
-  // Spring foreground meadow grass tufts & tiny daisies.
+  // Spring foreground meadow grass tufts with pink blossom accents.
   for (let x = SEASON_BORDERS.spring + 0.8; x < SEASON_BORDERS.summer - 0.6; x += 7.6) {
     const tuft = fg('fg-spring-grass', x, 0.25, 1.15 + (Math.round(x) % 2) * 0.12);
     for (let b = -2; b <= 2; b++) {
@@ -43,36 +43,34 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
         0.018,
       );
     }
-    tuft.oval(0.09, 0.09, '#f6e7d4', 0.12, 0.34, 0.03, undefined, 0.014);
+    tuft.oval(0.09, 0.09, '#f1c7c1', 0.12, 0.34, 0.03, undefined, 0.014);
     tuft.oval(0.04, 0.04, '#e6be6c', 0.12, 0.34, 0.045, undefined, 0.012);
   }
   await pause();
 
-  // Grassy foreground river bank with reeds.
-  for (let x = SEASON_BORDERS.summer + 0.9; x < SEASON_BORDERS.autumn - 0.6; x += 7.2) {
-    const dune = fg('fg-summer-river-bank', x, 0.25, 1.18);
-    const wave = shapeFrom(s => {
-      s.moveTo(-1.1, 0);
-      s.quadraticCurveTo(-0.5, 0.34, 0, 0.24);
-      s.quadraticCurveTo(0.55, 0.38, 1.15, 0);
-      s.closePath();
-    });
-    dune.shape(wave, '#91a879', 0, 0, 0, undefined, 0.022);
-    for (let b = -1; b <= 1; b++) {
-      dune.cut(
+  // Golden-green summer meadow grass tufts with tiny sunflowers along the bottom edge.
+  for (let x = SEASON_BORDERS.summer + 0.9; x < SEASON_BORDERS.autumn - 0.6; x += 6.6) {
+    const tuft = fg('fg-summer-meadow', x, 0.25, 1.18 + (Math.round(x) % 2) * 0.1);
+    for (let b = -2; b <= 2; b++) {
+      const h = 0.34 + (2 - Math.abs(b)) * 0.055;
+      tuft.cut(
         [
-          [b * 0.11 - 0.025, 0.04],
-          [b * 0.19, 0.44 - Math.abs(b) * 0.06],
-          [b * 0.11 + 0.025, 0.04],
+          [b * 0.09 - 0.03, 0],
+          [b * 0.16, h],
+          [b * 0.09 + 0.03, 0],
         ],
-        '#7b9e84',
-        0.25,
+        b % 2 === 0 ? '#9ab05d' : '#c0ba68',
         0,
-        0.025,
+        0,
+        b * 0.005,
         undefined,
         0.018,
       );
     }
+    tuft.oval(0.12, 0.12, '#f2c549', -0.06, 0.38, 0.032, undefined, 0.014);
+    tuft.oval(0.058, 0.058, '#5f4331', -0.06, 0.38, 0.046, undefined, 0.012);
+    tuft.oval(0.085, 0.085, '#dc6551', 0.18, 0.3, 0.032, undefined, 0.014);
+    tuft.oval(0.035, 0.035, '#48382f', 0.18, 0.3, 0.046, undefined, 0.012);
   }
   await pause();
 

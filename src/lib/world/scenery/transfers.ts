@@ -2,7 +2,7 @@ import type { PaperDetail } from '../paper-brush';
 import { SEASON_BORDERS } from '../seasons';
 import type { SceneryContext } from '../scene-context';
 
-/** The same paper lantern marks every season border. */
+/** The same paper lantern marks every season border along the continuous road. */
 function addLantern(detail: PaperDetail): void {
   const post = '#665f53';
   const frame = '#53665b';
@@ -25,34 +25,10 @@ function addLantern(detail: PaperDetail): void {
   );
 }
 
-/** Four short planks connect the land to the river beside the lantern. */
-function addLanding(detail: PaperDetail, direction: -1 | 1): void {
-  for (let index = 0; index < 4; index++) {
-    detail.box(
-      0.18,
-      0.055,
-      0.88,
-      index % 2 ? '#b69374' : '#c09f7c',
-      direction * 0.08 + (index - 1.5) * 0.19,
-      -0.015,
-      0.58,
-    );
-  }
-}
-
-/** Four matching lanterns, with low landings at the two river borders. */
+/** Four matching lanterns mark the seasonal transitions along the road. */
 export function addTransferStations(ctx: SceneryContext): void {
-  const winterSpring = ctx.detail('transfer-winter-spring', SEASON_BORDERS.spring, -0.62);
-  addLantern(winterSpring);
-
-  const springSummer = ctx.detail('transfer-spring-summer', SEASON_BORDERS.summer, -0.62);
-  addLantern(springSummer);
-  addLanding(springSummer, -1);
-
-  const summerAutumn = ctx.detail('transfer-summer-autumn', SEASON_BORDERS.autumn, -0.62);
-  addLantern(summerAutumn);
-  addLanding(summerAutumn, 1);
-
-  const autumnWinter = ctx.detail('transfer-autumn-winter', SEASON_BORDERS.winterEnd, -0.62);
-  addLantern(autumnWinter);
+  addLantern(ctx.detail('transfer-winter-spring', SEASON_BORDERS.spring, -0.62));
+  addLantern(ctx.detail('transfer-spring-summer', SEASON_BORDERS.summer, -0.62));
+  addLantern(ctx.detail('transfer-summer-autumn', SEASON_BORDERS.autumn, -0.62));
+  addLantern(ctx.detail('transfer-autumn-winter', SEASON_BORDERS.winterEnd, -0.62));
 }

@@ -43,9 +43,9 @@ function addStar(parent: THREE.Object3D, x: number, y: number, radius: number): 
 
 function addSun(parent: THREE.Object3D): void {
   const batch = new PaperBatch();
-  // Warm soft paper sun framed cleanly inside the summer stop (clear of Spring, Autumn, and title).
-  batch.add(ovalGeometry(1.48, 1.48, 0.02), '#b8cab8');
-  batch.add(ovalGeometry(1.02, 1.02, 0.02), '#f5e2b2', { z: 0.07 });
+  // Warm golden paper sun framed cleanly inside the summer stop (clear of Spring, Autumn, and title).
+  batch.add(ovalGeometry(1.56, 1.56, 0.02), '#dbe0ba');
+  batch.add(ovalGeometry(1.06, 1.06, 0.02), '#fae19a', { z: 0.07 });
   addObject(parent, 'paper-sun', batch, seasonCenter('summer') - 0.1, 8.65, -6.85);
 }
 

@@ -10,7 +10,7 @@ import { createPaperScenery, type PaperSet } from './scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './vehicles';
 import type { MotionFrame } from './part-motion';
 import { JourneyMotion, stopIndexAt } from './route';
-import { FINALE_SLEIGH_X } from './finale';
+import { FINALE_CAR_X } from './finale';
 import { createYieldPacer } from './schedule';
 import { CameraRig } from './year/camera';
 import { CssLayer } from './year/css-layer';
@@ -237,11 +237,11 @@ export class YearWorld {
         }
       }
       const atFinale = this.motion.finished && !this.motion.moving && this.state.cameraSettled;
-      // Leave room for the entire sleigh beyond the right edge.
+      // Leave room for the entire van beyond the right edge.
       const halfView = (this.camera.position.z + 0.7) * this.rig.halfViewTan * this.camera.aspect;
-      const exitOffset = Math.max(0, this.camera.position.x + halfView + 5 - FINALE_SLEIGH_X);
-      const sleighOffset = this.departure.update(step, this.motion.committedToFinale, this.reduced, exitOffset);
-      this.fleet?.update(this.motion.distance, step, this.time, this.reduced, sleighOffset);
+      const exitOffset = Math.max(0, this.camera.position.x + halfView + 5 - FINALE_CAR_X);
+      const departureOffset = this.departure.update(step, this.motion.committedToFinale, this.reduced, exitOffset);
+      this.fleet?.update(this.motion.distance, step, this.time, this.reduced, departureOffset);
       layersChanged = this.updateLayers();
       this.fireworks.update(step, this.motion.distance, atFinale && this.departure.complete, this.rig.portrait);
     }

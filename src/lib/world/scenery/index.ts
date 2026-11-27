@@ -5,10 +5,11 @@ import { paperSheet, seasonalPaperMaterial } from '../paper-materials';
 import { PaperDetail } from '../paper-brush';
 import { GROUND_RAMP } from '../seasons';
 import {
-  addBeaver,
+  addBeehive,
   addBird,
   addBunny,
   addCat,
+  addCow,
   addDeer,
   addFox,
   addHedgehog,
@@ -30,8 +31,8 @@ import { addFinaleMascots } from './mascots';
 import { mergeStaticChildren, pruneEmptyGroups } from './merge-static';
 import { addDistantRidgeTrees } from './ridge-trees';
 import { addPanoramaRidges } from './ridges';
-import { addRiverDuck, addSummerRiver } from './river';
 import { addSkyDetails } from './sky';
+import { addSummerMeadow } from './summer';
 import { addTransferStations } from './transfers';
 import { addTravelSurfaces } from './surfaces';
 
@@ -125,7 +126,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addTransferStations(ctx);
   await pause();
 
-  // Stop 0 (Winter start, x = 0.00): sleigh clamp -10 .. 16.85; deer at +2.05.
+  // Stop 0 (Winter start, x = 0.00): deer at +2.05.
   addFir(ctx, -5.2, 3.7, true, false, -2.1);
   addFir(ctx, -3.6, 2.7, true, false, -2.35);
   await pause();
@@ -135,25 +136,26 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addFir(ctx, 9.1, 3.5, true, false, -1.98);
   await pause();
 
-  // Stop 1 (iOS v4.5.15, winter, x = 12.65): sleigh clamp -10 .. 16.85; snowman at +2.35.
+  // Stop 1 (iOS v4.5.15, winter, x = 12.65): snowman at +2.35.
   addFir(ctx, stopX(1) - 4.4, 3.1, true, false, -2.2);
   addSnowman(ctx, stopX(1) + 2.35, true, -1.04);
   addFir(ctx, stopX(1) + 4.45, 3.5, true, false, -2.0);
   addFir(ctx, stopX(1) + 5.7, 2.6, true, false, -2.32);
   await pause();
 
-  // Stop 2 (AdGuard on Meta Quest, spring, x = 25.30): bicycle clamp 20.8 .. 41.95.
-  addBroadTree(ctx, stopX(2) - 5.9, 'spring-green', 0.88, -2.35);
+  // Stop 2 (AdGuard on Meta Quest, spring, x = 25.30): cool blooming spring orchard.
+  addBroadTree(ctx, stopX(2) - 5.9, 'spring-blossom', 0.9, -2.35);
   addBroadTree(ctx, stopX(2) - 4.55, 'spring-blossom', 1.08, -2.08);
   addFox(ctx, stopX(2) - 2.75, -1.02);
   addHedgehog(ctx, stopX(2) + 2.85, -1.02);
   addBroadTree(ctx, stopX(2) + 3.5, 'spring-green', 0.96, -2.68);
+  addBroadTree(ctx, stopX(2) + 4.85, 'spring-blossom', 0.88, -2.2);
   await pause();
 
-  // Stop 3 (Browser Extension v5.4, spring, x = 37.95): bicycle clamp 20.8 .. 41.95.
-  addBroadTree(ctx, stopX(3) - 6.35, 'spring-blossom', 0.94, -2.16);
+  // Stop 3 (Browser Extension v5.4, spring, x = 37.95): blossoms and pond with frog.
+  addBroadTree(ctx, stopX(3) - 6.35, 'spring-blossom', 0.96, -2.16);
   addBroadTree(ctx, stopX(3) - 4.15, 'spring-green', 0.9, -3.03);
-  addBroadTree(ctx, stopX(3) - 1.95, 'spring-blossom', 0.78, -2.65);
+  addBroadTree(ctx, stopX(3) - 1.95, 'spring-blossom', 0.82, -2.65);
   addBird(ctx, stopX(3) - 2.9, -1.45);
   addPondWithFrog(ctx, stopX(3) + 3.05, -1.04);
   await pause();
@@ -171,13 +173,13 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   );
   await pause();
 
-  // Stop 4 (AdGuard for Windows v8.0, summer, x = 50.60): punt clamp 46.3 .. 54.9; forest river banks.
-  addSummerRiver(ctx);
-  addRiverDuck(ctx, stopX(4) - 2.85);
-  addBeaver(ctx, stopX(4) + 3.05);
+  // Stop 4 (AdGuard for Windows v8.0, summer, x = 52.10): sunlit countryside meadow with distant river.
+  addSummerMeadow(ctx);
+  addCow(ctx, stopX(4) - 2.9, -1.04);
+  addBeehive(ctx, stopX(4) + 2.95, -1.04);
   await pause();
 
-  // Stop 5 (AdGuard Mini for Android v3.0, autumn, x = 63.25): car clamp 58.95 .. 79.5; lantern at +1.95.
+  // Stop 5 (AdGuard Mini for Android v3.0, autumn): bunny and squirrel flank the story.
   addBroadTree(ctx, stopX(5) - 6.55, 'autumn-birch', 0.92, -2.95);
   addBroadTree(ctx, stopX(5) - 5.55, 'autumn-maple', 1.12, -2.15);
   addBroadTree(ctx, stopX(5) - 4.4, 'autumn-oak', 0.82, -3.0);
@@ -185,7 +187,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addSquirrel(ctx, stopX(5) + 2.85, -1.02);
   await pause();
 
-  // Stop 6 (AdGuard Home 1.0, autumn, x = 75.90): car clamp 58.95 .. 79.5; cat and owl flank the story.
+  // Stop 6 (AdGuard Home 1.0, autumn): cat and owl flank the story.
   addCat(ctx, stopX(6) - 2.85, -1.02);
   addOwl(ctx, stopX(6) + 2.85, -1.4);
   addBroadTree(ctx, stopX(6) + 3.9, 'autumn-birch', 0.88, -3.05);
@@ -195,7 +197,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addAutumnUndergrowth(ctx);
   await pause();
 
-  // The final sleigh passes one decorated tree and the three gift-givers.
+  // The retro van passes one decorated tree and the three gift-givers.
   addFir(ctx, STORY_END - 5.9, 3.3, true, false, -2.05);
   addFir(ctx, STORY_END - 4.4, 2.5, true, false, -2.35);
   addFinaleTree(ctx);

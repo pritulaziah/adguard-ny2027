@@ -3,7 +3,7 @@ import type { PaperDetail } from '../paper-brush';
 import { shapeFrom } from './palette';
 
 export type TreeVariant =
-  'spring-green' | 'spring-blossom' | 'summer-alder' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
+  'spring-green' | 'spring-blossom' | 'summer-alder' | 'summer-birch' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
 
 interface TreePalette {
   bark: string;
@@ -16,7 +16,8 @@ interface TreePalette {
 
 const palettes: Record<TreeVariant, TreePalette> = {
   'spring-green': { bark: '#896c59', back: '#729273', mid: '#8aa881', front: '#a3bc91' },
-  'summer-alder': { bark: '#7f7056', back: '#52755d', mid: '#6f926b', front: '#9ab77e' },
+  'summer-alder': { bark: '#7f7056', back: '#567c55', mid: '#789d60', front: '#a8c273' },
+  'summer-birch': { bark: '#e6dfd0', barkMark: '#746c61', back: '#698e57', mid: '#8cb062', front: '#bdd077' },
   'spring-blossom': { bark: '#856758', back: '#c98e8b', mid: '#e2ada6', front: '#f2cec6', accent: '#9bb388' },
   'autumn-maple': { bark: '#7d6050', back: '#9e5144', mid: '#c66849', front: '#df9451', accent: '#ebbc67' },
   'autumn-birch': { bark: '#dfd5c3', barkMark: '#7d7367', back: '#c5954d', mid: '#dbb15c', front: '#ebd07b' },

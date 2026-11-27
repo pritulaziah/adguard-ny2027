@@ -4,16 +4,16 @@ import { JourneyMotion, JOURNEY_END } from './route.ts';
 import { createSeasonalFleet } from './vehicles/index.ts';
 import { FinaleDeparture } from './year/finale-departure.ts';
 
-test.each([30, 60, 120])('the final sleigh continues through the handoff at %ifps', hz => {
+test.each([30, 60, 120])('the retro van continues through the finale handoff at %ifps', hz => {
   const scene = new THREE.Scene();
   const fleet = createSeasonalFleet(scene);
   const motion = new JourneyMotion();
   const departure = new FinaleDeparture();
-  const sleigh = scene.getObjectByName('paper-sleigh-festive');
+  const van = scene.getObjectByName('paper-retro-van');
   const delta = 1 / hz;
   motion.distance = motion.target = JOURNEY_END - 1.6;
   fleet.update(motion.distance, delta, 0, false);
-  let previousX = sleigh.position.x;
+  let previousX = van.position.x;
   let nearStop = 0;
   let longestNearStop = 0;
   let committedAt;
@@ -31,9 +31,9 @@ test.each([30, 60, 120])('the final sleigh continues through the handoff at %ifp
     if (motion.finished && finishedAt === undefined) finishedAt = time;
     const offset = departure.update(delta, motion.committedToFinale, false, 9);
     fleet.update(motion.distance, delta, time, false, offset);
-    const x = sleigh.position.x;
+    const x = van.position.x;
     const speed = (x - previousX) / delta;
-    expect(speed, 'the sleigh does not reverse during the handoff').toBeGreaterThanOrEqual(-1e-8);
+    expect(speed, 'the van does not reverse during the handoff').toBeGreaterThanOrEqual(-1e-8);
     previousX = x;
     nearStop = speed < 0.2 ? nearStop + delta : 0;
     longestNearStop = Math.max(longestNearStop, nearStop);
@@ -43,7 +43,7 @@ test.each([30, 60, 120])('the final sleigh continues through the handoff at %ifp
   expect(committedAt, 'the visitor reaches the automatic departure').toBeDefined();
   expect(finishedAt).toBeDefined();
   expect(committedAt).toBeLessThan(finishedAt);
-  expect(longestNearStop, 'the sleigh does not pause before its automatic departure').toBeLessThan(0.3);
+  expect(longestNearStop, 'the van does not pause before its automatic departure').toBeLessThan(0.3);
   expect(departure.complete).toBe(true);
-  expect(sleigh.position.x).toBeGreaterThan(JOURNEY_END + 7);
+  expect(van.position.x).toBeGreaterThan(JOURNEY_END + 7);
 });

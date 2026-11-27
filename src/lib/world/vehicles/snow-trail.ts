@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { ovalGeometry, paint } from '../paper-brush';
 import { paperSheet } from '../paper-materials';
-import { SLEIGH_REAR_X } from './sleigh';
+import { VAN_REAR_X } from './retro-van';
 
-/** A low snow trail follows the rear of the sleigh and settles onto the path. */
-export function createSleighSnow(scene: THREE.Scene, name: string) {
+/** A low snow trail follows the rear tires on winter stretches and settles onto the road. */
+export function createSnowTrail(scene: THREE.Scene, name: string) {
   const capacity = 72;
   const lifetime = 0.65;
   const snow = new THREE.InstancedMesh(
@@ -43,7 +43,7 @@ export function createSleighSnow(scene: THREE.Scene, name: string) {
           cursor = (cursor + 1) % capacity;
           const side = i % 2 ? 1 : -1;
           p.age = 0;
-          p.x = x + SLEIGH_REAR_X - 0.08 + (seed - 0.5) * 0.12;
+          p.x = x + VAN_REAR_X - 0.06 + (seed - 0.5) * 0.12;
           p.z = side * 0.19;
           p.vx = -Math.sign(speed) * (0.65 + strength * 0.18 + seed * 0.8);
           p.vz = side * (0.18 + strength * 0.02 + seed * 0.25);
@@ -65,7 +65,6 @@ export function createSleighSnow(scene: THREE.Scene, name: string) {
       snow.setMatrixAt(count++, dummy.matrix);
     }
     snow.count = count;
-    // An empty trail needs no upload, and a hidden mesh needs no draw.
     if (count > 0) snow.instanceMatrix.needsUpdate = true;
     snow.visible = count > 0;
   };

@@ -25,7 +25,7 @@ export function routeProgress(distance: number): number {
 
 /** The last story stands here; the road continues past it. */
 export const STORY_END = routeDistance(STOP_COUNT * STOP_SPACING);
-/** The final sleigh continues through the New Year scene. */
+/** The retro van continues through the New Year scene. */
 export const JOURNEY_END = STORY_END + 6;
 export const TRACK_LENGTH = STORY_END + 14;
 export const WALL_Z = -2.92;
@@ -60,7 +60,7 @@ export function stopIndexAt(distance: number): number {
 /**
  * Free scrolling. Input moves a target, the vehicle eases toward it and stops
  * where the reader left it: no magnetic snapping, no automatic legs.
- * The final approach hands control to the departing sleigh and ends route input.
+ * The final approach hands control to the departing van and ends route input.
  */
 export class JourneyMotion {
   distance = 0;

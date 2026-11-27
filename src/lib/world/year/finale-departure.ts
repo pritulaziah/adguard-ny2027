@@ -5,7 +5,7 @@ function progress(time: number): number {
   return t * t;
 }
 
-/** Moves only the final sleigh after the visitor reaches the destination. */
+/** Moves the retro van off-screen after the visitor reaches the destination. */
 export class FinaleDeparture {
   private active = false;
   private elapsed = 0;

@@ -50,9 +50,9 @@ export async function addPanoramaRidges(ctx: SceneryContext, pause: () => Promis
     }),
     x => {
       const wave = 2.05 + Math.sin(x * 0.14 + 0.3) * 0.72 + Math.sin(x * 0.31 + 1.4) * 0.44 + Math.cos(x * 0.53) * 0.18;
-      // Gently dip along the summer coast so the open sea feels wide and airy.
-      const coastDip = Math.exp(-Math.pow((x - seasonCenter('summer')) / 9.5, 2)) * 0.88;
-      return Math.max(1.05, wave - coastDip);
+      // Gently lower the far hills behind the summer valley so the meadow sky feels wide and open.
+      const valleyDip = Math.exp(-Math.pow((x - seasonCenter('summer')) / 9.5, 2)) * 0.45;
+      return Math.max(1.2, wave - valleyDip);
     },
   );
   await pause();

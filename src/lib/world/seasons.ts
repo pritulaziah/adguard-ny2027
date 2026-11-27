@@ -32,8 +32,8 @@ export const SEASON_BORDERS = {
 export const WALL_RAMP: SeasonalRamp = scale({
   base: '#7e8fa9',
   stops: [
-    { from: 13.0, to: 20.0, color: '#748b63' },
-    { from: 35.0, to: 42.0, color: '#5f8a9b' },
+    { from: 13.0, to: 20.0, color: '#78967c' },
+    { from: 35.0, to: 42.0, color: '#5f94b0' },
     { from: 46.0, to: 53.0, color: '#a87d47' },
     { from: 57.5, to: 63.5, color: '#a46d6b' },
     { from: 68.3, to: 74.7, color: '#7588a7' },
@@ -43,19 +43,30 @@ export const WALL_RAMP: SeasonalRamp = scale({
 export const GROUND_RAMP: SeasonalRamp = scale({
   base: '#e4e5db',
   stops: [
-    { from: 13.2, to: 19.8, color: '#b5c199' },
-    { from: 35.2, to: 41.8, color: '#dfd0a6' },
+    { from: 13.2, to: 19.8, color: '#b2c69e' },
+    { from: 35.2, to: 41.8, color: '#dfd096' },
     { from: 46.2, to: 52.8, color: '#d1ac7f' },
     { from: 57.5, to: 63.5, color: '#c79c89' },
     { from: 68.5, to: 74.5, color: '#e4e5db' },
   ],
 });
 
+export const ROAD_RAMP: SeasonalRamp = scale({
+  base: '#e5e7e1',
+  stops: [
+    { from: 13.4, to: 19.6, color: '#d4c8ae' },
+    { from: 35.4, to: 41.6, color: '#dbc799' },
+    { from: 46.4, to: 52.6, color: '#91877c' },
+    { from: 57.5, to: 63.5, color: '#8a8076' },
+    { from: 68.4, to: 74.6, color: '#e5e7e1' },
+  ],
+});
+
 export const DISTANT_PEAKS_RAMP: SeasonalRamp = scale({
   base: '#9ba8be',
   stops: [
-    { from: 13.0, to: 20.0, color: '#849c77' },
-    { from: 35.0, to: 42.0, color: '#729aa6' },
+    { from: 13.0, to: 20.0, color: '#83a085' },
+    { from: 35.0, to: 42.0, color: '#74a2b2' },
     { from: 46.0, to: 53.0, color: '#b38c5b' },
     { from: 57.5, to: 63.5, color: '#ae7c77' },
     { from: 68.3, to: 74.7, color: '#94a4bd' },
@@ -65,8 +76,8 @@ export const DISTANT_PEAKS_RAMP: SeasonalRamp = scale({
 export const FAR_RIDGE_RAMP: SeasonalRamp = scale({
   base: '#c5cdd6',
   stops: [
-    { from: 13.0, to: 20.0, color: '#99ab87' },
-    { from: 35.0, to: 42.0, color: '#86a9ab' },
+    { from: 13.0, to: 20.0, color: '#96b192' },
+    { from: 35.0, to: 42.0, color: '#8bb091' },
     { from: 46.0, to: 53.0, color: '#ba9468' },
     { from: 57.5, to: 63.5, color: '#b48780' },
     { from: 68.3, to: 74.7, color: '#c1cad5' },
@@ -76,8 +87,8 @@ export const FAR_RIDGE_RAMP: SeasonalRamp = scale({
 export const NEAR_RIDGE_RAMP: SeasonalRamp = scale({
   base: '#dde1da',
   stops: [
-    { from: 13.0, to: 20.0, color: '#aebc94' },
-    { from: 35.0, to: 42.0, color: '#c8be9b' },
+    { from: 13.0, to: 20.0, color: '#a8c098' },
+    { from: 35.0, to: 42.0, color: '#c4c788' },
     { from: 46.0, to: 53.0, color: '#ca9f77' },
     { from: 57.5, to: 63.5, color: '#c39787' },
     { from: 68.3, to: 74.7, color: '#dce0da' },
@@ -87,8 +98,8 @@ export const NEAR_RIDGE_RAMP: SeasonalRamp = scale({
 export const FLOOR_RAMP: SeasonalRamp = scale({
   base: '#dcd9c8',
   stops: [
-    { from: 13.2, to: 19.8, color: '#d5d8bc' },
-    { from: 35.2, to: 41.8, color: '#e2d6b6' },
+    { from: 13.2, to: 19.8, color: '#d2dac0' },
+    { from: 35.2, to: 41.8, color: '#e6d8aa' },
     { from: 46.2, to: 52.8, color: '#ded0b4' },
     { from: 57.5, to: 63.5, color: '#dbc8b7' },
     { from: 68.5, to: 74.5, color: '#dcd9c8' },
