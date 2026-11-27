@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
 import { SEASON_BORDERS } from './seasons';
+import { dragonfly, dragonflyWing } from './dragonfly-motion';
 
 /**
  * Every moving part names one motion. The registry below binds the motion to
@@ -22,6 +23,8 @@ export const PART_KINDS = [
   'crab-step',
   'crab-claw',
   'gull',
+  'dragonfly',
+  'dragonfly-wing',
   'spin',
   'wave',
 ] as const;
@@ -211,6 +214,8 @@ const motions: Record<PartKind, PartMotion> = {
   'crab-step': crabStep,
   'crab-claw': crabClaw,
   gull,
+  dragonfly,
+  'dragonfly-wing': dragonflyWing,
   spin,
   wave,
 };

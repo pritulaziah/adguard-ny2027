@@ -5,6 +5,7 @@ import { addRiverPier } from './pier';
 import { addLilyPads } from './lily-pads';
 import { addRiverWillow } from './willow';
 import { addRiverReeds } from './reeds';
+import { addRiverDragonflies } from './dragonflies';
 
 export { addRiverDuck } from './duck';
 
@@ -16,4 +17,5 @@ export function addSummerRiver(ctx: SceneryContext): void {
   addRiverPier(ctx);
   addRiverReeds(ctx);
   addLilyPads(ctx);
+  addRiverDragonflies(ctx);
 }
