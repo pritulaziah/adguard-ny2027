@@ -144,8 +144,8 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   await pause();
 
   // Stop 2 (AdGuard on Meta Quest, spring, x = 25.30): cool blooming spring orchard.
-  addBroadTree(ctx, stopX(2) - 5.9, 'spring-blossom', 0.9, -2.35);
-  addBroadTree(ctx, stopX(2) - 4.55, 'spring-blossom', 1.08, -2.08);
+  addBroadTree(ctx, stopX(2) - 5.4, 'spring-blossom', 0.9, -2.35);
+  addBroadTree(ctx, stopX(2) - 4.0, 'spring-blossom', 1.08, -2.08);
   addFox(ctx, stopX(2) - 2.75, -1.02);
   addHedgehog(ctx, stopX(2) + 2.85, -1.02);
   addBroadTree(ctx, stopX(2) + 3.5, 'spring-green', 0.96, -2.68);
@@ -180,8 +180,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   await pause();
 
   // Stop 5 (AdGuard Mini for Android v3.0, autumn): bunny and squirrel flank the story.
-  addBroadTree(ctx, stopX(5) - 6.55, 'autumn-birch', 0.92, -2.95);
-  addBroadTree(ctx, stopX(5) - 5.55, 'autumn-maple', 1.12, -2.15);
+  addBroadTree(ctx, stopX(5) - 5.3, 'autumn-maple', 1.12, -2.15);
   addBroadTree(ctx, stopX(5) - 4.4, 'autumn-oak', 0.82, -3.0);
   addBunny(ctx, stopX(5) - 2.85, -0.98);
   addSquirrel(ctx, stopX(5) + 2.85, -1.02);
@@ -192,7 +191,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addOwl(ctx, stopX(6) + 2.85, -1.4);
   addBroadTree(ctx, stopX(6) + 3.9, 'autumn-birch', 0.88, -3.05);
   addBroadTree(ctx, stopX(6) + 4.6, 'autumn-maple', 1.06, -2.12);
-  addBroadTree(ctx, stopX(6) + 5.8, 'autumn-oak', 0.88, -2.84);
+  addBroadTree(ctx, stopX(6) + 5.4, 'autumn-oak', 0.88, -2.84);
   await pause();
   addAutumnUndergrowth(ctx);
   await pause();
