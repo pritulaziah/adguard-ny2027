@@ -19,6 +19,14 @@ export function addSquirrel(ctx: AnimalBuilderContext, x: number, z = -1.02): vo
   // Rotate at the tail root, with the base tucked behind the body.
   tail.geometry.translate(0, -0.25, 0);
   tail.position.set(0.1, -0.16, -0.06);
+  // A raised warm face follows the curl, leaving a shaded outer fold.
+  cut(tail, shapeFrom(s => {
+    s.moveTo(0.03, 0.23);
+    s.bezierCurveTo(0.79, 0.2, 0.94, 1.34, 0.53, 1.5);
+    s.bezierCurveTo(0.17, 1.62, 0.05, 1.18, 0.31, 1.09);
+    s.bezierCurveTo(0.72, 1.03, 0.62, 0.42, 0.03, 0.31);
+    s.closePath();
+  }), '#cc8753', 0, -0.25, 0.042, 0.022);
   oval(body, 0.25, 0.48, CREAM, -0.08, 0.03, 0.045, 0.02);
   oval(body, 0.31, 0.12, '#b96f44', 0, -0.3, 0.06, 0.026);
   // Ears belong to the head outline, with no overlapping paper edges.

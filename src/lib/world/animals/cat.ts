@@ -10,26 +10,28 @@ export function addCat(ctx: AnimalBuilderContext, x: number, z = -1.02): void {
 
   // Graceful upright S-tail with a small cream tip, tucked behind the body.
   const tail = shapeFrom(s => {
-    s.moveTo(-0.16, 0.2);
-    s.bezierCurveTo(-0.46, 0.1, -0.62, 0.34, -0.54, 0.62);
-    s.bezierCurveTo(-0.515, 0.72, -0.54, 0.8, -0.58, 0.85);
-    s.lineTo(-0.51, 0.79);
-    s.bezierCurveTo(-0.46, 0.71, -0.435, 0.64, -0.42, 0.5);
-    s.bezierCurveTo(-0.4, 0.32, -0.3, 0.2, -0.16, 0.2);
+    s.moveTo(-0.16, 0.15);
+    s.bezierCurveTo(-0.49, 0.09, -0.7, 0.32, -0.63, 0.61);
+    s.bezierCurveTo(-0.59, 0.77, -0.62, 0.85, -0.7, 0.86);
+    s.bezierCurveTo(-0.8, 0.88, -0.78, 1.0, -0.68, 0.99);
+    s.bezierCurveTo(-0.46, 0.97, -0.43, 0.75, -0.47, 0.57);
+    s.bezierCurveTo(-0.52, 0.39, -0.36, 0.28, -0.15, 0.3);
     s.closePath();
   });
   const tailTip = shapeFrom(s => {
-    s.moveTo(-0.51, 0.79);
-    s.lineTo(-0.58, 0.85);
-    s.bezierCurveTo(-0.62, 0.9, -0.68, 0.91, -0.67, 0.95);
-    s.bezierCurveTo(-0.65, 1.02, -0.55, 0.89, -0.51, 0.79);
+    s.moveTo(-0.63, 0.78);
+    s.bezierCurveTo(-0.64, 0.83, -0.67, 0.855, -0.7, 0.86);
+    s.bezierCurveTo(-0.8, 0.88, -0.78, 1.0, -0.68, 0.99);
+    s.bezierCurveTo(-0.57, 0.98, -0.51, 0.92, -0.48, 0.83);
+    s.lineTo(-0.55, 0.85);
+    s.lineTo(-0.58, 0.79);
     s.closePath();
   });
   const movingTail = new THREE.Group();
   movingTail.position.set(-0.16, 0.2, -0.08);
   cat.group.add(movingTail);
-  cut(movingTail, tail, '#566470', 0.16, -0.2, 0, 0.03);
-  cut(movingTail, tailTip, CREAM, 0.16, -0.2, 0, 0.03);
+  cut(movingTail, tail, '#566470', 0.16, -0.2, 0, 0.038);
+  cut(movingTail, tailTip, CREAM, 0.16, -0.2, 0.04, 0.022);
 
   // Seated pear-shaped body with tucked haunch.
   const body = shapeFrom(s => {
