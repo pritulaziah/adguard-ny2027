@@ -1,4 +1,3 @@
-import { get } from 'svelte/store';
 import { openStoryId } from '../../content/story-modal';
 import { controlsHelpOpen } from '../../content/controls-help';
 
@@ -20,11 +19,13 @@ export class WorldInput {
   private touchLastY = 0;
   private heldKeys = new Set<string>();
   private subscriptions: (() => void)[] = [];
+  private storyOpen = false;
+  private helpOpen = false;
 
   constructor(private readonly handlers: WorldInputHandlers) {}
 
   private get blocked(): boolean {
-    return !!get(openStoryId) || get(controlsHelpOpen);
+    return this.storyOpen || this.helpOpen;
   }
 
   update(delta: number): void {
@@ -45,9 +46,11 @@ export class WorldInput {
     document.addEventListener('visibilitychange', this.reset);
     this.subscriptions = [
       openStoryId.subscribe(value => {
+        this.storyOpen = !!value;
         if (value) this.reset();
       }),
       controlsHelpOpen.subscribe(value => {
+        this.helpOpen = !!value;
         if (value) this.reset();
       }),
     ];

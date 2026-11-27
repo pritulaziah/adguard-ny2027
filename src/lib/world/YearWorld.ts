@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import type { WebGPURenderer } from 'three/webgpu';
-import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import { get } from 'svelte/store';
 import type { Interaction } from '../content/i18n';
 import { objectFact } from '../content/object-fact';
@@ -14,6 +13,7 @@ import { JourneyMotion, stopIndexAt } from './route';
 import { FINALE_SLEIGH_X } from './finale';
 import { createYieldPacer } from './schedule';
 import { CameraRig } from './year/camera';
+import { CssLayer } from './year/css-layer';
 import { WorldInput, STEP_LIMIT } from './year/input';
 import { precompileRoute } from './year/precompile';
 import { SparkLayer } from './year/sparks';
@@ -43,8 +43,7 @@ export class YearWorld {
   readonly loaded: Promise<void>;
   private resolveLoaded!: () => void;
   private renderer: WebGPURenderer;
-  private cssRenderer: CSS3DRenderer;
-  private cssScene = new THREE.Scene();
+  private css: CssLayer;
   private journey: JourneyStore;
   private onerror: () => void;
   private paper: PaperSet | null = null;
@@ -66,6 +65,8 @@ export class YearWorld {
   private observer: ResizeObserver;
   private found = new Set<string>();
   private frame: MotionFrame = { time: 0, delta: 0, reduced: false, distance: 0 };
+  private storyOpen = false;
+  private unsubscribeStory: () => void;
 
   constructor(host: WorldHost) {
     this.scene = host.scene;
@@ -80,15 +81,14 @@ export class YearWorld {
     this.unsubscribe = host.journey.subscribe(state => {
       this.state = state;
     });
-    this.cssRenderer = new CSS3DRenderer();
-    this.cssRenderer.domElement.style.pointerEvents = 'none';
-    // Focus must not scroll the layer away from its WebGL geometry.
-    this.cssRenderer.domElement.style.overflow = 'clip';
-    host.layer.append(this.cssRenderer.domElement);
+    this.unsubscribeStory = openStoryId.subscribe(value => {
+      this.storyOpen = !!value;
+    });
+    this.css = new CssLayer(host.layer);
     this.rig = new CameraRig(host.camera, host.renderer, this.reduced);
     this.scene.background = this.rig.background;
     this.stories = new StoryLayer(host.layer);
-    this.sparks = new SparkLayer(this.cssScene, host.camera, host.renderer);
+    this.sparks = new SparkLayer(this.css.scene, host.camera);
     createWalls(this.scene, this.rig.cameraX);
     this.weatherFields = createWeather(this.scene, this.reduced);
     this.fireworks = new FinaleFireworks(this.scene, this.camera, this.reduced);
@@ -144,7 +144,7 @@ export class YearWorld {
     this.ready = true;
     this.rig.update(1, true, 0, 0);
     this.updateLayers();
-    this.cssRenderer.render(this.cssScene, this.camera);
+    this.css.render(this.camera, true);
     // Draw the first frame behind the loading screen. Pipeline and buffer setup
     // happens here, so the reveal shows a finished frame instead of a stall.
     this.renderer.render(this.scene, this.camera);
@@ -170,7 +170,8 @@ export class YearWorld {
     const height = this.renderer.domElement.clientHeight;
     if (!width || !height) return;
     this.rig.resize(width, height);
-    this.cssRenderer.setSize(width, height);
+    this.css.resize(width, height);
+    this.sparks.resize(width, height);
     this.stories.resize(this.rig.portrait);
     this.settling = 0;
   };
@@ -184,9 +185,9 @@ export class YearWorld {
     this.journey.update(s => ({ ...s, moving: true, cameraSettled: false }));
   }
 
-  private updateLayers(): void {
+  private updateLayers(): boolean {
     this.stories.update(this.motion.distance);
-    this.sparks.update(this.motion.distance, this.rig.portrait);
+    return this.sparks.update(this.motion.distance, this.rig.portrait);
   }
 
   private animateParts(delta: number): void {
@@ -209,9 +210,10 @@ export class YearWorld {
   // Threlte calls this task every frame, before it renders the scene.
   tick = (delta: number): void => {
     if (this.disposed) return;
-    if (get(openStoryId)) return;
+    if (this.storyOpen) return;
     const step = Math.min(delta, 0.05);
     this.time += step;
+    let layersChanged = false;
     if (this.ready) {
       this.input.update(step);
       const arrived = this.motion.step(step);
@@ -236,15 +238,16 @@ export class YearWorld {
       }
       const atFinale = this.motion.finished && !this.motion.moving && this.state.cameraSettled;
       // Leave room for the entire sleigh beyond the right edge.
-      const halfView =
-        (this.camera.position.z + 0.7) * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.aspect;
+      const halfView = (this.camera.position.z + 0.7) * this.rig.halfViewTan * this.camera.aspect;
       const exitOffset = Math.max(0, this.camera.position.x + halfView + 5 - FINALE_SLEIGH_X);
       const sleighOffset = this.departure.update(step, this.motion.committedToFinale, this.reduced, exitOffset);
       this.fleet?.update(this.motion.distance, step, this.time, this.reduced, sleighOffset);
-      this.updateLayers();
+      layersChanged = this.updateLayers();
       this.fireworks.update(step, this.motion.distance, atFinale && this.departure.complete, this.rig.portrait);
     }
-    this.cssRenderer.render(this.cssScene, this.camera);
+    // The CSS layer only changes with the camera or a spark, so a still frame
+    // leaves the DOM transforms alone.
+    this.css.render(this.camera, layersChanged);
   };
 
   destroy(): void {
@@ -253,10 +256,11 @@ export class YearWorld {
     this.resolveLoaded();
     this.observer.disconnect();
     this.unsubscribe();
+    this.unsubscribeStory();
     this.input.unbind();
     this.stories.destroy();
     this.sparks.destroy();
-    this.cssRenderer.domElement.remove();
+    this.css.destroy();
     const geometries = new Set<THREE.BufferGeometry>();
     const materials = new Set<THREE.Material>();
     const textures = new Set<THREE.Texture>();

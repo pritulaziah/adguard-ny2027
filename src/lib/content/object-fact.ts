@@ -12,8 +12,10 @@ export interface FactPosition {
   height: number;
 }
 
-/** The figure whose note is open, with its last screen position. */
+/** The figure whose note is open. Position updates do not change the key. */
 export const objectFact = writable<FactPosition | null>(null);
+
+const objectFactKey = derived(objectFact, $fact => $fact?.key ?? null);
 
 export function objectNoteCopy(key: Interaction, language: Language) {
   const ru = language === 'ru';
@@ -43,6 +45,6 @@ export function objectNoteCopy(key: Interaction, language: Language) {
   };
 }
 
-export const objectFactCopy = derived([language, objectFact], ([$language, $fact]) => {
-  return $fact ? objectNoteCopy($fact.key, $language) : null;
+export const objectFactCopy = derived([language, objectFactKey], ([$language, $key]) => {
+  return $key ? objectNoteCopy($key, $language) : null;
 });

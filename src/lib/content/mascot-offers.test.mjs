@@ -39,6 +39,27 @@ test('an open VPN card changes its code when the language changes', () => {
   }
 });
 
+test('a moved card does not rebuild its copy', () => {
+  const original = get(language);
+  try {
+    language.set('en');
+    objectFact.set({ key: 'tengu', x: 200, y: 400, width: 400, height: 800 });
+    let updates = 0;
+    let latest = null;
+    const unsubscribe = objectFactCopy.subscribe(value => {
+      updates++;
+      latest = value;
+    });
+    objectFact.set({ key: 'tengu', x: 240, y: 430, width: 400, height: 800 });
+    expect(updates, 'a position update does not rebuild the copy').toBe(1);
+    expect(latest.promo.code).toBe('NYVPN2026');
+    unsubscribe();
+  } finally {
+    objectFact.set(null);
+    language.set(original);
+  }
+});
+
 test('animal notes keep their facts without a promo button', () => {
   for (const [key, facts] of Object.entries(figureFacts)) {
     for (const language of ['en', 'ru']) {

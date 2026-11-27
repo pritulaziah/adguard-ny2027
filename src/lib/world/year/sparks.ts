@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import type { WebGPURenderer } from 'three/webgpu';
 import { CSS3DSprite } from 'three/addons/renderers/CSS3DRenderer.js';
 import { get } from 'svelte/store';
 import { language, translations, type Interaction } from '../../content/i18n';
@@ -25,11 +24,14 @@ export class SparkLayer {
   private labels = translations[get(language)].interactions;
   private unsubscribeLanguage: () => void;
   private unsubscribeFact: () => void;
+  private viewWidth = 0;
+  private viewHeight = 0;
+  /** World units to CSS pixels for one unit of depth in portrait view. */
+  private portraitPixels = 0;
 
   constructor(
     private readonly cssScene: THREE.Scene,
     private readonly camera: THREE.PerspectiveCamera,
-    private readonly renderer: WebGPURenderer,
   ) {
     this.unsubscribeLanguage = language.subscribe(value => {
       this.labels = translations[value].interactions;
@@ -37,6 +39,13 @@ export class SparkLayer {
     this.unsubscribeFact = objectFact.subscribe(value => {
       this.fact = value;
     });
+  }
+
+  /** Caches the viewport size, so the frame loop reads no layout. */
+  resize(width: number, height: number): void {
+    this.viewWidth = width;
+    this.viewHeight = height;
+    this.portraitPixels = (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))) / height;
   }
 
   create(paper: PaperSet, onActivate: (key: Interaction) => void): void {
@@ -73,6 +82,7 @@ export class SparkLayer {
     }
     anchor.updateWorldMatrix(true, false);
     const world = local.clone().applyMatrix4(anchor.matrixWorld);
+    sprite.position.copy(world);
     this.cssScene.add(sprite);
     this.sparks.push({ key, object: sprite, button, anchor, local, x: world.x, position: world, expanded: false });
   }
@@ -86,10 +96,10 @@ export class SparkLayer {
     if (spark) this.positionFact(spark);
   }
 
-  private positionFact(spark: Spark): void {
+  private positionFact(spark: Spark): boolean {
     const point = this.projection.copy(spark.position).project(this.camera);
-    const width = this.renderer.domElement.clientWidth;
-    const height = this.renderer.domElement.clientHeight;
+    const width = this.viewWidth;
+    const height = this.viewHeight;
     const next = { key: spark.key, x: ((point.x + 1) * width) / 2, y: ((1 - point.y) * height) / 2, width, height };
     const previous = this.fact;
     if (
@@ -99,46 +109,58 @@ export class SparkLayer {
       Math.abs(previous.y - next.y) > 0.75 ||
       previous.width !== width ||
       previous.height !== height
-    )
+    ) {
       objectFact.set(next);
+      return true;
+    }
+    return false;
   }
 
-  update(distance: number, portrait: boolean): void {
+  /** Returns true when a spark or the note changed, so the CSS layer needs a new frame. */
+  update(distance: number, portrait: boolean): boolean {
+    let changed = false;
     const labels = this.labels;
     for (const spark of this.sparks) {
       const label = labels[spark.key].label;
       if (spark.button.title !== label) {
         spark.button.title = label;
         spark.button.setAttribute('aria-label', label);
+        changed = true;
       }
-      // Keep the touch target steady while the paper character moves underneath it.
-      spark.object.position.copy(spark.position);
+      // The mark keeps its anchor while the paper character moves underneath it,
+      // so only the scale and the visibility need a look each frame.
       if (portrait) {
         const view = this.camera.matrixWorldInverse.elements;
         const point = spark.position;
         const depth = -(view[2] * point.x + view[6] * point.y + view[10] * point.z + view[14]);
-        const pixel =
-          (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))) / this.renderer.domElement.clientHeight;
-        spark.object.scale.setScalar((Math.max(depth, 0.1) * pixel * 44) / 42);
-      } else {
+        spark.object.scale.setScalar((Math.max(depth, 0.1) * this.portraitPixels * 44) / 42);
+      } else if (spark.object.scale.x !== 0.0075) {
         spark.object.scale.setScalar(0.0075);
+        changed = true;
       }
       // The marks stay visible while the vehicle moves; only distance hides them.
       const visible = Math.abs(spark.x - distance) < 5.6;
       if (spark.object.visible !== visible) {
         spark.object.visible = visible;
         spark.button.inert = !visible;
+        changed = true;
       }
       const factOpen = this.fact?.key === spark.key;
       if (factOpen !== spark.expanded) {
         spark.expanded = factOpen;
         spark.button.setAttribute('aria-expanded', String(factOpen));
+        changed = true;
       }
       if (factOpen) {
-        if (visible) this.positionFact(spark);
-        else objectFact.set(null);
+        if (visible) {
+          if (this.positionFact(spark)) changed = true;
+        } else {
+          objectFact.set(null);
+          changed = true;
+        }
       }
     }
+    return changed;
   }
 
   destroy(): void {

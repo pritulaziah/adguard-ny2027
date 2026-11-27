@@ -10,7 +10,10 @@ export class CameraRig {
   readonly cameraX: ScalarUniform = createScalarUniform(0);
   readonly background = new THREE.Color(WALL_RAMP.base);
   readonly desiredPosition = new THREE.Vector3();
+  /** Tangent of the half vertical field of view; the route uses it for the exit view. */
+  halfViewTan = Math.tan(THREE.MathUtils.degToRad(55 / 2));
   portrait = false;
+  private viewDistance = 8.35;
   private look = new THREE.Vector3();
   private desiredLook = new THREE.Vector3();
   private pointer = new THREE.Vector2();
@@ -29,6 +32,17 @@ export class CameraRig {
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
     }
+    // Short screens need a slightly wider view; both values change on resize only.
+    const shortT = THREE.MathUtils.clamp((560 - height) / (560 - 360), 0, 1);
+    const desiredFov = THREE.MathUtils.lerp(54, 55, shortT);
+    if (Math.abs(this.camera.fov - desiredFov) > 0.001) {
+      this.camera.fov = desiredFov;
+      this.camera.updateProjectionMatrix();
+    }
+    this.halfViewTan = Math.tan(THREE.MathUtils.degToRad(desiredFov / 2));
+    const wallWidth = this.portrait ? 8.4 : 5.35;
+    const minDistance = THREE.MathUtils.lerp(8.35, 8.65, shortT);
+    this.viewDistance = Math.max(minDistance, wallWidth / (2 * this.halfViewTan * this.camera.aspect * 0.87));
   }
 
   setPointer(x: number, y: number): void {
@@ -36,23 +50,7 @@ export class CameraRig {
   }
 
   update(delta: number, immediate: boolean, distance: number, speed: number): void {
-    const height = this.renderer.domElement.clientHeight || window.innerHeight;
-    const aspect = this.camera.aspect;
-    const shortT = THREE.MathUtils.clamp((560 - height) / (560 - 360), 0, 1);
-    const desiredFov = THREE.MathUtils.lerp(54, 55, shortT);
-    if (Math.abs(this.camera.fov - desiredFov) > 0.01) {
-      this.camera.fov = desiredFov;
-      this.camera.updateProjectionMatrix();
-    }
-
     // Portrait views include both figures beside the story. Copy stays in screen space.
-    const wallWidth = this.portrait ? 8.4 : 5.35;
-    const minDistance = THREE.MathUtils.lerp(8.35, 8.65, shortT);
-    const viewDistance = Math.max(
-      minDistance,
-      wallWidth / (2 * Math.tan(THREE.MathUtils.degToRad(desiredFov / 2)) * aspect * 0.87),
-    );
-
     this.pointerSmooth.lerp(this.pointer, 1 - Math.exp(-delta * 3.8));
     const parallaxX = this.portrait || this.reduced ? 0 : 0.58;
     const parallaxY = this.portrait || this.reduced ? 0 : 0.26;
@@ -61,6 +59,7 @@ export class CameraRig {
     const speedFactor = THREE.MathUtils.clamp(Math.abs(speed) / 2.2, 0, 1);
     const peek = this.reduced ? 0 : Math.sin(fraction * Math.PI) * speedFactor;
     const framedDistance = distance + finaleCameraOffset(distance);
+    const viewDistance = this.viewDistance;
 
     // Pivot gently around the animal plane (z ~ -1.05) so clickable sparks stay steady
     // while close foreground planes and deep hills/sky glide smoothly in opposite parallax.

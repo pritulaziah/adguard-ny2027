@@ -45,6 +45,7 @@
     let stopped = false;
     let last = performance.now();
     let loaded = false;
+    let blocked = false;
 
     const size = (): void => {
       const width = host.clientWidth;
@@ -57,23 +58,38 @@
     observer.observe(host);
     size();
 
+    const start = (): void => {
+      if (stopped || blocked || document.hidden || !loaded) return;
+      last = performance.now();
+      renderer.setAnimationLoop(frame);
+    };
+
+    const stop = (): void => {
+      renderer.setAnimationLoop(null);
+    };
+
     const frame = (time: number): void => {
       const delta = Math.min((time - last) / 1000, 0.05);
       last = time;
-      // Keep the canvas still while the reader uses the story dialog.
-      if (get(openStoryId) || get(controlsHelpOpen)) return;
       world?.tick(delta);
       renderer.render(scene, camera);
     };
 
+    // A dialog pauses the loop, so the closed world costs nothing.
+    const syncBlocked = (): void => {
+      const next = !!get(openStoryId) || !!get(controlsHelpOpen);
+      if (next === blocked) return;
+      blocked = next;
+      if (blocked) stop();
+      else start();
+    };
+    const unsubscribeStory = openStoryId.subscribe(syncBlocked);
+    const unsubscribeHelp = controlsHelpOpen.subscribe(syncBlocked);
+
     // A hidden tab must not keep the GPU busy.
     const onVisibility = (): void => {
-      if (document.hidden) {
-        renderer.setAnimationLoop(null);
-      } else if (loaded) {
-        last = performance.now();
-        renderer.setAnimationLoop(frame);
-      }
+      if (document.hidden) stop();
+      else start();
     };
     document.addEventListener('visibilitychange', onVisibility);
 
@@ -107,9 +123,7 @@
         void created.loaded.then(() => {
           if (stopped || world !== created) return;
           loaded = true;
-          if (document.hidden) return;
-          last = performance.now();
-          renderer.setAnimationLoop(frame);
+          start();
         });
       } catch (cause) {
         console.error(cause);
@@ -121,6 +135,8 @@
     cleanup = (): void => {
       stopped = true;
       renderer.setAnimationLoop(null);
+      unsubscribeStory();
+      unsubscribeHelp();
       document.removeEventListener('visibilitychange', onVisibility);
       observer.disconnect();
       world?.destroy();
