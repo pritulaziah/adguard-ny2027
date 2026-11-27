@@ -52,9 +52,9 @@ export async function addDistantRidgeTrees(ctx: SceneryContext, pause: () => Pro
     { x: stopX(3) - 4.8, kind: 'round', color: '#7e9975', scale: 0.76 },
     { x: stopX(3) - 3.2, kind: 'round', color: '#8aa47d', scale: 0.66 },
     { x: stopX(3) + 3.7, kind: 'round', color: '#7a9671', scale: 0.72 },
-    // Summer distant headland pines
-    { x: stopX(4) - 2.45, kind: 'fir', color: '#699194', scale: 0.7 },
-    { x: stopX(4) + 4.45, kind: 'fir', color: '#719898', scale: 0.74 },
+    // Summer broadleaf silhouettes along the far river bank.
+    { x: stopX(4) - 2.45, kind: 'round', color: '#73988c', scale: 0.82 },
+    { x: stopX(4) + 4.45, kind: 'round', color: '#7e9f91', scale: 0.9 },
     // Autumn
     { x: stopX(5) - 2.6, kind: 'round', color: '#ad7d58', scale: 0.84 },
     { x: stopX(5) - 0.9, kind: 'round', color: '#bf9160', scale: 0.68 },

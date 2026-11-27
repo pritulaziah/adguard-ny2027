@@ -1,7 +1,8 @@
 import type { SceneryContext } from '../scene-context';
+import type { PaperDetail } from '../paper-brush';
 import { shapeFrom } from './palette';
 
-export type TreeVariant = 'spring-green' | 'spring-blossom' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
+export type TreeVariant = 'spring-green' | 'spring-blossom' | 'summer-alder' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
 
 interface TreePalette {
   bark: string;
@@ -14,6 +15,7 @@ interface TreePalette {
 
 const palettes: Record<TreeVariant, TreePalette> = {
   'spring-green': { bark: '#896c59', back: '#729273', mid: '#8aa881', front: '#a3bc91' },
+  'summer-alder': { bark: '#7f7056', back: '#52755d', mid: '#6f926b', front: '#9ab77e' },
   'spring-blossom': { bark: '#856758', back: '#c98e8b', mid: '#e2ada6', front: '#f2cec6', accent: '#9bb388' },
   'autumn-maple': { bark: '#7d6050', back: '#9e5144', mid: '#c66849', front: '#df9451', accent: '#ebbc67' },
   'autumn-birch': { bark: '#dfd5c3', barkMark: '#7d7367', back: '#c5954d', mid: '#dbb15c', front: '#ebd07b' },
@@ -21,7 +23,7 @@ const palettes: Record<TreeVariant, TreePalette> = {
 };
 
 /** Organic multi-layered broadleaf tree with a tapered bark trunk between foliage planes. */
-export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVariant, scale = 1.0, z = -2.1): void {
+export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVariant, scale = 1.0, z = -2.1): PaperDetail {
   const tree = ctx.detail(`layered-paper-tree-${variant}`, x, z, scale);
   const p = palettes[variant];
 
@@ -99,4 +101,5 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
       tree.oval(0.048, 0.048, '#e8c477', bx, by, 0.146, undefined, 0.012);
     }
   }
+  return tree;
 }
