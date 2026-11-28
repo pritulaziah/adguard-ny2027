@@ -238,6 +238,10 @@ MUST NOT import `world/` or `ui/`.
 - **Owl perch**: Use one smooth, tapered branch contour with a clear fork
   under both feet. Keep the toes in front of the branch face. Preserve the
   owl's proportions and its head motion when changing the perch.
+- **Camera settle**: Snap the camera, the look point, and the pointer to
+  their targets below 1e-3 world units. The CSS3D layer compares the camera
+  position exactly, so an asymptotic approach keeps it writing every spark
+  transform on a still frame.
 - **Weather culling**: Keep every weather field in the scene and toggle
   `points.visible` from the camera. Use the season bands in
   `year/weather/weather-season.ts` for both the particle placement and the

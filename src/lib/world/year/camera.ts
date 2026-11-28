@@ -5,6 +5,10 @@ import { STORY_Z, routeProgress } from '../route';
 import { WALL_RAMP, sampleRampColor } from '../seasons';
 import { finaleCameraOffset } from '../finale';
 
+/** Below this distance the camera is visually at its target, so it snaps. */
+const SNAP_EPSILON = 1e-3;
+const SNAP_SQUARED = SNAP_EPSILON * SNAP_EPSILON;
+
 /** Camera position, parallax, pointer smoothing, and the seasonal background. */
 export class CameraRig {
   readonly cameraX: ScalarUniform = createScalarUniform(0);
@@ -52,6 +56,9 @@ export class CameraRig {
   update(delta: number, immediate: boolean, distance: number, speed: number): void {
     // Portrait views include both figures beside the story. Copy stays in screen space.
     this.pointerSmooth.lerp(this.pointer, 1 - Math.exp(-delta * 3.8));
+    if (this.pointerSmooth.distanceToSquared(this.pointer) < SNAP_SQUARED) {
+      this.pointerSmooth.copy(this.pointer);
+    }
     const parallaxX = this.portrait || this.reduced ? 0 : 0.58;
     const parallaxY = this.portrait || this.reduced ? 0 : 0.26;
     const progress = routeProgress(distance);
@@ -77,6 +84,15 @@ export class CameraRig {
     const factor = immediate || this.reduced ? 1 : 1 - Math.exp(-delta * 4.5);
     this.camera.position.lerp(this.desiredPosition, factor);
     this.look.lerp(this.desiredLook, factor);
+    // The CSS3D layer compares the camera position exactly. An asymptotic
+    // approach would keep it writing every spark transform on a still frame,
+    // so the camera lands on its target once the gap is under a pixel.
+    if (this.camera.position.distanceToSquared(this.desiredPosition) < SNAP_SQUARED) {
+      this.camera.position.copy(this.desiredPosition);
+    }
+    if (this.look.distanceToSquared(this.desiredLook) < SNAP_SQUARED) {
+      this.look.copy(this.desiredLook);
+    }
     this.camera.lookAt(this.look);
     this.camera.updateMatrixWorld();
 
