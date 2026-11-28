@@ -8,7 +8,7 @@ import type { JourneyStore, JourneyState } from './journey-state';
 import { resetPaperMaterials } from './paper-materials';
 import { resetTemplates } from './paper-geometry';
 import { createPaperScenery, type PaperSet } from './scenery';
-import { createSeasonalFleet, type SeasonalFleet } from './vehicles';
+import { SeasonalFleet } from './vehicles';
 import { resetWheelTemplates } from './vehicles/wheels';
 import type { MotionFrame } from './part-motion';
 import { JourneyMotion, stopIndexAt } from './route';
@@ -123,7 +123,7 @@ export class YearWorld {
     this.scene.add(this.paper.group);
     await pause();
 
-    this.fleet = createSeasonalFleet(this.scene);
+    this.fleet = new SeasonalFleet(this.scene);
     this.fleet.update(0, 1 / 60, 0, this.reduced);
     await pause();
 

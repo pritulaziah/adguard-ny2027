@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { JourneyMotion, JOURNEY_END } from './route.ts';
-import { createSeasonalFleet } from './vehicles/index.ts';
+import { SeasonalFleet } from './vehicles/index.ts';
 import { FinaleDeparture } from './year/finale-departure.ts';
 
 test.each([30, 60, 120])('the retro van continues through the finale handoff at %ifps', hz => {
   const scene = new THREE.Scene();
-  const fleet = createSeasonalFleet(scene);
+  const fleet = new SeasonalFleet(scene);
   const motion = new JourneyMotion();
   const departure = new FinaleDeparture();
   const van = scene.getObjectByName('paper-retro-van');

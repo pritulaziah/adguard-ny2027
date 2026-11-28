@@ -5,6 +5,12 @@ import { paperSheet } from '../paper-materials';
 // Wheel geometry never changes, so one merged buffer serves all wheels of a
 // type. This keeps the tire, sidewall, steel rim, slots, and hubcap in one draw call.
 const wheelTemplates = new Map<string, THREE.BufferGeometry>();
+const sharedWheels = new WeakSet<THREE.BufferGeometry>();
+
+/** True for a geometry that the wheel template cache owns and disposes. */
+export function isSharedWheelGeometry(geometry: THREE.BufferGeometry): boolean {
+  return sharedWheels.has(geometry);
+}
 
 /** Number of cached wheel templates. A development and test helper. */
 export function wheelTemplateCacheSize(): number {
@@ -87,6 +93,7 @@ function retroCarWheelGeometry(
 
   const geometry = batch.build()!;
   wheelTemplates.set(key, geometry);
+  sharedWheels.add(geometry);
   return geometry;
 }
 

@@ -1,8 +1,9 @@
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import * as THREE from 'three';
-import { createSeasonalFleet } from './vehicles/index.ts';
+import { SeasonalFleet } from './vehicles/index.ts';
 import { SnowTrail } from './vehicles/snow-trail.ts';
-import { createVanExhaust } from './vehicles/exhaust.ts';
+import { VanExhaust } from './vehicles/exhaust.ts';
+import { isSharedWheelGeometry } from './vehicles/wheels.ts';
 import { VAN_REAR_X } from './vehicles/retro-van.ts';
 import { JOURNEY_END, stopX } from './route.ts';
 import { SEASON_BORDERS } from './seasons.ts';
@@ -22,7 +23,7 @@ function inventory(scene) {
 
 test('one retro van drives continuously from start through every season and finale', () => {
   const scene = new THREE.Scene();
-  const fleet = createSeasonalFleet(scene);
+  const fleet = new SeasonalFleet(scene);
   const van = scene.getObjectByName('paper-retro-van');
   expect(van).toBeTruthy();
 
@@ -40,7 +41,7 @@ test('one retro van drives continuously from start through every season and fina
 
 test('the single-car fleet merges still parts and removes legacy seasonal vehicles', () => {
   const scene = new THREE.Scene();
-  createSeasonalFleet(scene);
+  new SeasonalFleet(scene);
   const { meshes, geometries } = inventory(scene);
 
   expect(meshes).toBeLessThan(20);
@@ -59,7 +60,7 @@ test('the single-car fleet merges still parts and removes legacy seasonal vehicl
 
 test('the retro van stays a thin, clearly visible paper silhouette', () => {
   const scene = new THREE.Scene();
-  const fleet = createSeasonalFleet(scene);
+  const fleet = new SeasonalFleet(scene);
   fleet.update(stopX(4), 1 / 60, 1, false);
   scene.updateMatrixWorld(true);
 
@@ -71,7 +72,7 @@ test('the retro van stays a thin, clearly visible paper silhouette', () => {
 
 test('every fleet mesh has baked vertex colors', () => {
   const scene = new THREE.Scene();
-  createSeasonalFleet(scene);
+  new SeasonalFleet(scene);
   scene.traverse(object => {
     if (!(object instanceof THREE.Mesh)) return;
     const color = object.geometry.getAttribute('color');
@@ -82,7 +83,7 @@ test('every fleet mesh has baked vertex colors', () => {
 
 test('van wheels follow the bridge on ascent, descent, reverse travel and reduced motion', () => {
   const scene = new THREE.Scene();
-  const fleet = createSeasonalFleet(scene);
+  const fleet = new SeasonalFleet(scene);
   const van = scene.getObjectByName('paper-retro-van');
   const wheels = van.children.filter(child => child instanceof THREE.Mesh);
   expect(wheels).toHaveLength(2);
@@ -111,15 +112,17 @@ test('van wheels follow the bridge on ascent, descent, reverse travel and reduce
 
 test('exhaust retains its emission height after the van descends from the bridge', () => {
   const scene = new THREE.Scene();
-  const update = createVanExhaust(scene);
-  update(0, 2, 1 / 60, false, 0.5, 0.1);
-  update(0.1, 0, 0.1, false, 0, 0);
+  const exhaust = new VanExhaust(scene);
+  exhaust.update(0, 2, 1 / 60, false, 0.5, 0.1);
+  exhaust.update(0.1, 0, 0.1, false, 0, 0);
   const puffs = scene.getObjectsByProperty('name', 'paper-van-exhaust');
   const visible = puffs.filter(puff => puff.visible);
   expect(visible).toHaveLength(1);
   expect(visible[0].position.y).toBeGreaterThan(0.95);
-  update(0.1, 0, 0.1, true);
+  exhaust.update(0.1, 0, 0.1, true);
   expect(puffs.every(puff => !puff.visible)).toBe(true);
+  exhaust.destroy();
+  expect(scene.getObjectsByProperty('name', 'paper-van-exhaust')).toHaveLength(0);
 });
 
 test('winter snow trail follows behind the van only on snowy road sections', () => {
@@ -144,7 +147,7 @@ test('winter snow trail follows behind the van only on snowy road sections', () 
 
   // Verify the fleet emits snow in winter and suppresses it in summer.
   const fleetScene = new THREE.Scene();
-  const fleet = createSeasonalFleet(fleetScene);
+  const fleet = new SeasonalFleet(fleetScene);
   const fleetSnow = fleetScene.getObjectByName('paper-van-snow');
   for (let frame = 0; frame < 15; frame++) fleet.update(frame * 0.25, 1 / 60, frame / 60, false);
   expect(fleetSnow.count).toBeGreaterThan(0);
@@ -153,4 +156,27 @@ test('winter snow trail follows behind the van only on snowy road sections', () 
   expect(fleetSnow.count).toBe(0);
   fleet.destroy();
   expect(fleetScene.getObjectByName('paper-van-snow')).toBeUndefined();
+  expect(fleetScene.getObjectByName('paper-retro-van')).toBeUndefined();
+  expect(fleetScene.getObjectsByProperty('name', 'paper-van-exhaust')).toHaveLength(0);
+});
+
+test('the fleet disposes its own geometry and leaves the shared wheel buffers', () => {
+  const scene = new THREE.Scene();
+  const fleet = new SeasonalFleet(scene);
+  const van = scene.getObjectByName('paper-retro-van');
+  const meshes = [];
+  van.traverse(object => {
+    if (object instanceof THREE.Mesh) meshes.push(object);
+  });
+  const wheel = meshes.find(mesh => isSharedWheelGeometry(mesh.geometry));
+  const body = meshes.find(mesh => !isSharedWheelGeometry(mesh.geometry));
+  expect(wheel).toBeTruthy();
+  expect(body).toBeTruthy();
+
+  const wheelDispose = vi.spyOn(wheel.geometry, 'dispose');
+  const bodyDispose = vi.spyOn(body.geometry, 'dispose');
+  fleet.destroy();
+
+  expect(wheelDispose).not.toHaveBeenCalled();
+  expect(bodyDispose).toHaveBeenCalled();
 });
