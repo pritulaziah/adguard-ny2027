@@ -3,6 +3,8 @@ import { PaperBatch } from '../paper-batch';
 import { paperSheet } from '../paper-materials';
 import { bar, cutout, shapedCutout, type MovingVehicle } from './shared';
 import { retroCarWheel } from './wheels';
+import { addVanLuggage } from './van-luggage';
+import { bridgeLift } from '../summer-bridge';
 
 export const VAN_REAR_X = -0.9;
 
@@ -207,60 +209,7 @@ export function createPaperRetroVan(scene: THREE.Scene): MovingVehicle {
     0.022,
   );
 
-  // Full-length steel roof rack with countryside road-trip cargo (jerrycan, wooden crate, rolled tarp).
-  bar(shell, -0.8, 1.15, 0.46, 1.15, 0.026, '#505652', 0.008, 0.034);
-  for (const px of [-0.7, -0.18, 0.36]) {
-    bar(shell, px, 1.07, px, 1.15, 0.022, '#505652', 0.008, 0.034);
-  }
-  // Classic red metal fuel jerrycan.
-  cutout(
-    shell,
-    [
-      [-0.72, 1.16],
-      [-0.47, 1.16],
-      [-0.47, 1.4],
-      [-0.53, 1.44],
-      [-0.72, 1.44],
-    ],
-    '#bc4e41',
-    0.064,
-    0.006,
-  );
-  cutout(
-    shell,
-    [
-      [-0.68, 1.38],
-      [-0.55, 1.38],
-      [-0.55, 1.42],
-      [-0.68, 1.42],
-    ],
-    '#8c372d',
-    0.068,
-    0.01,
-  );
-  // Slatted wooden supply crate.
-  cutout(
-    shell,
-    [
-      [-0.4, 1.16],
-      [0.06, 1.16],
-      [0.06, 1.37],
-      [-0.4, 1.37],
-    ],
-    '#caa06a',
-    0.068,
-    0.005,
-  );
-  for (const cy of [1.22, 1.31]) {
-    shell.add(new THREE.BoxGeometry(0.46, 0.016, 0.072), '#a17a4a', { x: -0.17, y: cy, z: 0.039 });
-  }
-  // Rolled sage camping mat with leather straps.
-  const rollShape = new THREE.Shape();
-  rollShape.absellipse(0, 0, 0.16, 0.085, 0, Math.PI * 2, false, 0);
-  shapedCutout(shell, rollShape, '#739179', 0.062, 0.006, 0.25, 1.24);
-  for (const sx of [0.18, 0.32]) {
-    shell.add(new THREE.BoxGeometry(0.024, 0.17, 0.068), '#8a6042', { x: sx, y: 1.24, z: 0.038 });
-  }
+  addVanLuggage(shell);
 
   const shellGeometry = shell.build();
   if (shellGeometry) {
@@ -269,7 +218,6 @@ export function createPaperRetroVan(scene: THREE.Scene): MovingVehicle {
     body.add(mesh);
   }
 
-  // Two spinning chunky retro steelie wheels.
   const wheelRadius = 0.22;
   const wheels: THREE.Mesh[] = [];
   for (const wx of [-0.54, 0.56]) {
@@ -285,7 +233,22 @@ export function createPaperRetroVan(scene: THREE.Scene): MovingVehicle {
     group,
     update: (x, time, moving, reduced) => {
       const bob = moving && !reduced ? Math.sin(time * 9.5) * 0.01 : 0;
-      group.position.set(x, 0.34, 0);
+      let rear = bridgeLift(x - 0.54);
+      let front = bridgeLift(x + 0.56);
+      let pitch = Math.atan2(front - rear, 1.1);
+      // Rotation shifts the wheel centres along X on the steeper, short bridge.
+      if (rear || front) {
+        for (let pass = 0; pass < 4; pass++) {
+          const cosine = Math.cos(pitch);
+          const shift = -wheelRadius * Math.sin(pitch);
+          rear = bridgeLift(x - 0.54 * cosine + shift);
+          front = bridgeLift(x + 0.56 * cosine + shift);
+          pitch = Math.asin((front - rear) / 1.1);
+        }
+      }
+      const lift = (rear + front) / 2 + wheelRadius * (1 - Math.cos(pitch)) - 0.01 * Math.sin(pitch);
+      group.position.set(x, 0.34 + lift, 0);
+      group.rotation.z = pitch;
       body.position.y = bob;
       const angle = -x / wheelRadius;
       for (const wheel of wheels) wheel.rotation.z = angle;

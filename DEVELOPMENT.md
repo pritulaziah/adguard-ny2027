@@ -59,14 +59,16 @@ The console prints a warning when the app uses the WebGL2 fallback.
 
 ## Project layout
 
-| Path                 | Content                                                            |
-| -------------------- | ------------------------------------------------------------------ |
-| `src/lib/content/`   | Stories, dialog copy, figure notes, UI strings, language store     |
-| `src/lib/ui/`        | Svelte components: wall story, story dialog, figure note           |
-| `src/lib/world/`     | Three.js scene: route, seasons, scenery, vehicles, camera, weather |
-| `src/App.svelte`     | Page frame, language switch, loading and error states              |
-| `public/`            | Fonts, logo, story covers, and screenshots                         |
-| `.github/workflows/` | GitHub Actions: deploy and CI                                      |
+| Path                             | Content                                                             |
+| -------------------------------- | ------------------------------------------------------------------- |
+| `src/lib/content/`               | Stories, dialog copy, figure notes, UI strings, language store      |
+| `src/lib/ui/`                    | Svelte components: wall story, story dialog, figure note            |
+| `src/lib/world/`                 | Three.js scene: route, seasons, scenery, vehicles, camera, weather  |
+| `src/lib/world/summer-bridge.ts` | Summer bridge position and deck profile shared with the van         |
+| `src/lib/world/vehicles/`        | Retro van, separate roof cargo builder, wheels, exhaust, snow trail |
+| `src/App.svelte`                 | Page frame, language switch, loading and error states               |
+| `public/`                        | Fonts, logo, story covers, and screenshots                          |
+| `.github/workflows/`             | GitHub Actions: deploy and CI                                       |
 
 ## Where to change content
 

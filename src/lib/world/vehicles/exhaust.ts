@@ -4,24 +4,24 @@ import { carded } from '../paper-mesh';
 
 export function createVanExhaust(
   scene: THREE.Scene,
-): (vanX: number, speed: number, delta: number, reduced: boolean) => void {
+): (vanX: number, speed: number, delta: number, reduced: boolean, lift?: number, pitch?: number) => void {
   const lifetime = 0.85;
   const puffs = Array.from({ length: 5 }, (_, index) => {
     const puff = carded(ovalGeometry(0.18, 0.105, 0.018), index % 2 === 0 ? '#d5cfc4' : '#e5dbcb');
     puff.name = 'paper-van-exhaust';
     puff.visible = false;
     scene.add(puff);
-    return { puff, age: lifetime, x: 0, drift: 0 };
+    return { puff, age: lifetime, x: 0, y: 0.57, drift: 0 };
   });
   let untilNextPuff = 0;
 
-  return (vanX: number, speed: number, delta: number, reduced: boolean): void => {
+  return (vanX: number, speed: number, delta: number, reduced: boolean, lift = 0, pitch = 0): void => {
     for (const entry of puffs) {
       entry.age = Math.min(entry.age + delta, lifetime);
       const progress = entry.age / lifetime;
       entry.puff.visible = !reduced && progress < 1;
       if (!entry.puff.visible) continue;
-      entry.puff.position.set(entry.x + entry.drift * progress, 0.57 + 0.29 * progress, 0.1);
+      entry.puff.position.set(entry.x + entry.drift * progress, entry.y + 0.29 * progress, 0.1);
       const scale = 1.25 * Math.sin(Math.PI * progress) + 0.38 * (1 - progress);
       entry.puff.scale.setScalar(scale);
     }
@@ -36,6 +36,7 @@ export function createVanExhaust(
     if (!entry) return;
     entry.age = 0;
     entry.x = vanX - 0.92;
+    entry.y = 0.57 + lift - 0.92 * Math.sin(pitch);
     entry.drift = -Math.sign(speed) * 0.45;
     untilNextPuff = 0.2;
   };

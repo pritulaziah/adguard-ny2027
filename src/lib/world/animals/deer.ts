@@ -4,7 +4,7 @@ import { PaperAnimal } from './paper-animal';
 import { cut, oval, stroke } from '../paper-shapes';
 import { BLUSH, CREAM } from './shared';
 
-/** Graceful winter fawn in 3/4 side profile with scarf and branched antlers. */
+/** Graceful winter fawn in 3/4 side profile with branched antlers. */
 export class Deer extends PaperAnimal {
   constructor(ctx: AnimalBuilderContext, x: number, z = -1.08) {
     super(ctx, 'paper-deer', x, z, 0.96);
@@ -12,45 +12,24 @@ export class Deer extends PaperAnimal {
 
   protected paint(): void {
     const deer = this.detail;
-    this.shadow(0.92, 0.26, '#849099');
+    this.shadow(1.06, 0.24, '#849099');
 
-    // Back legs (darker warm tan, gracefully tapered and tucked behind body).
-    deer.cut(
-      [
-        [-0.34, 0.02],
-        [-0.26, 0.02],
-        [-0.21, 0.56],
-        [-0.35, 0.56],
-      ],
-      '#9e7c64',
-      0,
-      0,
-      -0.06,
-      undefined,
-      0.032,
-    );
-    deer.cut(
-      [
-        [0.17, 0.02],
-        [0.25, 0.02],
-        [0.26, 0.56],
-        [0.13, 0.56],
-      ],
-      '#9e7c64',
-      0,
-      0,
-      -0.06,
-      undefined,
-      0.032,
-    );
-    deer.rect(0.09, 0.065, '#584c45', -0.3, 0.0, -0.055, undefined, 0.036);
-    deer.rect(0.09, 0.065, '#584c45', 0.21, 0.0, -0.055, undefined, 0.036);
+    // Far and near legs tucked behind the rounded torso, with dark hooves.
+    for (const [lx, shade, hoof, lz] of [
+      [-0.3, '#9e7c64', '#564a43', -0.026],
+      [0.14, '#9e7c64', '#564a43', -0.026],
+      [-0.19, '#b58d6f', '#4b403a', 0.012],
+      [0.25, '#b58d6f', '#4b403a', 0.012],
+    ] as const) {
+      deer.rect(0.084, 0.43, shade, lx, 0.05, lz, undefined, 0.026);
+      deer.rect(0.092, 0.072, hoof, lx, 0.01, lz + 0.008, undefined, 0.028);
+    }
 
-    // Sculpted fawn body and curved neck rising toward the right.
+    // Rounded fawn body and curved neck rising cleanly above the four legs.
     const body = this.shape(s => {
       s.moveTo(-0.46, 0.64);
       s.bezierCurveTo(-0.48, 0.42, -0.22, 0.38, 0.14, 0.41);
-      s.bezierCurveTo(0.38, 0.44, 0.44, 0.62, 0.42, 0.96);
+      s.bezierCurveTo(0.42, 0.44, 0.44, 0.62, 0.42, 0.96);
       s.bezierCurveTo(0.41, 1.07, 0.26, 1.08, 0.22, 0.98);
       s.bezierCurveTo(0.18, 0.84, 0.08, 0.8, -0.14, 0.81);
       s.bezierCurveTo(-0.34, 0.82, -0.45, 0.76, -0.46, 0.64);
@@ -60,12 +39,12 @@ export class Deer extends PaperAnimal {
 
     // Soft cream underbelly and upturned white tail tuft.
     const belly = this.shape(s => {
-      s.moveTo(-0.28, 0.45);
-      s.quadraticCurveTo(-0.02, 0.39, 0.24, 0.46);
-      s.quadraticCurveTo(0.02, 0.56, -0.28, 0.45);
+      s.moveTo(-0.24, 0.44);
+      s.quadraticCurveTo(-0.01, 0.405, 0.22, 0.45);
+      s.quadraticCurveTo(0, 0.535, -0.24, 0.44);
       s.closePath();
     });
-    deer.shape(belly, '#eadbc2', 0, 0, 0.044, undefined, 0.018);
+    deer.shape(belly, '#eadbc2', 0, 0, 0.04, undefined, 0.012);
 
     const tail = this.shape(s => {
       s.moveTo(-0.42, 0.68);
@@ -74,38 +53,6 @@ export class Deer extends PaperAnimal {
       s.closePath();
     });
     deer.shape(tail, CREAM, 0, 0, -0.02, undefined, 0.03);
-
-    // Front legs (brighter tan, gracefully tapered and standing cleanly in front).
-    deer.cut(
-      [
-        [-0.22, 0.02],
-        [-0.14, 0.02],
-        [-0.09, 0.52],
-        [-0.23, 0.52],
-      ],
-      '#b58d6f',
-      0,
-      0,
-      0.035,
-      undefined,
-      0.034,
-    );
-    deer.cut(
-      [
-        [0.27, 0.02],
-        [0.35, 0.02],
-        [0.35, 0.56],
-        [0.22, 0.56],
-      ],
-      '#b58d6f',
-      0,
-      0,
-      0.035,
-      undefined,
-      0.034,
-    );
-    deer.rect(0.09, 0.07, '#4e433d', -0.18, 0.0, 0.04, undefined, 0.038);
-    deer.rect(0.09, 0.07, '#4e433d', 0.31, 0.0, 0.04, undefined, 0.038);
 
     // Delicate fawn spots on the back.
     const spots: Array<[number, number, number]> = [
@@ -116,37 +63,6 @@ export class Deer extends PaperAnimal {
       [-0.03, 0.6, 0.062],
     ];
     for (const [sx, sy, sr] of spots) deer.oval(sr * 1.15, sr, '#f3e7ce', sx, sy, 0.052, undefined, 0.012);
-
-    // Warm knitted winter scarf around the neck.
-    deer.cut(
-      [
-        [0.16, 0.82],
-        [0.46, 0.83],
-        [0.47, 0.95],
-        [0.15, 0.94],
-      ],
-      '#be6e62',
-      0,
-      0,
-      0.062,
-      undefined,
-      0.028,
-    );
-    deer.cut(
-      [
-        [0.15, 0.85],
-        [0.25, 0.85],
-        [0.2, 0.58],
-        [0.09, 0.6],
-      ],
-      '#b06156',
-      0,
-      0,
-      0.076,
-      undefined,
-      0.024,
-    );
-    deer.rect(0.29, 0.024, '#efd9b3', 0.31, 0.87, 0.092, undefined, 0.01);
 
     // Deer head facing right with leaf-shaped ears and antlers.
     const headShape = this.shape(s => {

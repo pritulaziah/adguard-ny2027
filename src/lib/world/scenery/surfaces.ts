@@ -1,8 +1,13 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { seasonalPaperMaterial } from '../paper-materials';
 import { ROAD_RAMP, SEASON_BORDERS } from '../seasons';
 import { TRACK_LENGTH } from '../route';
 import type { SceneryContext } from '../scene-context';
+import { SUMMER_BRIDGE_HALF_SPAN, SUMMER_BRIDGE_X } from '../summer-bridge';
+
+const bridgeStart = SUMMER_BRIDGE_X - SUMMER_BRIDGE_HALF_SPAN;
+const bridgeEnd = SUMMER_BRIDGE_X + SUMMER_BRIDGE_HALF_SPAN;
 
 function addGrassVerge(
   ctx: SceneryContext,
@@ -36,15 +41,18 @@ function addGrassVerge(
   }
 }
 
-/** One continuous road from start to finale with seamless seasonal surfaces and verges. */
+/** The road meets the summer bridge at both ends without filling its arch. */
 export function addTravelSurfaces(ctx: SceneryContext): void {
-  const totalLength = TRACK_LENGTH + 20;
+  const sections = [
+    [-10, bridgeStart],
+    [bridgeEnd, TRACK_LENGTH + 10],
+  ].map(([start, end]) => new THREE.BoxGeometry(end - start, 0.055, 0.84).translate((start + end) / 2, 0.295, 0));
   const roadMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(totalLength, 0.055, 0.84),
+    mergeGeometries(sections),
     seasonalPaperMaterial(ROAD_RAMP, { grainStrength: 0.075 }),
   );
   roadMesh.name = 'paper-continuous-road';
-  roadMesh.position.set(TRACK_LENGTH / 2, 0.295, 0);
+  for (const geometry of sections) geometry.dispose();
   ctx.group.add(roadMesh);
 
   // Winter snow tire ruts and soft snowbank edges at start and finale.
@@ -75,16 +83,18 @@ export function addTravelSurfaces(ctx: SceneryContext): void {
   // Summer sunlit dirt road tire tracks and warm golden-green meadow edges.
   const summerStart = SEASON_BORDERS.summer + 0.5;
   const summerEnd = SEASON_BORDERS.autumn - 0.5;
-  const summerLen = summerEnd - summerStart;
-  const summerCenter = (summerStart + summerEnd) / 2;
-  const summerRoad = ctx.detail('paper-summer-road', summerCenter, 0, 1, 0);
-  for (const z of [-0.19, 0.19]) {
-    summerRoad.box(summerLen, 0.008, 0.06, '#c7b07f', 0, 0.326, z);
+  for (const [start, end] of [
+    [summerStart, bridgeStart],
+    [bridgeEnd, summerEnd],
+  ]) {
+    const center = (start + end) / 2;
+    const summerRoad = ctx.detail('paper-summer-road', center, 0, 1, 0);
+    for (const z of [-0.19, 0.19]) summerRoad.box(end - start, 0.008, 0.06, '#c7b07f', 0, 0.326, z);
+    for (let x = start + 0.6; x < end - 0.4; x += 1.25) {
+      summerRoad.box(0.28, 0.009, 0.12, '#ccb98c', x - center, 0.326, Math.round(x * 5) % 2 ? 0.03 : -0.04);
+    }
+    addGrassVerge(ctx, 'paper-summer-verge', start, end, '#a5b56d', '#c6ba70', 1.2);
   }
-  for (let x = summerStart + 0.6; x < summerEnd - 0.4; x += 1.25) {
-    summerRoad.box(0.28, 0.009, 0.12, '#ccb98c', x - summerCenter, 0.326, Math.round(x * 5) % 2 ? 0.03 : -0.04);
-  }
-  addGrassVerge(ctx, 'paper-summer-verge', summerStart, summerEnd, '#a5b56d', '#c6ba70', 1.2);
 
   // Autumn asphalt curbs and cream dashed road markings.
   const autumnStart = SEASON_BORDERS.autumn + 0.5;

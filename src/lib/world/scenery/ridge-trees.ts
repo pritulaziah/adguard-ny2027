@@ -85,7 +85,7 @@ export async function addDistantRidgeTrees(ctx: SceneryContext, pause: () => Pro
     { x: stopX(3) - 4.8, kind: 'round', color: '#7e9975', scale: 0.76 },
     { x: stopX(3) - 3.2, kind: 'round', color: '#8aa47d', scale: 0.66 },
     { x: stopX(3) + 3.7, kind: 'round', color: '#7a9671', scale: 0.72 },
-    // Summer broadleaf silhouettes along the far river bank.
+    // Summer broadleaf silhouettes beyond the distant stream.
     { x: stopX(4) - 2.45, kind: 'round', color: '#73988c', scale: 0.82 },
     { x: stopX(4) + 4.45, kind: 'round', color: '#7e9f91', scale: 0.9 },
     // Autumn

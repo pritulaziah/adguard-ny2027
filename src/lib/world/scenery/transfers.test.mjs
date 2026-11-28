@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { PaperDetail } from '../paper-detail.ts';
 import { SEASON_BORDERS } from '../seasons.ts';
 import { TRACK_LENGTH } from '../route.ts';
+import { SUMMER_BRIDGE_X } from '../summer-bridge.ts';
 import { addTravelSurfaces } from './surfaces.ts';
 import { addTransferStations } from './transfers.ts';
 
@@ -23,7 +24,7 @@ function buildTransfers() {
   return { group, details, ctx };
 }
 
-test('one continuous road spans the route with four border lanterns clear of the lane', () => {
+test('road spans the route with a bridge opening and four lanterns clear of the lane', () => {
   const { group, details, ctx } = buildTransfers();
   addTravelSurfaces(ctx);
   addTransferStations(ctx);
@@ -37,6 +38,11 @@ test('one continuous road spans the route with four border lanterns clear of the
   const roadBox = new THREE.Box3().setFromObject(road);
   expect(roadBox.min.x).toBeLessThanOrEqual(-9);
   expect(roadBox.max.x).toBeGreaterThanOrEqual(TRACK_LENGTH + 9);
+  const down = new THREE.Vector3(0, -1, 0);
+  const ray = new THREE.Raycaster(new THREE.Vector3(SUMMER_BRIDGE_X, 2, 0), down);
+  expect(ray.intersectObject(road)).toHaveLength(0);
+  ray.set(new THREE.Vector3(SUMMER_BRIDGE_X - 3, 2, 0), down);
+  expect(ray.intersectObject(road).length).toBeGreaterThan(0);
   expect(group.getObjectByName('paper-river')).toBeUndefined();
   expect(group.getObjectsByProperty('name', 'paper-river-wave')).toHaveLength(0);
 

@@ -1,5 +1,6 @@
 import { stopX } from '../route';
 import { SEASON_BORDERS } from '../seasons';
+import { SUMMER_BRIDGE_HALF_SPAN, SUMMER_BRIDGE_X } from '../summer-bridge';
 import type { SceneryContext } from '../scene-context';
 import { addAutumnFloor } from './autumn-plants';
 import { shapeFrom } from './palette';
@@ -50,6 +51,7 @@ export async function addForegroundFraming(ctx: SceneryContext, pause: () => Pro
 
   // Golden-green summer meadow grass tufts with tiny sunflowers along the bottom edge.
   for (let x = SEASON_BORDERS.summer + 0.9; x < SEASON_BORDERS.autumn - 0.6; x += 6.6) {
+    if (Math.abs(x - SUMMER_BRIDGE_X) < SUMMER_BRIDGE_HALF_SPAN + 0.4) continue;
     const tuft = fg('fg-summer-meadow', x, 0.25, 1.18 + (Math.round(x) % 2) * 0.1);
     for (let b = -2; b <= 2; b++) {
       const h = 0.34 + (2 - Math.abs(b)) * 0.055;

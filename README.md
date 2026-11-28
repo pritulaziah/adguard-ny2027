@@ -32,6 +32,7 @@ users and anyone who wants a quick tour of what the team shipped in
 - A release dialog for every story, with a cover image and a link to the
   AdGuard blog.
 - A short note for every interactive figure.
+- A curved wooden summer bridge over a stream. The van climbs and descends its deck.
 - Keyboard support: the arrow keys move between stops.
 - A language switch for the whole page.
 
@@ -50,7 +51,6 @@ users and anyone who wants a quick tour of what the team shipped in
       movements, try different ideas, and choose the most interesting animation
       for each figure.
 - [ ] Decide whether one vehicle runs the whole route: a car in every season
-      or a train in every season. Change the summer scene as well, because the
-      river fits neither vehicle. Choose a bright meadow with a far river, a
-      road on the bank, or a bridge over the water. Decide the future of the
+      or a train in every season. The summer scene has a bright meadow with
+      a narrow stream and a curved wooden bridge. Decide the future of the
       bicycle and the punt. Wait for concept approval before this work starts.

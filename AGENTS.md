@@ -70,14 +70,15 @@ year without a long list of release notes.
 │           ├── Stage.svelte    # Renderer and camera setup, frame loop, teardown
 │           ├── YearWorld.ts    # World orchestrator: build, tick, destroy
 │           ├── route.ts        # Route length, stop spacing, distance helpers
+│           ├── summer-bridge.ts # Shared summer bridge layout and van elevation
 │           ├── seasons.ts      # Season borders and colour ramps
 │           ├── finale.ts       # Finale layout and mascot positions
 │           ├── paper-*.ts      # Shared paper material, geometry, batching, meshes
 │           ├── birds/          # Sky bird classes: wingbeat, flights, season group
 │           ├── year/           # Camera, input, stories, weather/, sparks, CSS layer
-│           ├── scenery/        # Season builders: firs, meadow, ridges, sky, mascots
+│           ├── scenery/        # Season builders: meadow, summer bridge and stream, ridges, sky, mascots
 │           ├── animals/        # PaperAnimal classes and shared helpers
-│           └── vehicles/       # Retro van, wheels, exhaust, snow trail
+│           └── vehicles/       # Retro van, roof cargo, wheels, exhaust, snow trail
 ├── public/                     # Fonts, logo, mascot images, story covers, screenshots
 ├── .github/workflows/          # ci.yml for pull requests, deploy.yml for main
 └── design/                     # Source art (gitignored)
@@ -219,6 +220,19 @@ MUST NOT import `world/` or `ui/`.
 
 ### Code Quality
 
+- **Summer water**: Keep the river in `scenery/summer/distant-river.ts`
+  flat on the meadow floor, narrow, and winding from behind the near
+  ridge through the summer bridge arch. Do not add a separate raised
+  hill behind the bridge. Batch its static reflections with the banks.
+  Keep the arch and stream clear of the flat road, verges, and
+  foreground tufts. Use `summer-bridge.ts` for both the bridge deck and
+  the van's axle heights.
+- **Bridge material**: Show the summer bridge as timber: separate planks,
+  narrow curved beams, and open wooden rails. Keep it in one static batch.
+  Place posts and supports in proportion to `SUMMER_BRIDGE_HALF_SPAN`,
+  so the full bridge follows changes to its span.
+  Fit its posts and supports within `SUMMER_BRIDGE_HALF_SPAN` so the
+  bridge geometry and the road joins use the same length.
 - **Types**: TypeScript is strict (`@tsconfig/svelte` sets `strict`).
   `checkJs` is on. Keep `noEmit` and the two-project setup. Do not
   weaken `tsconfig.app.json` or `tsconfig.json` to silence an error.
@@ -257,6 +271,10 @@ MUST NOT import `world/` or `ui/`.
 - **Animal accessories**: Fit collars to the neck contour and hide their
   far ends behind the head. Keep the bell ring visible below the collar.
   Check the attachment at the normal scene size, as well as in a close-up.
+- **Winter deer**: Keep the deer without a scarf. The snowman already
+  wears the winter scarf in the opening scene. Layer all four legs
+  behind a separate rounded torso cut, matching `animals/cow.ts`, with
+  darker far legs and hooves seated inside the ground shadow.
 
 ### Testing
 

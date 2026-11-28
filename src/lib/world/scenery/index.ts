@@ -160,7 +160,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   );
   await pause();
 
-  // Stop 4 (AdGuard for Windows v8.0, summer, x = 52.10): sunlit countryside meadow with distant river.
+  // Stop 4 (AdGuard for Windows v8.0, summer): meadow with a stream beneath a shallow wooden bridge.
   addSummerMeadow(ctx);
   new Cow(ctx, stopX(4) - 2.9, -1.04).build();
   new Beehive(ctx, stopX(4) + 2.95, -1.04).build();

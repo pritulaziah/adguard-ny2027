@@ -2,10 +2,12 @@ import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { createSeasonalFleet } from './vehicles/index.ts';
 import { createSnowTrail } from './vehicles/snow-trail.ts';
+import { createVanExhaust } from './vehicles/exhaust.ts';
 import { VAN_REAR_X } from './vehicles/retro-van.ts';
 import { JOURNEY_END, stopX } from './route.ts';
 import { SEASON_BORDERS } from './seasons.ts';
 import { FINALE_CAR_X } from './finale.ts';
+import { bridgeLift, ROAD_SURFACE_Y, SUMMER_BRIDGE_X } from './summer-bridge.ts';
 
 function inventory(scene) {
   let meshes = 0;
@@ -76,6 +78,48 @@ test('every fleet mesh has baked vertex colors', () => {
     expect(color, object.name || object.geometry.type).toBeTruthy();
     expect(color.count).toBe(object.geometry.getAttribute('position').count);
   });
+});
+
+test('van wheels follow the bridge on ascent, descent, reverse travel and reduced motion', () => {
+  const scene = new THREE.Scene();
+  const fleet = createSeasonalFleet(scene);
+  const van = scene.getObjectByName('paper-retro-van');
+  const wheels = van.children.filter(child => child instanceof THREE.Mesh);
+  expect(wheels).toHaveLength(2);
+  for (const direction of [-1, 1]) {
+    for (const reduced of [false, true]) {
+      for (let i = 0; i <= 120; i++) {
+        const x = SUMMER_BRIDGE_X + direction * (-4 + i / 15);
+        fleet.update(x, 1 / 60, i / 60, reduced);
+        scene.updateMatrixWorld(true);
+        for (const wheel of wheels) {
+          const center = wheel.getWorldPosition(new THREE.Vector3());
+          const clearance = center.y - 0.22 - ROAD_SURFACE_Y - bridgeLift(center.x);
+          expect(clearance, `wheel clearance at ${x}`).toBeCloseTo(0.0175, 3);
+        }
+      }
+    }
+  }
+  fleet.update(SUMMER_BRIDGE_X - 1, 1 / 60, 0, true);
+  expect(van.rotation.z).toBeGreaterThan(0.1);
+  fleet.update(SUMMER_BRIDGE_X + 1, 1 / 60, 0, true);
+  expect(van.rotation.z).toBeLessThan(-0.1);
+  fleet.update(SUMMER_BRIDGE_X + 5, 1 / 60, 0, true);
+  expect(van.position.y).toBe(0.34);
+  expect(van.rotation.z).toBe(0);
+});
+
+test('exhaust retains its emission height after the van descends from the bridge', () => {
+  const scene = new THREE.Scene();
+  const update = createVanExhaust(scene);
+  update(0, 2, 1 / 60, false, 0.5, 0.1);
+  update(0.1, 0, 0.1, false, 0, 0);
+  const puffs = scene.getObjectsByProperty('name', 'paper-van-exhaust');
+  const visible = puffs.filter(puff => puff.visible);
+  expect(visible).toHaveLength(1);
+  expect(visible[0].position.y).toBeGreaterThan(0.95);
+  update(0.1, 0, 0.1, true);
+  expect(puffs.every(puff => !puff.visible)).toBe(true);
 });
 
 test('winter snow trail follows behind the van only on snowy road sections', () => {

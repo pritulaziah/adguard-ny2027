@@ -24,7 +24,7 @@ export function createSeasonalFleet(scene: THREE.Scene): SeasonalFleet {
       const moving = Math.abs(speed) > 0.08;
 
       retroVan.update(vanX, time, moving, reduced);
-      updateExhaust(vanX, speed, delta, reduced);
+      updateExhaust(vanX, speed, delta, reduced, retroVan.group.position.y - 0.34, retroVan.group.rotation.z);
       const onSnow = vanX < SEASON_BORDERS.spring || vanX > SEASON_BORDERS.winterEnd;
       updateSnowTrail(vanX, onSnow ? speed : 0, delta, reduced);
 
