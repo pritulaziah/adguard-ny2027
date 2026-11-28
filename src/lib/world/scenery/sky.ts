@@ -6,7 +6,6 @@ import { stopX } from '../route';
 import { seasonCenter } from '../seasons';
 import type { SceneryContext } from '../scene-context';
 import { addSkyClouds } from './clouds';
-import { addDistantBirds } from './distant-birds';
 import { shapeFrom } from './palette';
 
 function addObject(parent: THREE.Object3D, name: string, batch: PaperBatch, x: number, y: number, z: number): void {
@@ -71,7 +70,6 @@ export async function addSkyDetails(ctx: SceneryContext, pause: () => Promise<vo
   await pause();
 
   addSun(ctx.group);
-  addDistantBirds(ctx);
 
   await pause();
 }

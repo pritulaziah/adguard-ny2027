@@ -8,6 +8,7 @@ import { Beehive, Bird, Bunny, Cat, Cow, Deer, Fox, Hedgehog, Owl, PondWithFrog,
 import { createYieldPacer } from '../schedule';
 import { isAnimated, motionFor, type PaperPart } from '../part-motion';
 import type { SceneryContext } from '../scene-context';
+import type { DistantBirdSeason } from '../birds';
 import { addAutumnUndergrowth } from './autumn';
 import { addBroadTree } from './broad-tree';
 import { addFinaleTree } from './finale-tree';
@@ -16,6 +17,7 @@ import { addForegroundFraming } from './foreground';
 import { addSpringMeadowCluster } from './meadow';
 import { addFinaleMascots } from './mascots';
 import { mergeStaticChildren, pruneEmptyGroups } from './merge-static';
+import { addDistantBirds } from './distant-birds';
 import { addDistantRidgeTrees } from './ridge-trees';
 import { addPanoramaRidges } from './ridges';
 import { addSkyDetails } from './sky';
@@ -32,6 +34,8 @@ export interface PaperSet {
   /** Parts that need a motion call on each frame. */
   animated: PaperPart[];
   objects: Map<Interaction, THREE.Object3D>;
+  /** Bird season groups that own instanced buffers. */
+  birds: DistantBirdSeason[];
 }
 
 const FOREST_FIR_SCALE = 1.1;
@@ -47,6 +51,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   const animated: PaperPart[] = [];
   const objects = new Map<Interaction, THREE.Object3D>();
   const details: PaperDetail[] = [];
+  const birds: DistantBirdSeason[] = [];
 
   function detail(name: string, x: number, z = -1.1, scale = 1, y = 0.34): PaperDetail {
     const object = new PaperDetail(group, name, x, y, z, scale);
@@ -108,6 +113,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   await addDistantRidgeTrees(ctx, pause);
   await pause();
   await addSkyDetails(ctx, pause);
+  birds.push(...addDistantBirds(ctx));
   await pause();
 
   addTravelSurfaces(ctx);
@@ -208,5 +214,5 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   }
   pruneEmptyGroups(group, keep);
 
-  return { group, parts, animated, objects };
+  return { group, parts, animated, objects, birds };
 }

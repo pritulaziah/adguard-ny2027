@@ -28,7 +28,11 @@ function makeInstanced(geometry: THREE.BufferGeometry, count: number, name: stri
   return mesh;
 }
 
-function addSeasonGroup(ctx: SceneryContext, setup: SeasonSetup, cache: Map<BirdSpecies, BirdMeshes>): void {
+function addSeasonGroup(
+  ctx: SceneryContext,
+  setup: SeasonSetup,
+  cache: Map<BirdSpecies, BirdMeshes>,
+): DistantBirdSeason {
   const centerX = seasonCenter(setup.season);
   const count = setup.flights.reduce((total, flight) => total + flight.members.length, 0);
   const group = ctx.place(`distant-birds-${setup.season}`, centerX, 0, 1, 0);
@@ -67,10 +71,11 @@ function addSeasonGroup(ctx: SceneryContext, setup: SeasonSetup, cache: Map<Bird
   // Populate initial matrices at route start so winter-start appears on frame 1.
   group.visible = season.update(0, 1 / 60, 0, true);
   ctx.animate(group, 'distant-birds');
+  return season;
 }
 
 /** One distinct 3D folded-paper bird species per season, moving along with reader scroll. */
-export function addDistantBirds(ctx: SceneryContext): void {
+export function addDistantBirds(ctx: SceneryContext): DistantBirdSeason[] {
   const seasons: SeasonSetup[] = [
     {
       season: 'winter-start',
@@ -124,5 +129,7 @@ export function addDistantBirds(ctx: SceneryContext): void {
     },
   ];
   const cache = new Map<BirdSpecies, BirdMeshes>();
-  for (const setup of seasons) addSeasonGroup(ctx, setup, cache);
+  const built: DistantBirdSeason[] = [];
+  for (const setup of seasons) built.push(addSeasonGroup(ctx, setup, cache));
+  return built;
 }

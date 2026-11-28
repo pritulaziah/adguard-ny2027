@@ -119,4 +119,14 @@ export class FinaleFireworks {
       }
     }
   }
+
+  /** Removes the bursts and releases their geometry and cloned materials. */
+  destroy(): void {
+    this.group.removeFromParent();
+    for (const burst of this.bursts) {
+      burst.mesh.geometry.dispose();
+      burst.material.dispose();
+    }
+    this.bursts.length = 0;
+  }
 }

@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import * as THREE from 'three';
 import { addDistantBirds } from './scenery/distant-birds.ts';
 import { Wingbeat } from './birds/index.ts';
@@ -11,7 +11,7 @@ import { SEASON_BORDERS } from './seasons.ts';
 function buildDistantBirds() {
   const root = new THREE.Group();
   const parts = [];
-  addDistantBirds({
+  const seasons = addDistantBirds({
     group: root,
     cameraX: null,
     detail: () => {
@@ -39,7 +39,7 @@ function buildDistantBirds() {
       });
     },
   });
-  return { root, parts };
+  return { root, parts, seasons };
 }
 
 test('each season has one bird species, including winter, with no species mixing on one scene', () => {
@@ -308,4 +308,24 @@ test('light gulls are replaced by seasonal birds in the full scenery', async () 
   expect(set.group.getObjectByName('gull-wing-left')).toBeUndefined();
   expect(set.group.getObjectByName('gull-wing-right')).toBeUndefined();
   expect(set.animated.filter(part => part.kind === 'distant-birds')).toHaveLength(5);
+  expect(set.birds).toHaveLength(5);
 }, 60000);
+
+test('every bird season releases its instance buffers on destroy', () => {
+  const { root, seasons } = buildDistantBirds();
+  const meshes = [];
+  root.traverse(object => {
+    if (object instanceof THREE.InstancedMesh) meshes.push(object);
+  });
+  expect(meshes).toHaveLength(15);
+
+  const dispose = vi.spyOn(meshes[0], 'dispose');
+  for (const season of seasons) season.destroy();
+
+  expect(dispose).toHaveBeenCalled();
+  let remaining = 0;
+  root.traverse(object => {
+    if (object instanceof THREE.InstancedMesh) remaining++;
+  });
+  expect(remaining).toBe(0);
+});

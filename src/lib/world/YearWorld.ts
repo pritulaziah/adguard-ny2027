@@ -266,6 +266,7 @@ export class YearWorld {
     this.css.destroy();
     this.weather.destroy();
     this.fleet?.destroy();
+    this.fireworks.destroy();
     const geometries = new Set<THREE.BufferGeometry>();
     const materials = new Set<THREE.Material>();
     const textures = new Set<THREE.Texture>();
@@ -290,6 +291,7 @@ export class YearWorld {
     for (const geometry of geometries) geometry.dispose();
     for (const material of materials) material.dispose();
     for (const texture of textures) texture.dispose();
+    for (const season of this.paper?.birds ?? []) season.destroy();
     resetPaperMaterials();
     resetTemplates();
     resetWheelTemplates();

@@ -113,4 +113,16 @@ export class DistantBirdSeason {
     this.rightWings.instanceMatrix.needsUpdate = true;
     return true;
   }
+
+  /**
+   * Removes the three instanced meshes and releases their instance buffers.
+   * The scenery owns the shared body and wing geometry and material.
+   */
+  destroy(): void {
+    for (const mesh of [this.bodies, this.leftWings, this.rightWings]) {
+      mesh.removeFromParent();
+      mesh.dispose();
+    }
+    this.flights.length = 0;
+  }
 }
