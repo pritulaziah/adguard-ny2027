@@ -4,20 +4,7 @@ import { STORY_END, TRACK_LENGTH, stopX } from '../route';
 import { paperSheet, seasonalPaperMaterial } from '../paper-materials';
 import { PaperDetail } from '../paper-detail';
 import { GROUND_RAMP } from '../seasons';
-import {
-  addBeehive,
-  addBird,
-  addBunny,
-  addCat,
-  addCow,
-  addDeer,
-  addFox,
-  addHedgehog,
-  addOwl,
-  addPondWithFrog,
-  addSnowman,
-  addSquirrel,
-} from '../animals';
+import { Beehive, Bird, Bunny, Cat, Cow, Deer, Fox, Hedgehog, Owl, PondWithFrog, Snowman, Squirrel } from '../animals';
 import { createYieldPacer } from '../schedule';
 import { isAnimated, motionFor, type PaperPart } from '../part-motion';
 import type { SceneryContext } from '../scene-context';
@@ -130,7 +117,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addFir(ctx, -5.2, 3.7, true, false, -2.1);
   addFir(ctx, -3.6, 2.7, true, false, -2.35);
   await pause();
-  addDeer(ctx, 2.05, -1.08);
+  new Deer(ctx, 2.05, -1.08).build();
   await pause();
   addFir(ctx, 7.3, 3.0, true, false, -2.15);
   addFir(ctx, 9.1, 3.5, true, false, -1.98);
@@ -138,7 +125,7 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
 
   // Stop 1 (iOS v4.5.15, winter, x = 12.65): snowman at +2.35.
   addFir(ctx, stopX(1) - 4.4, 3.1, true, false, -2.2);
-  addSnowman(ctx, stopX(1) + 2.35, true, -1.04);
+  new Snowman(ctx, stopX(1) + 2.35, true, -1.04).build();
   addFir(ctx, stopX(1) + 4.45, 3.5, true, false, -2.0);
   addFir(ctx, stopX(1) + 5.7, 2.6, true, false, -2.32);
   await pause();
@@ -146,8 +133,8 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   // Stop 2 (AdGuard on Meta Quest, spring, x = 25.30): cool blooming spring orchard.
   addBroadTree(ctx, stopX(2) - 5.4, 'spring-blossom', 0.9, -2.35);
   addBroadTree(ctx, stopX(2) - 4.0, 'spring-blossom', 1.08, -2.08);
-  addFox(ctx, stopX(2) - 2.75, -1.02);
-  addHedgehog(ctx, stopX(2) + 2.85, -1.02);
+  new Fox(ctx, stopX(2) - 2.75, -1.02).build();
+  new Hedgehog(ctx, stopX(2) + 2.85, -1.02).build();
   addBroadTree(ctx, stopX(2) + 3.5, 'spring-green', 0.96, -2.68);
   addBroadTree(ctx, stopX(2) + 4.85, 'spring-blossom', 0.88, -2.2);
   await pause();
@@ -156,8 +143,8 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   addBroadTree(ctx, stopX(3) - 6.35, 'spring-blossom', 0.96, -2.16);
   addBroadTree(ctx, stopX(3) - 4.15, 'spring-green', 0.9, -3.03);
   addBroadTree(ctx, stopX(3) - 1.95, 'spring-blossom', 0.82, -2.65);
-  addBird(ctx, stopX(3) - 2.9, -1.45);
-  addPondWithFrog(ctx, stopX(3) + 3.05, -1.04);
+  new Bird(ctx, stopX(3) - 2.9, -1.45).build();
+  new PondWithFrog(ctx, stopX(3) + 3.05, -1.04).build();
   await pause();
   const meadowSpots: Array<[number, number]> = [
     [-5.3, -0.78],
@@ -175,20 +162,20 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
 
   // Stop 4 (AdGuard for Windows v8.0, summer, x = 52.10): sunlit countryside meadow with distant river.
   addSummerMeadow(ctx);
-  addCow(ctx, stopX(4) - 2.9, -1.04);
-  addBeehive(ctx, stopX(4) + 2.95, -1.04);
+  new Cow(ctx, stopX(4) - 2.9, -1.04).build();
+  new Beehive(ctx, stopX(4) + 2.95, -1.04).build();
   await pause();
 
   // Stop 5 (AdGuard Mini for Android v3.0, autumn): bunny and squirrel flank the story.
   addBroadTree(ctx, stopX(5) - 5.3, 'autumn-maple', 1.12, -2.15);
   addBroadTree(ctx, stopX(5) - 4.4, 'autumn-oak', 0.82, -3.0);
-  addBunny(ctx, stopX(5) - 2.85, -0.98);
-  addSquirrel(ctx, stopX(5) + 2.85, -1.02);
+  new Bunny(ctx, stopX(5) - 2.85, -0.98).build();
+  new Squirrel(ctx, stopX(5) + 2.85, -1.02).build();
   await pause();
 
   // Stop 6 (AdGuard Home 1.0, autumn): cat and owl flank the story.
-  addCat(ctx, stopX(6) - 2.85, -1.02);
-  addOwl(ctx, stopX(6) + 2.85, -1.4);
+  new Cat(ctx, stopX(6) - 2.85, -1.02).build();
+  new Owl(ctx, stopX(6) + 2.85, -1.4).build();
   addBroadTree(ctx, stopX(6) + 3.9, 'autumn-birch', 0.88, -3.05);
   addBroadTree(ctx, stopX(6) + 4.6, 'autumn-maple', 1.06, -2.12);
   addBroadTree(ctx, stopX(6) + 5.4, 'autumn-oak', 0.88, -2.84);

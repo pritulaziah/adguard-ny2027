@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
-import { addSquirrel } from './squirrel.ts';
+import { Squirrel } from './squirrel.ts';
 import { motionFor } from '../part-motion.ts';
 
 test('the squirrel tail overlaps the body at rest and throughout its motion', () => {
   const group = new THREE.Group();
   const parts = [];
-  addSquirrel(
+  new Squirrel(
     {
       detail: () => ({ group, oval: () => {} }),
       animate: (mesh, kind) =>
@@ -21,7 +21,7 @@ test('the squirrel tail overlaps the body at rest and throughout its motion', ()
         }),
     },
     0,
-  );
+  ).build();
   const body = parts.find(part => part.kind === 'sway').mesh;
   const tail = parts.find(part => part.kind === 'cat-tail').mesh;
   const vertices = tail.geometry.attributes.position;

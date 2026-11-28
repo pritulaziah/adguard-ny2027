@@ -20,6 +20,7 @@ function filesIn(directory) {
 
 test('each world object module stays small', () => {
   const files = [
+    ...filesIn(join(root, 'animals')),
     ...filesIn(join(root, 'scenery')),
     ...filesIn(join(root, 'vehicles')),
     ...filesIn(join(root, 'year')),
