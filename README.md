@@ -54,3 +54,13 @@ users and anyone who wants a quick tour of what the team shipped in
       or a train in every season. The summer scene has a bright meadow with
       a narrow stream and a curved wooden bridge. Decide the future of the
       bicycle and the punt. Wait for concept approval before this work starts.
+- [ ] Decide the final font set and delete the unused fonts. Unbounded is
+      declared but not used in code today. Keep it while the design is in
+      progress, then delete the unused files in `public/fonts` and their
+      `@font-face` rules in `src/styles/fonts.css`.
+- [ ] Compress the mascot portraits. The three PNG files in `public/mascots`
+      weigh 5.05 MB and load before the scene starts. Crop each image to its
+      box in `portraits.json`, resize it to 512 px high, and save it as WebP.
+      The total is about 98 KB. Then update `portraits.json` and
+      `paper-sprite.ts`, remove the UV remap, and add a size test. Start when
+      the compressed quality is acceptable.

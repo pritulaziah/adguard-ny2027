@@ -1,14 +1,6 @@
 import * as THREE from 'three';
 import { carded } from './paper-mesh';
-import {
-  cutGeometry,
-  ovalGeometry,
-  rectGeometry,
-  leafGeometry,
-  starGeometry,
-  strokeGeometry,
-  type Outline,
-} from './paper-geometry';
+import { cutGeometry, ovalGeometry, rectGeometry, strokeGeometry, type Outline } from './paper-geometry';
 
 export type { Outline };
 
@@ -72,31 +64,4 @@ export function rect(
 
 export function stroke(parent: THREE.Object3D, points: Outline, color: string, width = 0.025, z = 0.1): void {
   place(parent, strokeGeometry(points, width), color, 0, 0, z);
-}
-
-export function leaf(
-  parent: THREE.Object3D,
-  width: number,
-  height: number,
-  color: string,
-  x: number,
-  y: number,
-  z = 0,
-): THREE.Mesh {
-  const mesh = place(parent, leafGeometry(width, height), color, x, y, z);
-  stroke(
-    mesh,
-    [
-      [0, 0.07],
-      [0, height * 0.86],
-    ],
-    '#b9b491',
-    0.012,
-    0.05,
-  );
-  return mesh;
-}
-
-export function star(parent: THREE.Object3D, radius: number, color: string, x: number, y: number, z = 0): THREE.Mesh {
-  return place(parent, starGeometry(radius), color, x, y, z);
 }

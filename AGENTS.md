@@ -253,6 +253,10 @@ MUST NOT import `world/` or `ui/`.
 - **Helper placement**: A helper with one caller stays a local function or
   a private method. When a second module needs the same helper, move it to
   a shared module. Do not copy it.
+- **Dead code**: Delete a module or helper that nothing imports. Do not
+  keep it for later. Check the import graph and the tests first, and keep
+  a test-only helper only when a test states a rule. A reserved asset,
+  such as a font or a design prompt, can stay.
 - **Imports**: Use relative paths. No path aliases exist. Explicit `.ts`
   extensions are allowed (`allowImportingTsExtensions`). Tests use the
   explicit `.ts` extension.
@@ -348,6 +352,8 @@ MUST NOT import `world/` or `ui/`.
 
 ### Other
 
+- **TODO list**: Keep open work items in the `## TODO` section of
+  `README.md`. Do not keep them in another place.
 - **Commit messages**: Use Conventional Commits: a type, a scope, and a
   short imperative subject. Allowed types are `feat`, `fix`, `perf`,
   `test`, `docs`, and `chore`. Keep the subject at 72 characters or

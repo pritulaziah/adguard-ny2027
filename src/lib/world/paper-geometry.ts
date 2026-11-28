@@ -139,10 +139,6 @@ export function unitLeafGeometry(depth = FACE_DEPTH): THREE.BufferGeometry {
   });
 }
 
-export function leafGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
-  return unitLeafGeometry(depth).clone().scale(width, height, 1);
-}
-
 /** One cached unit maple leaf, centred at the origin. */
 export function unitMapleLeafGeometry(depth = 0.022): THREE.BufferGeometry {
   return template(`maple:${depth}`, () => {
@@ -227,10 +223,6 @@ export function unitStarGeometry(depth = FACE_DEPTH): THREE.BufferGeometry {
     });
     return extrude(shapeFrom(outline), depth);
   });
-}
-
-export function starGeometry(radius: number, depth = FACE_DEPTH): THREE.BufferGeometry {
-  return unitStarGeometry(depth).clone().scale(radius, radius, 1);
 }
 
 /** One ribbon per segment, merged, so a polyline stays a single part. */

@@ -10,7 +10,6 @@ interface Copy {
   title: string;
   description: string;
   scene: string;
-  canvas: string;
   loading: string;
   loadError: string;
   webglError: string;
@@ -19,7 +18,6 @@ interface Copy {
   station: string;
   story: string;
   year: string;
-  read: string;
   welcomeTitle: string;
   welcomeSummary: string;
   welcomeNote: string;
@@ -35,7 +33,6 @@ export const translations: Record<Language, Copy> = {
     title: 'AdGuard · 2026 in Review',
     description: 'A paper journey through the AdGuard 2026 highlights.',
     scene: 'AdGuard 2026 journey through a paper world',
-    canvas: 'A paper world with a retro van, four seasons, and stories on the walls',
     loading: 'Unfolding a paper world…',
     loadError: 'The paper world could not load. Refresh the page to try again.',
     webglError: 'The 3D scene could not open. Refresh the page in a browser with WebGPU or WebGL2 support.',
@@ -44,7 +41,6 @@ export const translations: Record<Language, Copy> = {
     station: 'New Year',
     story: 'STORY',
     year: '2026 IN REVIEW',
-    read: 'Read the full story',
     welcomeTitle: 'Let’s remember\na good year',
     welcomeSummary: 'A big year. Six stories about what we achieved together.',
     welcomeNote: 'Look around — this paper world is full of life.',
@@ -80,7 +76,6 @@ export const translations: Record<Language, Copy> = {
     title: 'AdGuard · Итоги 2026',
     description: 'Бумажное путешествие AdGuard: шесть историй 2026 года.',
     scene: 'Бумажное путешествие AdGuard по итогам 2026 года',
-    canvas: 'Бумажный мир: ретро-минивэн, четыре времени года, истории на стенах',
     loading: 'Раскрываем бумажный мир…',
     loadError: 'Не удалось загрузить бумажный мир. Обновите страницу, чтобы попробовать ещё раз.',
     webglError: 'Не удалось открыть 3D-сцену. Обновите страницу в браузере с поддержкой WebGPU или WebGL2.',
@@ -89,7 +84,6 @@ export const translations: Record<Language, Copy> = {
     station: 'Новогодняя',
     story: 'ИСТОРИЯ',
     year: 'ИТОГИ 2026',
-    read: 'Читать историю целиком',
     welcomeTitle: 'Вспомним\nхороший год',
     welcomeSummary: 'Большой год. Шесть историй о том, что мы сделали вместе.',
     welcomeNote: 'Оглядывайтесь по сторонам — здесь всё немного живое.',
