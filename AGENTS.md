@@ -50,7 +50,7 @@ year without a long list of release notes.
   motion, keyboard access, and ARIA state must stay. Interface and story
   copy exist in Russian and English.
 - **Scale/Scope**: One page, four seasons, a route of story stops, six
-  stories, one release dialog per story, and 19 test files. The audience
+  stories, one release dialog per story, and 25 test files. The audience
   is public.
 
 ## Project Structure
@@ -271,7 +271,10 @@ MUST NOT import `world/` or `ui/`.
   `Math.min(delta, 0.05)`.
 - **Assets**: Build an asset URL from `import.meta.env.BASE_URL`. Do not
   start a public asset path with `/`, because the site deploys under a
-  repository subpath.
+  repository subpath. Save raster art as WebP at quality 90 with
+  `alphaQuality: 100`, and keep the source resolution. Do not commit a
+  PNG to `public/`. `src/lib/content/assets.test.mjs` fails on a PNG and
+  on an image above 300 KB.
 - **Animal accessories**: Fit collars to the neck contour and hide their
   far ends behind the head. Keep the bell ring visible below the collar.
   Check the attachment at the normal scene size, as well as in a close-up.

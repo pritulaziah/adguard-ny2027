@@ -58,9 +58,9 @@ users and anyone who wants a quick tour of what the team shipped in
       declared but not used in code today. Keep it while the design is in
       progress, then delete the unused files in `public/fonts` and their
       `@font-face` rules in `src/styles/fonts.css`.
-- [ ] Compress the mascot portraits. The three PNG files in `public/mascots`
-      weigh 5.05 MB and load before the scene starts. Crop each image to its
-      box in `portraits.json`, resize it to 512 px high, and save it as WebP.
-      The total is about 98 KB. Then update `portraits.json` and
-      `paper-sprite.ts`, remove the UV remap, and add a size test. Start when
-      the compressed quality is acceptable.
+- [ ] Shrink the mascot portrait textures further. The three WebP portraits
+      weigh 432 KB at full resolution. The scene shows a figure about 200 px
+      high on a desktop screen. To go lower, crop each image to its box in
+      `portraits.json`, resize it to 800 px high, update the crop numbers, and
+      remove the UV remap in `paper-sprite.ts`. The result is about 145 KB.
+      Take this step only if the smaller texture looks the same in the finale.

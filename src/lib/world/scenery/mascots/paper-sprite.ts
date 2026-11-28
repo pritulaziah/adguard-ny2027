@@ -22,7 +22,7 @@ export async function addPaperSprite(
   z: number,
   scale: number,
 ): Promise<void> {
-  const url = `${import.meta.env.BASE_URL}mascots/${name}-paper.png`;
+  const url = `${import.meta.env.BASE_URL}mascots/${name}-paper.webp`;
   // Geometry checks run without the browser's image loader.
   const picture =
     typeof document === 'undefined' ? new THREE.Texture() : await new THREE.TextureLoader().loadAsync(url);

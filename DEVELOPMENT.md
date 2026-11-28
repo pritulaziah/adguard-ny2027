@@ -67,7 +67,7 @@ The console prints a warning when the app uses the WebGL2 fallback.
 | `src/lib/world/summer-bridge.ts` | Summer bridge position and deck profile shared with the van         |
 | `src/lib/world/vehicles/`        | Retro van, separate roof cargo builder, wheels, exhaust, snow trail |
 | `src/App.svelte`                 | Page frame, language switch, loading and error states               |
-| `public/`                        | Fonts, logo, story covers, and screenshots                          |
+| `public/`                        | Fonts, logo, WebP story covers and screenshots                      |
 | `.github/workflows/`             | GitHub Actions: deploy and CI                                       |
 
 ## Where to change content
@@ -98,6 +98,15 @@ Some test files are:
 - `src/lib/content/articles.test.mjs` — story data and release links.
 - `src/lib/content/story.test.mjs` — dialog copy and figure notes.
 - `src/lib/world/module-size.test.mjs` — the 300-line module limit.
+- `src/lib/content/assets.test.mjs` — image format and the 300 KB limit.
+
+## Images
+
+Put raster art in `public/` as WebP. Use quality 90 and
+`alphaQuality: 100`, so a transparent edge keeps its colour. Keep the
+source resolution and delete the PNG. Two covers stay JPEG, because
+WebP makes them larger. `src/lib/content/assets.test.mjs` rejects a PNG
+and an image above 300 KB.
 
 ## Deployment
 

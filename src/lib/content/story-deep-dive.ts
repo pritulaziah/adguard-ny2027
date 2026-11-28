@@ -252,13 +252,13 @@ export const deepDives: Record<string, Record<Language, StoryDeepDive>> = {
         {
           label: '01 / BEFORE',
           title: 'The interface before 1.0',
-          image: `${base}blog/home/dashboard-before.png`,
+          image: `${base}blog/home/dashboard-before.webp`,
           alt: 'AdGuard Home dashboard before version 1.0',
         },
         {
           label: '02 / AFTER',
           title: 'The interface after 1.0',
-          image: `${base}blog/home/dashboard-after.png`,
+          image: `${base}blog/home/dashboard-after.webp`,
           alt: 'AdGuard Home dashboard after version 1.0',
         },
       ],
@@ -285,13 +285,13 @@ export const deepDives: Record<string, Record<Language, StoryDeepDive>> = {
         {
           label: '01 / ДО',
           title: 'Интерфейс до 1.0',
-          image: `${base}blog/home/dashboard-before.png`,
+          image: `${base}blog/home/dashboard-before.webp`,
           alt: 'Панель AdGuard Home до версии 1.0',
         },
         {
           label: '02 / ПОСЛЕ',
           title: 'Интерфейс после 1.0',
-          image: `${base}blog/home/dashboard-after.png`,
+          image: `${base}blog/home/dashboard-after.webp`,
           alt: 'Панель AdGuard Home после версии 1.0',
         },
       ],

@@ -47,7 +47,7 @@ const stories: Story[] = [
     slug: 'adguard-for-ios-v4-5-15',
     color: '#526c84',
     stat: '4.5.15',
-    image: `${base}blog/ios-pqc.png`,
+    image: `${base}blog/ios-pqc.webp`,
     ru: {
       station: 'Защищённая',
       title: 'iOS 4.5.15: постквантовая защита',
@@ -72,7 +72,7 @@ const stories: Story[] = [
     slug: 'adguard-adblocker-vr-meta-quest',
     color: '#876447',
     stat: 'Meta Quest',
-    image: `${base}blog/quest.png`,
+    image: `${base}blog/quest.webp`,
     ru: {
       station: 'Виртуальная',
       title: 'AdGuard на Meta Quest',
@@ -126,7 +126,7 @@ const stories: Story[] = [
     slug: 'adguard-for-windows-v8-0',
     color: '#43745b',
     stat: '8.0',
-    image: `${base}blog/windows.png`,
+    image: `${base}blog/windows.webp`,
     ru: {
       station: 'Настольная',
       title: 'Windows 8.0',
@@ -153,7 +153,7 @@ const stories: Story[] = [
     slug: 'adguard-mini-v3-0-for-android',
     color: '#56744e',
     stat: '3.0',
-    image: `${base}blog/mini-android.png`,
+    image: `${base}blog/mini-android.webp`,
     ru: {
       station: 'Мобильная',
       title: 'Больше, чем браузер',
