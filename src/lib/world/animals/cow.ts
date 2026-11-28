@@ -61,9 +61,46 @@ export class Cow extends PaperAnimal {
     cow.oval(0.26, 0.22, '#6b513e', 0.16, 0.62, 0.044, [0, 0, -0.3], 0.016);
     cow.oval(0.18, 0.15, '#7c604a', -0.34, 0.56, 0.042, [0, 0, -0.2], 0.014);
 
-    // Leather neck strap and hanging brass bell.
-    cow.rect(0.1, 0.34, '#a66544', 0.41, 0.6, 0.048, [0, 0, -0.28], 0.02);
-    const bell = cow.child('cow-bell', 0.46, 0.58, 0.068);
+    // Follow the back of the neck, then turn below the jaw into the bell ring.
+    cow.shape(
+      this.shape(s => {
+        s.moveTo(0.25, 0.97);
+        s.lineTo(0.31, 1.0);
+        s.quadraticCurveTo(0.29, 0.83, 0.43, 0.74);
+        s.quadraticCurveTo(0.48, 0.71, 0.54, 0.72);
+        s.lineTo(0.54, 0.66);
+        s.quadraticCurveTo(0.46, 0.635, 0.38, 0.68);
+        s.quadraticCurveTo(0.23, 0.8, 0.25, 0.97);
+        s.closePath();
+      }),
+      '#956346',
+      0,
+      0,
+      0.054,
+      undefined,
+      0.02,
+    );
+    cow.shape(
+      this.shape(s => {
+        s.moveTo(0.25, 0.97);
+        s.quadraticCurveTo(0.23, 0.8, 0.38, 0.68);
+        s.quadraticCurveTo(0.46, 0.635, 0.54, 0.66);
+        s.lineTo(0.54, 0.671);
+        s.quadraticCurveTo(0.46, 0.648, 0.386, 0.69);
+        s.quadraticCurveTo(0.245, 0.804, 0.261, 0.975);
+        s.closePath();
+      }),
+      '#704b38',
+      0,
+      0,
+      0.075,
+      undefined,
+      0.008,
+    );
+    const ring = this.shape(s => s.absellipse(0, 0, 0.021, 0.027, 0, Math.PI * 2, false, 0));
+    ring.holes.push(this.shape(s => s.absellipse(0, 0, 0.011, 0.016, 0, Math.PI * 2, true, 0)));
+    cow.shape(ring, '#b88c34', 0.51, 0.667, 0.084, undefined, 0.012);
+    const bell = cow.child('cow-bell', 0.51, 0.62, 0.092);
     bell.shape(
       this.shape(s => {
         s.moveTo(-0.045, 0.02);

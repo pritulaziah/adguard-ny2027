@@ -254,6 +254,9 @@ MUST NOT import `world/` or `ui/`.
 - **Assets**: Build an asset URL from `import.meta.env.BASE_URL`. Do not
   start a public asset path with `/`, because the site deploys under a
   repository subpath.
+- **Animal accessories**: Fit collars to the neck contour and hide their
+  far ends behind the head. Keep the bell ring visible below the collar.
+  Check the attachment at the normal scene size, as well as in a close-up.
 
 ### Testing
 
