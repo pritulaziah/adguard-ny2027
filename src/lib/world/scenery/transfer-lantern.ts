@@ -127,12 +127,14 @@ const styles: Record<TransferVariant, LanternStyle> = {
       detail.mapleLeaf(0.075, '#c9784f', x(0.43), 1.64, 0.1);
       detail.mapleLeaf(0.06, '#b8693f', x(0.472), 1.575, 0.1);
       detail.mapleLeaf(0.055, '#d08a56', x(0.455), 1.5, 0.1);
-      // Mushrooms and one fallen leaf ground the post.
+      // Mushrooms and one fallen leaf ground the post. A cap rests on its stem,
+      // and a small z step keeps the two paper layers apart.
       detail.rect(0.03, 0.09, '#efe6cf', x(0.2), 0, 0.06);
-      detail.oval(0.11, 0.055, '#c4755f', x(0.2), 0.085, 0.06);
+      detail.oval(0.11, 0.055, '#c4755f', x(0.2), 0.07, 0.072);
       detail.rect(0.022, 0.06, '#efe6cf', x(0.1), 0, 0.065);
-      detail.oval(0.08, 0.04, '#d08a68', x(0.1), 0.06, 0.065);
-      detail.mapleLeaf(0.06, '#c9784f', x(-0.14), 0.04, 0.06, [Math.PI / 2, 0, 0.4]);
+      detail.oval(0.08, 0.04, '#d08a68', x(0.1), 0.048, 0.077);
+      // The flat leaf spans its size in z, so keep it clear of the plinth face.
+      detail.mapleLeaf(0.06, '#c9784f', x(-0.14), 0.04, 0.09, [Math.PI / 2, 0, 0.4]);
     },
   },
   'autumn-winter': {
