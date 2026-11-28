@@ -1,21 +1,20 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { FINALE_CAR_X } from '../finale';
 import { SEASON_BORDERS } from '../seasons';
 import { VanExhaust } from './exhaust';
-import { createPaperRetroVan } from './retro-van';
+import { PaperRetroVan } from './retro-van';
 import { SnowTrail } from './snow-trail';
-import { isSharedWheelGeometry } from './wheels';
 
 /** The one retro van, its exhaust, and its winter trail. */
 export class SeasonalFleet {
-  private readonly van: ReturnType<typeof createPaperRetroVan>;
+  private readonly van: PaperRetroVan;
   private readonly exhaust: VanExhaust;
   private readonly snowTrail: SnowTrail;
   private prevX = 0;
   private disposed = false;
 
   constructor(scene: THREE.Scene) {
-    this.van = createPaperRetroVan(scene);
+    this.van = new PaperRetroVan(scene);
     this.exhaust = new VanExhaust(scene);
     this.snowTrail = new SnowTrail(scene, 'paper-van-snow');
   }
@@ -39,11 +38,7 @@ export class SeasonalFleet {
   destroy(): void {
     if (this.disposed) return;
     this.disposed = true;
-    this.van.group.removeFromParent();
-    this.van.group.traverse(object => {
-      // The wheel template cache owns the shared wheel geometry.
-      if (object instanceof THREE.Mesh && !isSharedWheelGeometry(object.geometry)) object.geometry.dispose();
-    });
+    this.van.destroy();
     this.exhaust.destroy();
     this.snowTrail.destroy();
   }

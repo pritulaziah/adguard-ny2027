@@ -3,11 +3,6 @@ import { PaperBatch } from '../paper-batch';
 
 export const CUT_SIDE = '#e5d6ba';
 
-export interface MovingVehicle {
-  group: THREE.Group;
-  update: (x: number, time: number, moving: boolean, reduced: boolean) => void;
-}
-
 /**
  * All still parts of one vehicle go into a shared batch. A cutout keeps the
  * same depth offset and cream side edge as the old per-part mesh.
