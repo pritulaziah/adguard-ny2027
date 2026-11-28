@@ -24,6 +24,7 @@ import { createWalls } from './year/walls';
 import { WeatherLayer } from './year/weather';
 import { FinaleFireworks } from './year/fireworks';
 import { FinaleDeparture } from './year/finale-departure';
+import { disposeSceneResources } from './year/dispose-scene';
 
 // Moving parts farther than this from the camera cannot be seen; skip their math.
 const MOTION_SPAN = 13;
@@ -267,30 +268,7 @@ export class YearWorld {
     this.weather.destroy();
     this.fleet?.destroy();
     this.fireworks.destroy();
-    const geometries = new Set<THREE.BufferGeometry>();
-    const materials = new Set<THREE.Material>();
-    const textures = new Set<THREE.Texture>();
-    this.scene.traverse(object => {
-      if (!(
-        object instanceof THREE.Mesh ||
-        object instanceof THREE.Points ||
-        object instanceof THREE.Line ||
-        object instanceof THREE.Sprite
-      ))
-        return;
-      if ('geometry' in object && object.geometry) geometries.add(object.geometry);
-      const mats = Array.isArray(object.material) ? object.material : [object.material];
-      for (const material of mats) {
-        if (!material) continue;
-        materials.add(material);
-        for (const value of Object.values(material)) {
-          if (value instanceof THREE.Texture) textures.add(value);
-        }
-      }
-    });
-    for (const geometry of geometries) geometry.dispose();
-    for (const material of materials) material.dispose();
-    for (const texture of textures) texture.dispose();
+    disposeSceneResources(this.scene);
     for (const season of this.paper?.birds ?? []) season.destroy();
     resetPaperMaterials();
     resetTemplates();

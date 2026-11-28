@@ -145,7 +145,8 @@ Design for a static, client-side, GPU-bound page:
   `switch` or a motion lookup. Skip the motion of parts that are far
   from the camera.
 - Dispose every GPU resource on teardown: geometry, material, texture,
-  and renderer. Reset module caches as well, so a remount starts clean.
+  instance buffer, and renderer. Reset module caches as well, so a remount
+  starts clean.
 - Stop the animation loop when the tab is hidden and while a story
   dialog is open.
 - Respect `prefers-reduced-motion` in every animated subsystem.

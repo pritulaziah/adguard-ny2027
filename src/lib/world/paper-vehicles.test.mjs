@@ -142,7 +142,9 @@ test('winter snow trail follows behind the van only on snowy road sections', () 
   expect(positions.every(p => p.x < 19 / 30 + VAN_REAR_X)).toBe(true);
   trail.update(1, -5, 1 / 60, true);
   expect(snow.count).toBe(0);
+  const snowDispose = vi.spyOn(snow, 'dispose');
   trail.destroy();
+  expect(snowDispose).toHaveBeenCalled();
   expect(scene.getObjectByName('test-van-snow')).toBeUndefined();
 
   // Verify the fleet emits snow in winter and suppresses it in summer.
