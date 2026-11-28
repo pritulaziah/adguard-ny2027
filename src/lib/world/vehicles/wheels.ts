@@ -6,6 +6,16 @@ import { paperSheet } from '../paper-materials';
 // type. This keeps the tire, sidewall, steel rim, slots, and hubcap in one draw call.
 const wheelTemplates = new Map<string, THREE.BufferGeometry>();
 
+/** Number of cached wheel templates. A development and test helper. */
+export function wheelTemplateCacheSize(): number {
+  return wheelTemplates.size;
+}
+
+export function resetWheelTemplates(): void {
+  for (const geometry of wheelTemplates.values()) geometry.dispose();
+  wheelTemplates.clear();
+}
+
 function retroCarWheelGeometry(
   radius: number,
   tireColor: string,

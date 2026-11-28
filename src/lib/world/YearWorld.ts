@@ -6,8 +6,10 @@ import { objectFact } from '../content/object-fact';
 import { openStoryId } from '../content/story-modal';
 import type { JourneyStore, JourneyState } from './journey-state';
 import { resetPaperMaterials, type WeatherField } from './paper-materials';
+import { resetTemplates } from './paper-geometry';
 import { createPaperScenery, type PaperSet } from './scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './vehicles';
+import { resetWheelTemplates } from './vehicles/wheels';
 import type { MotionFrame } from './part-motion';
 import { JourneyMotion, stopIndexAt } from './route';
 import { FINALE_CAR_X } from './finale';
@@ -286,5 +288,7 @@ export class YearWorld {
     for (const material of materials) material.dispose();
     for (const texture of textures) texture.dispose();
     resetPaperMaterials();
+    resetTemplates();
+    resetWheelTemplates();
   }
 }

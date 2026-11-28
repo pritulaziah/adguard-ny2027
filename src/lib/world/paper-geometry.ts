@@ -224,6 +224,11 @@ export function strokeGeometry(points: Outline, width: number, depth = STROKE_DE
   return merged ?? segments[0];
 }
 
+/** Number of cached shape templates. A development and test helper. */
+export function templateCacheSize(): number {
+  return templates.size;
+}
+
 export function resetTemplates(): void {
   for (const geometry of templates.values()) geometry.dispose();
   templates.clear();
