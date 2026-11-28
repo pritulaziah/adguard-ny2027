@@ -73,7 +73,7 @@ year without a long list of release notes.
 │           ├── seasons.ts      # Season borders and colour ramps
 │           ├── finale.ts       # Finale layout and mascot positions
 │           ├── paper-*.ts      # Shared paper material, geometry, batching, meshes
-│           ├── year/           # Camera, input, stories, weather, sparks, CSS layer
+│           ├── year/           # Camera, input, stories, weather/, sparks, CSS layer
 │           ├── scenery/        # Season builders: firs, meadow, ridges, sky, mascots
 │           ├── animals/        # PaperAnimal classes and shared helpers
 │           └── vehicles/       # Retro van, wheels, exhaust, snow trail
@@ -179,10 +179,11 @@ Apply these principles:
   show a user-facing message. Log only at the top level.
 - **Keep It Boring** - prefer a plain class or a builder function over a
   clever abstraction.
-- **Weather layer** - `year/weather.ts` exposes one `WeatherLayer` class.
-  It owns three `WeatherStratum` instances: sky, midground, and
-  foreground. Each stratum owns its season presets and particle
-  placement. Pass build-time randomness as an `rng` function.
+- **Weather layer** - `year/weather/` exposes one `WeatherLayer` class from
+  `index.ts`. It owns three `WeatherStratum` subclasses: sky, midground,
+  and foreground. Each class lives in its own file. Each stratum owns its
+  season presets and particle placement. Pass build-time randomness as an
+  `rng` function.
 
 The layers, from the shell to the leaf:
 
@@ -233,6 +234,8 @@ MUST NOT import `world/` or `ui/`.
   classes and Svelte components, and UPPER_SNAKE for constants. Use
   `createX`, `addX`, `resetX`, and `unitXGeometry` prefixes for builders,
   and `*.test.mjs` for tests.
+- **Class files**: Put one class in one file, named after the class. A
+  module that exports several classes must be split.
 - **Imports**: Use relative paths. No path aliases exist. Explicit `.ts`
   extensions are allowed (`allowImportingTsExtensions`). Tests use the
   explicit `.ts` extension.

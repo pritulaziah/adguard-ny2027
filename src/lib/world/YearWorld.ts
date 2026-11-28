@@ -5,7 +5,7 @@ import type { Interaction } from '../content/i18n';
 import { objectFact } from '../content/object-fact';
 import { openStoryId } from '../content/story-modal';
 import type { JourneyStore, JourneyState } from './journey-state';
-import { resetPaperMaterials, type WeatherField } from './paper-materials';
+import { resetPaperMaterials } from './paper-materials';
 import { resetTemplates } from './paper-geometry';
 import { createPaperScenery, type PaperSet } from './scenery';
 import { createSeasonalFleet, type SeasonalFleet } from './vehicles';
@@ -21,7 +21,7 @@ import { precompileRoute } from './year/precompile';
 import { SparkLayer } from './year/sparks';
 import { StoryLayer } from './year/stories';
 import { createWalls } from './year/walls';
-import { createWeather } from './year/weather';
+import { WeatherLayer } from './year/weather';
 import { FinaleFireworks } from './year/fireworks';
 import { FinaleDeparture } from './year/finale-departure';
 
@@ -50,7 +50,7 @@ export class YearWorld {
   private onerror: () => void;
   private paper: PaperSet | null = null;
   private fleet: SeasonalFleet | null = null;
-  private weatherFields: WeatherField[] = [];
+  private readonly weather: WeatherLayer;
   private fireworks: FinaleFireworks;
   private departure = new FinaleDeparture();
   private rig: CameraRig;
@@ -92,7 +92,7 @@ export class YearWorld {
     this.stories = new StoryLayer(host.layer);
     this.sparks = new SparkLayer(this.css.scene, host.camera);
     createWalls(this.scene, this.rig.cameraX);
-    this.weatherFields = createWeather(this.scene, this.reduced);
+    this.weather = new WeatherLayer(this.scene, this.reduced);
     this.fireworks = new FinaleFireworks(this.scene, this.camera, this.reduced);
     this.input = new WorldInput({
       scrollBy: (units, limit) => this.scrollBy(units, limit),
@@ -263,6 +263,7 @@ export class YearWorld {
     this.stories.destroy();
     this.sparks.destroy();
     this.css.destroy();
+    this.weather.destroy();
     const geometries = new Set<THREE.BufferGeometry>();
     const materials = new Set<THREE.Material>();
     const textures = new Set<THREE.Texture>();
