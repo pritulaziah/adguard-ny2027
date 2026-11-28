@@ -73,6 +73,7 @@ year without a long list of release notes.
 │           ├── seasons.ts      # Season borders and colour ramps
 │           ├── finale.ts       # Finale layout and mascot positions
 │           ├── paper-*.ts      # Shared paper material, geometry, batching, meshes
+│           ├── birds/          # Sky bird classes: wingbeat, flights, season group
 │           ├── year/           # Camera, input, stories, weather/, sparks, CSS layer
 │           ├── scenery/        # Season builders: firs, meadow, ridges, sky, mascots
 │           ├── animals/        # PaperAnimal classes and shared helpers
@@ -226,15 +227,18 @@ MUST NOT import `world/` or `ui/`.
   `$effect` for side effects. Use shared Svelte stores for state that
   crosses modules. Use Svelte 5 event attributes (`onclick`,
   `onpointerdown`), not `on:click`.
-- **Module size**: Keep every file in `world/animals/`, `world/scenery/`,
-  `world/vehicles/`, and `world/year/`, and `YearWorld.ts` at 300 lines
-  or fewer. Split by object, not by technical layer.
+- **Module size**: Keep every file in `src/lib/world/` at 300 lines or
+  fewer. `src/lib/world/module-size.test.mjs` enforces this limit. Split
+  by object, not by technical layer.
 - **Naming**: Use kebab-case for TypeScript modules, PascalCase for
   classes and Svelte components, and UPPER_SNAKE for constants. Use
   `createX`, `addX`, `resetX`, and `unitXGeometry` prefixes for builders,
   and `*.test.mjs` for tests.
 - **Class files**: Put one class in one file, named after the class. A
   module that exports several classes must be split.
+- **Helper placement**: A helper with one caller stays a local function or
+  a private method. When a second module needs the same helper, move it to
+  a shared module. Do not copy it.
 - **Imports**: Use relative paths. No path aliases exist. Explicit `.ts`
   extensions are allowed (`allowImportingTsExtensions`). Tests use the
   explicit `.ts` extension.
