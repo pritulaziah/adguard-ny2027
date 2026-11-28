@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { addDistantBirds } from './scenery/distant-birds.ts';
-import { sampleFlightBirdPose, sampleWingBeat } from './distant-birds-motion.ts';
+import { Wingbeat } from './birds/index.ts';
 import { createPaperScenery } from './scenery/index.ts';
 import { createScalarUniform } from './paper-materials.ts';
 import { PART_KINDS, motionFor } from './part-motion.ts';
@@ -145,7 +145,7 @@ test('all four seasonal species have distinct 3D paper silhouettes inside season
           for (let step = 0; step < 30; step++) {
             const t = step * 0.6;
             part.apply(part, { time: t, delta: 0.05, reduced: false, distance, speed: 0 });
-            const pose = sampleFlightBirdPose(flight, member, t, distance, 1, false);
+            const pose = flight.samplePose(member, t, distance, 1, false);
             if (pose.scale === 0) continue;
             expect(pose.x, `${data.season} min x at d=${distance}`).toBeGreaterThan(minX);
             expect(pose.x, `${data.season} max x at d=${distance}`).toBeLessThan(maxX);
@@ -218,7 +218,7 @@ test('autumn geese fly continuously across autumn screens without mid-season res
 
     const scrollData = scrolled.mesh.userData.distantBirds;
     const scrollFlock = scrollData.flights[0];
-    const leadPose = sampleFlightBirdPose(scrollFlock, scrollFlock.members[0], t, d, 1, false, scrollData.dorsalTilt);
+    const leadPose = scrollFlock.samplePose(scrollFlock.members[0], t, d, 1, false, scrollData.dorsalTilt);
     expect(scrolled.mesh.visible, `autumn visible at step ${i}`).toBe(true);
     expect(leadPose.scale, `no mid-season fade at step ${i}`).toBeCloseTo(scrollFlock.members[0].size, 3);
     expect(scrollFlock.runtime.flockX, `monotonic forward flight at step ${i}`).toBeGreaterThan(prevX);
@@ -248,7 +248,7 @@ test('autumn geese fly continuously across autumn screens without mid-season res
     pt += 1 / 30;
     const d = THREE.MathUtils.lerp(stopX(5), stopX(6), i / 66);
     paused.apply(paused, { time: pt, delta: 1 / 30, reduced: false, distance: d, speed: 5.8 });
-    const pose = sampleFlightBirdPose(pausedFlock, pausedFlock.members[0], pt, d, 1, false, pausedData.dorsalTilt);
+    const pose = pausedFlock.samplePose(pausedFlock.members[0], pt, d, 1, false, pausedData.dorsalTilt);
     expect(pose.scale).toBeCloseTo(pausedFlock.members[0].size, 3);
     expect(pausedFlock.runtime.flockX).toBeGreaterThan(lastPausedX);
     lastPausedX = pausedFlock.runtime.flockX;
@@ -272,6 +272,7 @@ test('autumn geese fly continuously across autumn screens without mid-season res
 
 test('idle wing motion glides most of each cycle while scroll surge drives active beats', () => {
   const { parts } = buildDistantBirds();
+  const wingbeat = new Wingbeat();
   for (const part of parts) {
     const data = part.mesh.userData.distantBirds;
     for (const flight of data.flights) {
@@ -282,12 +283,12 @@ test('idle wing motion glides most of each cycle while scroll surge drives activ
         let activeBeats = 0;
         for (let i = 0; i < steps; i++) {
           const t = (i / steps) * member.wingCycle;
-          const idle = sampleWingBeat(member, t, false, 0);
+          const idle = wingbeat.sample(member, t, false, 0);
           const deviation = Math.abs(idle.flap - member.glideAngle);
           if (deviation < 0.05) gliding++;
           if (deviation > maxIdle) maxIdle = deviation;
 
-          const surging = sampleWingBeat(member, t, false, 1);
+          const surging = wingbeat.sample(member, t, false, 1);
           if (Math.abs(surging.flap - member.glideAngle) > 0.12) activeBeats++;
         }
         expect(gliding / steps, `${data.species} glides calmly when idle`).toBeGreaterThan(0.65);

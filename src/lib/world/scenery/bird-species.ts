@@ -1,4 +1,6 @@
-export type BirdSpecies = 'bullfinch' | 'swallow' | 'stork' | 'goose';
+import type { BirdSpecies } from '../birds/types';
+
+export type { BirdSpecies };
 
 export type WingStyle = 'finch' | 'scythe' | 'broad' | 'angled';
 export type TailStyle = 'long-notched' | 'forked-long' | 'short' | 'wedge-banded';

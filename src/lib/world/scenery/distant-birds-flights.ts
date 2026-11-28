@@ -1,9 +1,4 @@
-import {
-  createFlightRuntime,
-  type DistantBirdMember,
-  type FlightGroupSpec,
-  type SoarFlightSpec,
-} from '../distant-birds-motion';
+import { SoarFlight, type DistantBirdMember, type FlightGroup, type SoarFlightOptions } from '../birds';
 import { stopX } from '../route';
 
 export interface MemberInput {
@@ -37,15 +32,11 @@ export function buildMembers(items: MemberInput[], seedBase: number): DistantBir
   }));
 }
 
-export function soar(
-  spec: Omit<SoarFlightSpec, 'mode' | 'runtime' | 'members'>,
-  items: MemberInput[],
-  seedBase: number,
-): SoarFlightSpec {
-  return { mode: 'soar', ...spec, runtime: createFlightRuntime(), members: buildMembers(items, seedBase) };
+export function soar(options: SoarFlightOptions, items: MemberInput[], seedBase: number): SoarFlight {
+  return new SoarFlight(options, buildMembers(items, seedBase));
 }
 
-export function winterStartFlights(): FlightGroupSpec[] {
+export function winterStartFlights(): FlightGroup[] {
   return [
     soar(
       {
@@ -106,7 +97,7 @@ export function winterStartFlights(): FlightGroupSpec[] {
   ];
 }
 
-export function springFlights(): FlightGroupSpec[] {
+export function springFlights(): FlightGroup[] {
   return [
     soar(
       {
@@ -164,7 +155,7 @@ export function springFlights(): FlightGroupSpec[] {
   ];
 }
 
-export function summerFlights(): FlightGroupSpec[] {
+export function summerFlights(): FlightGroup[] {
   return [
     soar(
       {

@@ -3,12 +3,7 @@ import { paperSheet } from '../paper-materials';
 import { TRACK_LENGTH } from '../route';
 import { SEASON_BORDERS, seasonCenter } from '../seasons';
 import type { SceneryContext } from '../scene-context';
-import {
-  updateBirdSeason,
-  type BirdSeason,
-  type DistantBirdSeasonData,
-  type FlightGroupSpec,
-} from '../distant-birds-motion';
+import { DistantBirdSeason, type BirdSeason, type FlightGroup } from '../birds';
 import { buildBirdMeshes, type BirdMeshes } from './bird-shapes';
 import { BIRD_SPECIES, type BirdSpecies } from './bird-species';
 import { autumnFlights, winterEndFlights } from './distant-birds-autumn';
@@ -22,7 +17,7 @@ interface SeasonSetup {
   fadeOutStart: number;
   fadeOutEnd: number;
   motionSpan: number;
-  flights: FlightGroupSpec[];
+  flights: FlightGroup[];
 }
 
 function makeInstanced(geometry: THREE.BufferGeometry, count: number, name: string): THREE.InstancedMesh {
@@ -51,7 +46,7 @@ function addSeasonGroup(ctx: SceneryContext, setup: SeasonSetup, cache: Map<Bird
   const rightWings = makeInstanced(meshes.rightWing, count, `${prefix}-wings-right`);
   group.add(bodies, leftWings, rightWings);
 
-  const data: DistantBirdSeasonData = {
+  const season = new DistantBirdSeason({
     season: setup.season,
     species: setup.species,
     wingOffset: spec.wingOffset,
@@ -65,12 +60,12 @@ function addSeasonGroup(ctx: SceneryContext, setup: SeasonSetup, cache: Map<Bird
     bodies,
     leftWings,
     rightWings,
-  };
-  group.userData.distantBirds = data;
+  });
+  group.userData.distantBirds = season;
   group.userData.motionSpan = setup.motionSpan;
 
   // Populate initial matrices at route start so winter-start appears on frame 1.
-  group.visible = updateBirdSeason(data, 0, 1 / 60, 0, true);
+  group.visible = season.update(0, 1 / 60, 0, true);
   ctx.animate(group, 'distant-birds');
 }
 

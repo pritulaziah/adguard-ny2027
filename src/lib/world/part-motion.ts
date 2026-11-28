@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Interaction } from '../content/i18n';
-import { distantBirds } from './distant-birds-motion';
+import { distantBirds } from './birds';
 import { dragonfly, dragonflyWing } from './dragonfly-motion';
 
 /**

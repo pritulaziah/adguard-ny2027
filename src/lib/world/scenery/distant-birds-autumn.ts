@@ -1,22 +1,22 @@
-import { createFlightRuntime, type FlightGroupSpec } from '../distant-birds-motion';
+import { FlockFlight, type FlightGroup } from '../birds';
 import { TRACK_LENGTH, stopX } from '../route';
 import { SEASON_BORDERS } from '../seasons';
 import { buildMembers, soar } from './distant-birds-flights';
 
-export function autumnFlights(): FlightGroupSpec[] {
+export function autumnFlights(): FlightGroup[] {
   return [
-    {
-      mode: 'flock',
-      startX: SEASON_BORDERS.autumn + 2.6,
-      endX: SEASON_BORDERS.winterEnd - 0.3,
-      baseY: 6.55,
-      climb: 0.4,
-      arcY: 0.24,
-      baseZ: -6.95,
-      idleSpeed: 0.45,
-      scrollFollow: 0.92,
-      runtime: createFlightRuntime(),
-      members: buildMembers(
+    new FlockFlight(
+      {
+        startX: SEASON_BORDERS.autumn + 2.6,
+        endX: SEASON_BORDERS.winterEnd - 0.3,
+        baseY: 6.55,
+        climb: 0.4,
+        arcY: 0.24,
+        baseZ: -6.95,
+        idleSpeed: 0.45,
+        scrollFollow: 0.92,
+      },
+      buildMembers(
         [
           {
             dx: 0,
@@ -98,11 +98,11 @@ export function autumnFlights(): FlightGroupSpec[] {
         ],
         31.2,
       ),
-    },
+    ),
   ];
 }
 
-export function winterEndFlights(): FlightGroupSpec[] {
+export function winterEndFlights(): FlightGroup[] {
   return [
     soar(
       {

@@ -13,19 +13,15 @@ function filesIn(directory) {
   for (const name of readdirSync(directory)) {
     const path = join(directory, name);
     if (statSync(path).isDirectory()) files.push(...filesIn(path));
-    else if (name.endsWith('.ts')) files.push(path);
+    // Every world module counts, including the modules at the world root.
+    // Only the test file in `year/` is not a production module.
+    else if (name.endsWith('.ts') && !name.endsWith('.test.ts')) files.push(path);
   }
   return files;
 }
 
 test('each world object module stays small', () => {
-  const files = [
-    ...filesIn(join(root, 'animals')),
-    ...filesIn(join(root, 'scenery')),
-    ...filesIn(join(root, 'vehicles')),
-    ...filesIn(join(root, 'year')),
-    join(root, 'YearWorld.ts'),
-  ];
+  const files = filesIn(root);
 
   for (const file of files) {
     const lines = readFileSync(file, 'utf8').split('\n').length;
