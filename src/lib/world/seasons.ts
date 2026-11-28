@@ -123,17 +123,12 @@ function colorsFor(ramp: SeasonalRamp): RampColors {
   return colors;
 }
 
-function smoothstep(edge0: number, edge1: number, x: number): number {
-  const t = THREE.MathUtils.clamp((x - edge0) / (edge1 - edge0), 0, 1);
-  return t * t * (3 - 2 * t);
-}
-
 export function sampleRampColor(ramp: SeasonalRamp, x: number, target: THREE.Color): THREE.Color {
   const colors = colorsFor(ramp);
   target.copy(colors.base);
   for (let index = 0; index < ramp.stops.length; index++) {
     const stop = ramp.stops[index];
-    const t = smoothstep(stop.from, stop.to, x);
+    const t = THREE.MathUtils.smoothstep(x, stop.from, stop.to);
     if (t > 0) target.lerp(colors.stops[index], t);
   }
   return target;

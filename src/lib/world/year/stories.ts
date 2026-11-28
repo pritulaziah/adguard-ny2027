@@ -1,4 +1,5 @@
 import { mount, unmount } from 'svelte';
+import * as THREE from 'three';
 import WallStory from '../../ui/WallStory.svelte';
 import { STOP_COUNT, stopX } from '../route';
 import { FINALE_STORY_X } from '../finale';
@@ -11,11 +12,6 @@ interface Story {
   shown: boolean;
   active: boolean;
   opacity: number;
-}
-
-function smoothstep(edge0: number, edge1: number, x: number): number {
-  const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
-  return t * t * (3 - 2 * t);
 }
 
 /** One screen-space story card above every stop. */
@@ -48,7 +44,7 @@ export class StoryLayer {
     const storyDistance = Math.min(distance, FINALE_STORY_X);
     for (const story of this.stories) {
       const absDiff = Math.abs(story.x - storyDistance);
-      const opacity = 1 - smoothstep(1.5, 4.7, absDiff);
+      const opacity = 1 - THREE.MathUtils.smoothstep(absDiff, 1.5, 4.7);
       const shown = opacity > 0.004;
       const active = shown && opacity > 0.85;
       if (shown !== story.shown) {
