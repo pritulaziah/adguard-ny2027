@@ -238,6 +238,11 @@ MUST NOT import `world/` or `ui/`.
 - **Owl perch**: Use one smooth, tapered branch contour with a clear fork
   under both feet. Keep the toes in front of the branch face. Preserve the
   owl's proportions and its head motion when changing the perch.
+- **Weather culling**: Keep every weather field in the scene and toggle
+  `points.visible` from the camera. Use the season bands in
+  `year/weather/weather-season.ts` for both the particle placement and the
+  culling, so a hidden field can never hold a particle in view. A hidden
+  field keeps its buffers and returns with one visibility flip.
 - **Summer water**: Keep the river in `scenery/summer/distant-river.ts`
   flat on the meadow floor, narrow, and winding from behind the near
   ridge through the summer bridge arch. Do not add a separate raised

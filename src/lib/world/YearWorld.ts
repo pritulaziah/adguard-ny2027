@@ -229,6 +229,7 @@ export class YearWorld {
       }
 
       this.rig.update(step, false, this.motion.distance, this.motion.speed);
+      this.weather.update(this.camera);
       this.animateParts(step);
 
       if (!this.motion.moving && !this.state.cameraSettled) {

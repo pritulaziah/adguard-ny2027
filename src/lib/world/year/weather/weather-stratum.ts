@@ -1,7 +1,16 @@
 import type * as THREE from 'three';
 import { createWeatherField, type WeatherField } from '../../paper-materials';
 import type { WeatherPreset } from './weather-presets';
-import { sampleSeasonX, type Season } from './weather-season';
+import { sampleSeasonX, seasonBands, type Season, type SeasonBands } from './weather-season';
+
+/** A built field with the data that the culling needs. */
+export interface BuiltStratum {
+  field: WeatherField;
+  /** The x bands of the field's particles. */
+  bands: SeasonBands;
+  /** The farthest z of the stratum. The view is widest at that plane. */
+  farZ: number;
+}
 
 /** One parallax stratum: its depth per season and its four season presets. */
 export class WeatherStratum {
@@ -10,7 +19,7 @@ export class WeatherStratum {
     private readonly presets: Record<Season, WeatherPreset>,
   ) {}
 
-  build(scene: THREE.Scene, season: Season, reduced: boolean, rng: () => number): WeatherField {
+  build(scene: THREE.Scene, season: Season, reduced: boolean, rng: () => number): BuiltStratum {
     const preset = this.presets[season];
     const [zMin, zMax] = this.depths[season];
     const { count, ...options } = preset;
@@ -29,6 +38,6 @@ export class WeatherStratum {
     const field = createWeatherField(positions, seeds, options);
     field.speed.value = reduced ? 0 : 1;
     scene.add(field.points);
-    return field;
+    return { field, bands: seasonBands(season), farZ: zMin };
   }
 }
