@@ -96,6 +96,11 @@ export class SparkLayer {
     if (spark) this.positionFact(spark);
   }
 
+  /** Closes the open figure note, if one is open. */
+  closeFact(): void {
+    if (this.fact) objectFact.set(null);
+  }
+
   private positionFact(spark: Spark): boolean {
     const point = this.projection.copy(spark.position).project(this.camera);
     const width = this.viewWidth;

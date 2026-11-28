@@ -238,6 +238,9 @@ MUST NOT import `world/` or `ui/`.
 - **Owl perch**: Use one smooth, tapered branch contour with a clear fork
   under both feet. Keep the toes in front of the branch face. Preserve the
   owl's proportions and its head motion when changing the perch.
+- **Store writes**: Update a shared store only when the value changes.
+  `writable.update` notifies even when the updater returns the same object,
+  so guard repeated input with the mirrored state.
 - **Camera settle**: Snap the camera, the look point, and the pointer to
   their targets below 1e-3 world units. The CSS3D layer compares the camera
   position exactly, so an asymptotic approach keeps it writing every spark

@@ -19,3 +19,8 @@ export function createJourneyState() {
 }
 
 export type JourneyStore = ReturnType<typeof createJourneyState>;
+
+/** True when a scroll must switch the journey to moving and unsettle the camera. */
+export function needsMotionStart(state: JourneyState): boolean {
+  return !state.moving || state.cameraSettled;
+}

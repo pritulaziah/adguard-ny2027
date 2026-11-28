@@ -4,7 +4,7 @@ import { get } from 'svelte/store';
 import type { Interaction } from '../content/i18n';
 import { objectFact } from '../content/object-fact';
 import { openStoryId } from '../content/story-modal';
-import type { JourneyStore, JourneyState } from './journey-state';
+import { needsMotionStart, type JourneyStore, type JourneyState } from './journey-state';
 import { resetPaperMaterials } from './paper-materials';
 import { resetTemplates } from './paper-geometry';
 import { createPaperScenery, type PaperSet } from './scenery';
@@ -182,9 +182,9 @@ export class YearWorld {
     if (!Number.isFinite(units)) return;
     const limited = Math.max(-limit, Math.min(limit, units));
     if (!this.motion.scroll(limited)) return;
-    objectFact.set(null);
+    this.sparks.closeFact();
     this.settling = 0;
-    this.journey.update(s => ({ ...s, moving: true, cameraSettled: false }));
+    if (needsMotionStart(this.state)) this.journey.update(s => ({ ...s, moving: true, cameraSettled: false }));
   }
 
   private updateLayers(): boolean {
