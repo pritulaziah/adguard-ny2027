@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PaperBatch } from '../paper-batch';
-import { cutGeometry, ovalGeometry } from '../paper-geometry';
+import { cutGeometry, unitOvalGeometry } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 import { stopX } from '../route';
 import type { SceneryContext } from '../scene-context';
@@ -52,9 +52,9 @@ function addTree(ctx: SceneryContext, item: DistantTree, baseY: number): void {
       ),
       '#7d695b',
     );
-    batch.add(ovalGeometry(0.68, 0.66, 0.025), item.color, { y: 0.52, z: 0.03 });
-    batch.add(ovalGeometry(0.46, 0.46, 0.025), item.color, { x: 0.25, y: 0.36, z: 0.05 });
-    batch.add(ovalGeometry(0.42, 0.42, 0.025), item.color, { x: -0.23, y: 0.34, z: 0.05 });
+    batch.add(unitOvalGeometry(0.025), item.color, { y: 0.52, z: 0.03, scale: [0.68, 0.66, 1] });
+    batch.add(unitOvalGeometry(0.025), item.color, { x: 0.25, y: 0.36, z: 0.05, scale: [0.46, 0.46, 1] });
+    batch.add(unitOvalGeometry(0.025), item.color, { x: -0.23, y: 0.34, z: 0.05, scale: [0.42, 0.42, 1] });
   }
 
   const geometry = batch.build();

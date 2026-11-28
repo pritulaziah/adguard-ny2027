@@ -2,16 +2,16 @@ import * as THREE from 'three';
 import { PaperBatch } from './paper-batch';
 import {
   FACE_DEPTH,
-  birchLeafGeometry,
   cutGeometry,
-  leafGeometry,
-  mapleLeafGeometry,
-  oakLeafGeometry,
-  ovalGeometry,
-  rectGeometry,
   shapeGeometry,
-  starGeometry,
   strokeGeometry,
+  unitBirchLeafGeometry,
+  unitLeafGeometry,
+  unitMapleLeafGeometry,
+  unitOakLeafGeometry,
+  unitOvalGeometry,
+  unitRectGeometry,
+  unitStarGeometry,
   type Outline,
 } from './paper-geometry';
 import { matrixOf, type Placement } from './paper-placement';
@@ -82,8 +82,9 @@ export class PaperDetail {
     y = 0,
     z = 0,
     rotate?: [number, number, number],
+    scale?: [number, number, number],
   ): this {
-    this.batch.add(geometry, color, this.world({ x, y, z, rotate }));
+    this.batch.add(geometry, color, this.world({ x, y, z, rotate, scale }));
     return this;
   }
 
@@ -150,7 +151,7 @@ export class PaperDetail {
     rotate?: [number, number, number],
     depth = FACE_DEPTH,
   ): this {
-    return this.put(ovalGeometry(width, height, depth), color, x, y, z, rotate);
+    return this.put(unitOvalGeometry(depth), color, x, y, z, rotate, [width, height, 1]);
   }
 
   rect(
@@ -163,7 +164,7 @@ export class PaperDetail {
     rotate?: [number, number, number],
     depth = FACE_DEPTH,
   ): this {
-    return this.put(rectGeometry(width, height, depth), color, x, y, z, rotate);
+    return this.put(unitRectGeometry(depth), color, x, y, z, rotate, [width, height, 1]);
   }
 
   mapleLeaf(
@@ -174,7 +175,7 @@ export class PaperDetail {
     z = 0,
     rotate?: [number, number, number],
   ): this {
-    return this.put(mapleLeafGeometry(size), color, x, y, z, rotate);
+    return this.put(unitMapleLeafGeometry(), color, x, y, z, rotate, [size, size, 1]);
   }
 
   oakLeaf(
@@ -185,7 +186,7 @@ export class PaperDetail {
     z = 0,
     rotate?: [number, number, number],
   ): this {
-    return this.put(oakLeafGeometry(size), color, x, y, z, rotate);
+    return this.put(unitOakLeafGeometry(), color, x, y, z, rotate, [size, size, 1]);
   }
 
   birchLeaf(
@@ -196,7 +197,7 @@ export class PaperDetail {
     z = 0,
     rotate?: [number, number, number],
   ): this {
-    return this.put(birchLeafGeometry(size), color, x, y, z, rotate);
+    return this.put(unitBirchLeafGeometry(), color, x, y, z, rotate, [size, size, 1]);
   }
 
   leaf(
@@ -208,7 +209,7 @@ export class PaperDetail {
     z = 0,
     rotate?: [number, number, number],
   ): this {
-    this.put(leafGeometry(width, height), color, x, y, z, rotate);
+    this.put(unitLeafGeometry(), color, x, y, z, rotate, [width, height, 1]);
     return this.put(
       strokeGeometry(
         [
@@ -226,7 +227,7 @@ export class PaperDetail {
   }
 
   star(radius: number, color: THREE.ColorRepresentation, x = 0, y = 0, z = 0): this {
-    return this.put(starGeometry(radius), color, x, y, z);
+    return this.put(unitStarGeometry(), color, x, y, z, undefined, [radius, radius, 1]);
   }
 
   stroke(points: Outline, color: THREE.ColorRepresentation, width = 0.025, z = 0.1): this {

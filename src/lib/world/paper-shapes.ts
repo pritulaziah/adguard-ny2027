@@ -54,7 +54,7 @@ export function oval(
   z = 0,
   depth = 0.045,
 ): THREE.Mesh {
-  return place(parent, ovalGeometry(width, height, depth).clone(), color, x, y, z);
+  return place(parent, ovalGeometry(width, height, depth), color, x, y, z);
 }
 
 export function rect(
@@ -67,7 +67,7 @@ export function rect(
   z = 0,
   depth = 0.045,
 ): THREE.Mesh {
-  return place(parent, rectGeometry(width, height, depth).clone(), color, x, y, z);
+  return place(parent, rectGeometry(width, height, depth), color, x, y, z);
 }
 
 export function stroke(parent: THREE.Object3D, points: Outline, color: string, width = 0.025, z = 0.1): void {
@@ -83,7 +83,7 @@ export function leaf(
   y: number,
   z = 0,
 ): THREE.Mesh {
-  const mesh = place(parent, leafGeometry(width, height).clone(), color, x, y, z);
+  const mesh = place(parent, leafGeometry(width, height), color, x, y, z);
   stroke(
     mesh,
     [
@@ -98,5 +98,5 @@ export function leaf(
 }
 
 export function star(parent: THREE.Object3D, radius: number, color: string, x: number, y: number, z = 0): THREE.Mesh {
-  return place(parent, starGeometry(radius).clone(), color, x, y, z);
+  return place(parent, starGeometry(radius), color, x, y, z);
 }

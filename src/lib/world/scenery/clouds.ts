@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PaperBatch } from '../paper-batch';
-import { ovalGeometry } from '../paper-geometry';
+import { unitOvalGeometry } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 
 /** One folded-paper cloud: a soft shadow layer and five lighter puffs. */
@@ -22,17 +22,17 @@ export function addCloud(
     [0.05, -0.08, 2.25, 0.4],
   ];
   for (const [px, py, pw, ph] of puffs) {
-    batch.add(ovalGeometry(pw, ph, 0.03), shadow, {
+    batch.add(unitOvalGeometry(0.03), shadow, {
       x: (px + 0.06) * scale,
       y: (py - 0.05) * scale,
       z: -0.04,
-      scale: [scale, scale, 1],
+      scale: [pw * scale, ph * scale, 1],
     });
-    batch.add(ovalGeometry(pw, ph, 0.03), tint, {
+    batch.add(unitOvalGeometry(0.03), tint, {
       x: px * scale,
       y: py * scale,
       z: 0,
-      scale: [scale, scale, 1],
+      scale: [pw * scale, ph * scale, 1],
     });
   }
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PaperBatch } from '../paper-batch';
-import { cutGeometry, ovalGeometry, rectGeometry, starGeometry } from '../paper-geometry';
+import { cutGeometry, unitOvalGeometry, unitRectGeometry, unitStarGeometry } from '../paper-geometry';
 import type { Placement } from '../paper-placement';
 import { paperSheet } from '../paper-materials';
 import type { SceneryContext } from '../scene-context';
@@ -17,14 +17,14 @@ export function addFir(
 ): void {
   const scale = height / 3;
   const batch = new PaperBatch();
-  const at = (lx: number, ly: number, lz = 0): Placement => ({
+  const at = (lx: number, ly: number, lz = 0, sx = 1, sy = 1): Placement => ({
     x: lx * scale,
     y: 0.34 + ly * scale,
     z: lz * scale,
-    scale: [scale, scale, scale],
+    scale: [sx * scale, sy * scale, scale],
   });
 
-  batch.add(rectGeometry(0.16, 0.88), colors.wood, at(0, -0.05, -0.06));
+  batch.add(unitRectGeometry(), colors.wood, at(0, -0.05, -0.06, 0.16, 0.88));
   for (let tier = 0; tier < 4; tier++) {
     const bottom = 0.38 + tier * 0.5;
     const width = 1.7 - tier * 0.33;
@@ -62,18 +62,18 @@ export function addFir(
     }
     if (festive && tier < 3) {
       batch.add(
-        ovalGeometry(0.14, 0.16),
+        unitOvalGeometry(),
         tier % 2 ? '#cf8572' : colors.gold,
-        at(-0.18 + tier * 0.14, bottom + 0.28, 0.22),
+        at(-0.18 + tier * 0.14, bottom + 0.28, 0.22, 0.14, 0.16),
       );
       batch.add(
-        ovalGeometry(0.12, 0.14),
+        unitOvalGeometry(),
         tier % 2 ? colors.gold : '#cf8572',
-        at(0.24 - tier * 0.09, bottom + 0.44, 0.22),
+        at(0.24 - tier * 0.09, bottom + 0.44, 0.22, 0.12, 0.14),
       );
     }
   }
-  if (festive) batch.add(starGeometry(0.24), colors.gold, at(0, 3.12, 0.2));
+  if (festive) batch.add(unitStarGeometry(), colors.gold, at(0, 3.12, 0.2, 0.24, 0.24));
 
   const geometry = batch.build();
   if (!geometry) return;

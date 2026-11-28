@@ -95,41 +95,58 @@ export function cutGeometry(outline: Outline, depth = FACE_DEPTH): THREE.BufferG
   return extrude(shapeFrom(outline), depth);
 }
 
-export function ovalGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
-  return template(`oval:${width}:${height}:${depth}`, () => {
+/** One cached unit oval: one unit wide and one unit high, centred at the origin. */
+export function unitOvalGeometry(depth = FACE_DEPTH): THREE.BufferGeometry {
+  return template(`oval:${depth}`, () => {
     const shape = new THREE.Shape();
-    shape.absellipse(0, 0, width / 2, height / 2, 0, Math.PI * 2, false, 0);
+    shape.absellipse(0, 0, 0.5, 0.5, 0, Math.PI * 2, false, 0);
     return extrude(shape, depth);
   });
 }
 
-export function rectGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
-  return template(`rect:${width}:${height}:${depth}`, () =>
+/** A sized oval for one mesh. The caller owns the returned geometry. */
+export function ovalGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
+  return unitOvalGeometry(depth).clone().scale(width, height, 1);
+}
+
+/** One cached unit rectangle: one unit wide and one unit high, from y = 0 to 1. */
+export function unitRectGeometry(depth = FACE_DEPTH): THREE.BufferGeometry {
+  return template(`rect:${depth}`, () =>
     extrude(
       shapeFrom([
-        [-width / 2, 0],
-        [width / 2, 0],
-        [width / 2, height],
-        [-width / 2, height],
+        [-0.5, 0],
+        [0.5, 0],
+        [0.5, 1],
+        [-0.5, 1],
       ]),
       depth,
     ),
   );
 }
 
-export function leafGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
-  return template(`leaf:${width}:${height}:${depth}`, () => {
+export function rectGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
+  return unitRectGeometry(depth).clone().scale(width, height, 1);
+}
+
+/** One cached unit leaf: one unit wide and one unit high, from y = 0 to 1. */
+export function unitLeafGeometry(depth = FACE_DEPTH): THREE.BufferGeometry {
+  return template(`leaf:${depth}`, () => {
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
-    shape.bezierCurveTo(-width * 0.8, height * 0.35, -width * 0.45, height * 0.8, 0, height);
-    shape.bezierCurveTo(width * 0.45, height * 0.8, width * 0.8, height * 0.35, 0, 0);
+    shape.bezierCurveTo(-0.8, 0.35, -0.45, 0.8, 0, 1);
+    shape.bezierCurveTo(0.45, 0.8, 0.8, 0.35, 0, 0);
     return extrude(shape, depth);
   });
 }
 
-export function mapleLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
-  return template(`maple:${size}:${depth}`, () => {
-    const s = size;
+export function leafGeometry(width: number, height: number, depth = FACE_DEPTH): THREE.BufferGeometry {
+  return unitLeafGeometry(depth).clone().scale(width, height, 1);
+}
+
+/** One cached unit maple leaf, centred at the origin. */
+export function unitMapleLeafGeometry(depth = 0.022): THREE.BufferGeometry {
+  return template(`maple:${depth}`, () => {
+    const s = 1;
     const shape = new THREE.Shape();
     shape.moveTo(0, -s * 0.56);
     shape.lineTo(-s * 0.05, -s * 0.32);
@@ -152,9 +169,14 @@ export function mapleLeafGeometry(size: number, depth = 0.022): THREE.BufferGeom
   });
 }
 
-export function oakLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
-  return template(`oak:${size}:${depth}`, () => {
-    const s = size;
+export function mapleLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
+  return unitMapleLeafGeometry(depth).clone().scale(size, size, 1);
+}
+
+/** One cached unit oak leaf, centred at the origin. */
+export function unitOakLeafGeometry(depth = 0.022): THREE.BufferGeometry {
+  return template(`oak:${depth}`, () => {
+    const s = 1;
     const shape = new THREE.Shape();
     shape.moveTo(0, -s * 0.55);
     shape.quadraticCurveTo(-s * 0.26, -s * 0.42, -s * 0.18, -s * 0.22);
@@ -170,9 +192,14 @@ export function oakLeafGeometry(size: number, depth = 0.022): THREE.BufferGeomet
   });
 }
 
-export function birchLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
-  return template(`birch:${size}:${depth}`, () => {
-    const s = size;
+export function oakLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
+  return unitOakLeafGeometry(depth).clone().scale(size, size, 1);
+}
+
+/** One cached unit birch leaf, centred at the origin. */
+export function unitBirchLeafGeometry(depth = 0.022): THREE.BufferGeometry {
+  return template(`birch:${depth}`, () => {
+    const s = 1;
     const shape = new THREE.Shape();
     shape.moveTo(0, -s * 0.46);
     shape.bezierCurveTo(-s * 0.36, -s * 0.26, -s * 0.32, s * 0.16, 0, s * 0.52);
@@ -182,19 +209,28 @@ export function birchLeafGeometry(size: number, depth = 0.022): THREE.BufferGeom
   });
 }
 
+export function birchLeafGeometry(size: number, depth = 0.022): THREE.BufferGeometry {
+  return unitBirchLeafGeometry(depth).clone().scale(size, size, 1);
+}
+
 export function shapeGeometry(shape: THREE.Shape, depth = FACE_DEPTH): THREE.BufferGeometry {
   return extrude(shape, depth);
 }
 
-export function starGeometry(radius: number, depth = FACE_DEPTH): THREE.BufferGeometry {
-  return template(`star:${radius}:${depth}`, () => {
+/** One cached unit star. The points reach one unit from the centre. */
+export function unitStarGeometry(depth = FACE_DEPTH): THREE.BufferGeometry {
+  return template(`star:${depth}`, () => {
     const outline: Outline = Array.from({ length: 10 }, (_, i) => {
       const angle = Math.PI / 2 + (i * Math.PI) / 5;
-      const r = radius * (i % 2 ? 0.45 : 1);
+      const r = i % 2 ? 0.45 : 1;
       return [Math.cos(angle) * r, Math.sin(angle) * r] as [number, number];
     });
     return extrude(shapeFrom(outline), depth);
   });
+}
+
+export function starGeometry(radius: number, depth = FACE_DEPTH): THREE.BufferGeometry {
+  return unitStarGeometry(depth).clone().scale(radius, radius, 1);
 }
 
 /** One ribbon per segment, merged, so a polyline stays a single part. */

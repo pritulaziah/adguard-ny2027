@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PaperBatch } from '../paper-batch';
-import { ovalGeometry, starGeometry } from '../paper-geometry';
+import { unitOvalGeometry, unitStarGeometry } from '../paper-geometry';
 import { paperSheet } from '../paper-materials';
 import { stopX } from '../route';
 import { seasonCenter } from '../seasons';
@@ -38,15 +38,15 @@ function addMoon(parent: THREE.Object3D, x: number, y: number): void {
 
 function addStar(parent: THREE.Object3D, x: number, y: number, radius: number): void {
   const batch = new PaperBatch();
-  batch.add(starGeometry(radius, 0.02), '#f2e5be');
+  batch.add(unitStarGeometry(0.02), '#f2e5be', { scale: [radius, radius, 1] });
   addObject(parent, 'paper-star', batch, x, y, -8.15);
 }
 
 function addSun(parent: THREE.Object3D): void {
   const batch = new PaperBatch();
   // Warm golden paper sun framed cleanly inside the summer stop (clear of Spring, Autumn, and title).
-  batch.add(ovalGeometry(1.56, 1.56, 0.02), '#dbe0ba');
-  batch.add(ovalGeometry(1.06, 1.06, 0.02), '#fae19a', { z: 0.07 });
+  batch.add(unitOvalGeometry(0.02), '#dbe0ba', { scale: [1.56, 1.56, 1] });
+  batch.add(unitOvalGeometry(0.02), '#fae19a', { z: 0.07, scale: [1.06, 1.06, 1] });
   addObject(parent, 'paper-sun', batch, seasonCenter('summer') - 0.1, 8.65, -6.85);
 }
 

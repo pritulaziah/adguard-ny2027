@@ -7,11 +7,7 @@ import { VAN_REAR_X } from './retro-van';
 export function createSnowTrail(scene: THREE.Scene, name: string) {
   const capacity = 72;
   const lifetime = 0.65;
-  const snow = new THREE.InstancedMesh(
-    paint(ovalGeometry(0.08, 0.045, 0.012).clone(), '#f7f2e4'),
-    paperSheet(),
-    capacity,
-  );
+  const snow = new THREE.InstancedMesh(paint(ovalGeometry(0.08, 0.045, 0.012), '#f7f2e4'), paperSheet(), capacity);
   snow.name = name;
   snow.count = 0;
   snow.frustumCulled = false;

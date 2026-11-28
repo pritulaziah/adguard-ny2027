@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PaperBatch } from '../paper-batch';
-import { rectGeometry, starGeometry } from '../paper-geometry';
+import { unitRectGeometry, unitStarGeometry } from '../paper-geometry';
 import { transparentPaperSheet } from '../paper-materials';
 import { STORY_END } from '../route';
 
@@ -16,19 +16,21 @@ function burstGeometry(index: number): THREE.BufferGeometry {
   for (let ray = 0; ray < 12; ray++) {
     const angle = (ray / 12) * Math.PI * 2 + index * 0.2;
     const radius = ray % 2 ? 0.43 : 0.52;
-    batch.add(rectGeometry(0.026, ray % 2 ? 0.23 : 0.32), colors[index], {
+    batch.add(unitRectGeometry(), colors[index], {
       x: Math.cos(angle) * radius,
       y: Math.sin(angle) * radius,
       rotate: [0, 0, angle - Math.PI / 2],
+      scale: [0.026, ray % 2 ? 0.23 : 0.32, 1],
     });
     if (ray % 3 === 0)
-      batch.add(starGeometry(0.07), '#f4dfaf', {
+      batch.add(unitStarGeometry(), '#f4dfaf', {
         x: Math.cos(angle + 0.12) * 0.88,
         y: Math.sin(angle + 0.12) * 0.88,
         z: 0.012,
+        scale: [0.07, 0.07, 1],
       });
   }
-  batch.add(starGeometry(0.065), colors[index]);
+  batch.add(unitStarGeometry(), colors[index], { scale: [0.065, 0.065, 1] });
   return batch.build()!;
 }
 
@@ -63,7 +65,7 @@ export class FinaleFireworks {
     for (let index = 0; index < 3; index++) {
       const material = transparentPaperSheet().clone();
       material.opacity = 0;
-      const geometry = reduced ? starGeometry(0.12).clone() : burstGeometry(index);
+      const geometry = reduced ? unitStarGeometry().clone().scale(0.12, 0.12, 1) : burstGeometry(index);
       if (reduced) {
         const color = new THREE.Color(['#e9cc8c', '#d9a9b1', '#a9c2aa'][index]);
         const values = new Float32Array(geometry.getAttribute('position').count * 3);

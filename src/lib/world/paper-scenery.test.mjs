@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { createPaperScenery } from './scenery/index.ts';
 import { createScalarUniform } from './paper-materials.ts';
+import { templateCacheSize } from './paper-geometry.ts';
 import { stopX } from './route.ts';
 import { SEASON_BORDERS } from './seasons.ts';
 
@@ -10,6 +11,8 @@ test('every scenery object has its own mesh and keeps colors', async () => {
 
   const set = await createPaperScenery(createScalarUniform(0));
 
+  // Shape templates are keyed by depth, not by size. A size-keyed cache grows to hundreds.
+  expect(templateCacheSize()).toBeLessThan(100);
   expect(set.parts.length).toBeGreaterThan(30);
   for (const part of set.parts) expect(typeof part.apply, part.kind).toBe('function');
 

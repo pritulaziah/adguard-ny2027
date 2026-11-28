@@ -7,7 +7,7 @@ export function createVanExhaust(
 ): (vanX: number, speed: number, delta: number, reduced: boolean) => void {
   const lifetime = 0.85;
   const puffs = Array.from({ length: 5 }, (_, index) => {
-    const puff = carded(ovalGeometry(0.18, 0.105, 0.018).clone(), index % 2 === 0 ? '#d5cfc4' : '#e5dbcb');
+    const puff = carded(ovalGeometry(0.18, 0.105, 0.018), index % 2 === 0 ? '#d5cfc4' : '#e5dbcb');
     puff.name = 'paper-van-exhaust';
     puff.visible = false;
     scene.add(puff);
