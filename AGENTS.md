@@ -273,6 +273,9 @@ MUST NOT import `world/` or `ui/`.
   and `*.test.mjs` for tests.
 - **Class files**: Put one class in one file, named after the class. A
   module that exports several classes must be split.
+- **Owned resources**: A system that owns a GPU buffer or needs its own
+  teardown gets a class with `update` and `destroy`. A one-shot builder
+  stays a function.
 - **Helper placement**: A helper with one caller stays a local function or
   a private method. When a second module needs the same helper, move it to
   a shared module. Do not copy it.

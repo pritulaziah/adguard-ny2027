@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import * as THREE from 'three';
 import { createSeasonalFleet } from './vehicles/index.ts';
-import { createSnowTrail } from './vehicles/snow-trail.ts';
+import { SnowTrail } from './vehicles/snow-trail.ts';
 import { createVanExhaust } from './vehicles/exhaust.ts';
 import { VAN_REAR_X } from './vehicles/retro-van.ts';
 import { JOURNEY_END, stopX } from './route.ts';
@@ -124,11 +124,11 @@ test('exhaust retains its emission height after the van descends from the bridge
 
 test('winter snow trail follows behind the van only on snowy road sections', () => {
   const scene = new THREE.Scene();
-  const update = createSnowTrail(scene, 'test-van-snow');
+  const trail = new SnowTrail(scene, 'test-van-snow');
   const snow = scene.getObjectByName('test-van-snow');
-  update(0, 0, 1 / 60, false);
+  trail.update(0, 0, 1 / 60, false);
   expect(snow.count).toBe(0);
-  for (let frame = 0; frame < 20; frame++) update(frame / 30, 2, 1 / 60, false);
+  for (let frame = 0; frame < 20; frame++) trail.update(frame / 30, 2, 1 / 60, false);
   expect(snow.count).toBeGreaterThan(8);
   const positions = Array.from({ length: snow.count }, (_, i) => {
     const matrix = new THREE.Matrix4();
@@ -137,8 +137,10 @@ test('winter snow trail follows behind the van only on snowy road sections', () 
   });
   expect(positions.every(p => p.y >= 0.3)).toBe(true);
   expect(positions.every(p => p.x < 19 / 30 + VAN_REAR_X)).toBe(true);
-  update(1, -5, 1 / 60, true);
+  trail.update(1, -5, 1 / 60, true);
   expect(snow.count).toBe(0);
+  trail.destroy();
+  expect(scene.getObjectByName('test-van-snow')).toBeUndefined();
 
   // Verify the fleet emits snow in winter and suppresses it in summer.
   const fleetScene = new THREE.Scene();
@@ -149,4 +151,6 @@ test('winter snow trail follows behind the van only on snowy road sections', () 
   const summerX = (SEASON_BORDERS.summer + SEASON_BORDERS.autumn) / 2;
   for (let frame = 0; frame < 60; frame++) fleet.update(summerX + frame * 0.1, 1 / 60, frame / 60, false);
   expect(fleetSnow.count).toBe(0);
+  fleet.destroy();
+  expect(fleetScene.getObjectByName('paper-van-snow')).toBeUndefined();
 });
