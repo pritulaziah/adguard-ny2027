@@ -65,14 +65,14 @@ The console prints a warning when the app uses the WebGL2 fallback.
 | `src/lib/ui/`        | Svelte components: wall story, story dialog, figure note           |
 | `src/lib/world/`     | Three.js scene: route, seasons, scenery, vehicles, camera, weather |
 | `src/App.svelte`     | Page frame, language switch, loading and error states              |
-| `public/`            | Fonts, logo, and story screenshots                                 |
+| `public/`            | Fonts, logo, story covers, and screenshots                         |
 | `.github/workflows/` | GitHub Actions: deploy and CI                                      |
 
 ## Where to change content
 
 | Change                                                 | File                                 |
 | ------------------------------------------------------ | ------------------------------------ |
-| Story title, summary, station, release link            | `src/lib/content/articles.ts`        |
+| Story title, summary, station, cover, release link     | `src/lib/content/articles.ts`        |
 | Story dialog copy: lead, timeline, passages, afterword | `src/lib/content/story-deep-dive.ts` |
 | Note for one figure                                    | `src/lib/content/figure-facts.ts`    |
 | Interface text and language labels                     | `src/lib/content/i18n.ts`            |
@@ -86,14 +86,16 @@ Every change to the route or the seasons needs the matching update in
 ## Tests
 
 Tests use Vitest and run in a Node environment. A test file sits next
-to the code it covers and has the `.test.mjs` extension. Tests import
+to the code it covers and has the `.test.mjs` extension. The one
+TypeScript test is `src/lib/world/year/input.test.ts`. Tests import
 TypeScript modules directly.
 
-The test files are:
+Some test files are:
 
 - `src/lib/world/route.test.mjs` — route geometry, seasons, movement.
 - `src/lib/content/articles.test.mjs` — story data and release links.
 - `src/lib/content/story.test.mjs` — dialog copy and figure notes.
+- `src/lib/world/module-size.test.mjs` — the 300-line module limit.
 
 ## Deployment
 

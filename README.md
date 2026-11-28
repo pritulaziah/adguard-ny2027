@@ -5,11 +5,11 @@ A paper-craft world of AdGuard's 2026 highlights.
 ## Description
 
 AdGuard 2026 in Review turns the year into a paper-craft world with four
-seasons and six stops. At each stop a story fades in. Its button opens a
-longer release dialog, and glowing marks on the figures behind it show
-short notes. The page is for AdGuard users and anyone who wants a quick
-tour of what the team shipped in 2026, without reading a long list of
-release notes.
+seasons, a welcome, six story stops, and a finale. At each story stop a
+story fades in. Its button opens a longer release dialog, and glowing
+marks on the figures behind it show short notes. The page is for AdGuard
+users and anyone who wants a quick tour of what the team shipped in
+2026, without reading a long list of release notes.
 
 ## Access
 
@@ -28,8 +28,9 @@ release notes.
 
 ## Features
 
-- Six stories, one at each stop, each inside its own season.
-- A release dialog for every story, with a link to the AdGuard blog.
+- Six stories, one at each story stop, across four seasons.
+- A release dialog for every story, with a cover image and a link to the
+  AdGuard blog.
 - A short note for every interactive figure.
 - Keyboard support: the arrow keys move between stops.
 - A language switch for the whole page.

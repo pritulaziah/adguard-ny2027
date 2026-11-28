@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from 'vitest';
 import { articles, articlesByLanguage, findHomeArticle, homeStoryStop } from './articles.ts';
 import { translations } from './i18n.ts';
@@ -35,6 +38,14 @@ test('every story carries a unique complete record', () => {
         expect(fact.length, `${language} ${article.id} fact is not empty`).toBeGreaterThan(0);
       }
     }
+  }
+});
+
+test('every story cover exists in public', () => {
+  const publicDir = fileURLToPath(new URL('../../../public/', import.meta.url));
+  for (const article of articlesByLanguage.en) {
+    const file = article.image.replace(/^\.?\//, '');
+    expect(existsSync(join(publicDir, file)), `${article.id} cover`).toBe(true);
   }
 });
 

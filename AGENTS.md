@@ -42,16 +42,16 @@ year without a long list of release notes.
   is static and deploys to GitHub Pages.
 - **Project Type**: Website (static client-rendered single-page 3D
   site).
-- **Performance Goals**: Keep the measured baseline in `REFACTORING.md`:
-  46–95 draw calls, about 250 000 triangles, and about 7 ms frame time
-  at 1440×900. Do not add a per-frame cost without a measurement.
+- **Performance Goals**: Keep the measured baseline: 46–95 draw calls,
+  about 250 000 triangles, and about 7 ms frame time at 1440×900. Do not
+  add a per-frame cost without a measurement.
 - **Constraints**: No server rendering and no SvelteKit. The Vite base
   is `./`, so the site works from a subpath. The WebGL2 fallback, reduced
   motion, keyboard access, and ARIA state must stay. Interface and story
   copy exist in Russian and English.
 - **Scale/Scope**: One page, four seasons, a route of story stops, six
-  stories, one release dialog per story, and about 18 test files. The
-  audience is public.
+  stories, one release dialog per story, and 19 test files. The audience
+  is public.
 
 ## Project Structure
 
@@ -62,7 +62,7 @@ year without a long list of release notes.
 │   ├── main.ts                 # Mounts App and imports the global CSS
 │   ├── App.svelte              # Composition root: language, errors, Stage, overlays
 │   ├── app.css                 # Global styles and stage/content z-index
-│   ├── styles/fonts.css        # Generated @font-face rules, Cyrillic and Latin
+│   ├── styles/fonts.css        # @font-face rules for the bundled fonts, Cyrillic and Latin
 │   └── lib/
 │       ├── content/            # RU/EN copy, story data, notes, shared Svelte stores
 │       ├── ui/                 # Svelte DOM components: story card, dialog, note, help
@@ -77,9 +77,8 @@ year without a long list of release notes.
 │           ├── scenery/        # Season builders: firs, meadow, ridges, sky, mascots
 │           ├── animals/        # PaperAnimal classes and shared helpers
 │           └── vehicles/       # Retro van, wheels, exhaust, snow trail
-├── public/                     # Fonts, logo, mascot images, blog screenshots
+├── public/                     # Fonts, logo, mascot images, story covers, screenshots
 ├── .github/workflows/          # ci.yml for pull requests, deploy.yml for main
-├── REFACTORING.md              # Performance budget and "do not regress" list
 └── design/                     # Source art (gitignored)
 ```
 
@@ -267,6 +266,8 @@ MUST NOT import `world/` or `ui/`.
 - **Data tests**: Check that both languages are complete. Check the
   story list, the release links, the dialog copy, the figure notes, and
   the promo codes.
+- **Cover files**: `src/lib/content/articles.test.mjs` checks that every
+  story cover path exists under `public/`.
 - **Budget tests**: Keep `module-size.test.mjs`, the draw-call tests, and
   the vertex-colour tests. Do not raise a limit to fit a new change.
 - **Route and season tests**: Change `route.test.mjs` together with
@@ -276,8 +277,8 @@ MUST NOT import `world/` or `ui/`.
 - **Before merge**: `npm test`, `npm run check`, `npm run format:check`,
   and `npm run build` must all pass.
 - **Visual checks**: For a visual or performance change, take screenshots
-  at the fixed stops in both languages, with reduced motion, and on the
-  `?webgl` fallback. Compare them with `REFACTORING.md` instructions.
+  at stops 0, 2, 4, 6, and 7 in both languages, with reduced motion, and
+  on the `?webgl` fallback.
 
 ### Dependency Management
 
@@ -314,9 +315,9 @@ MUST NOT import `world/` or `ui/`.
 - **Documents to update**: Update `README.md` for a user-visible feature,
   `DEVELOPMENT.md` for a command, layout, or content location change,
   and `CONTRIBUTING.md` for a workflow change.
-- **Generated files**: Do not edit `dist/` or
-  `package-lock.json` by hand. `src/styles/fonts.css` is generated. Do not
-  edit it by hand.
+- **Generated files**: Do not edit `dist/` or `package-lock.json` by
+  hand. Keep `src/styles/fonts.css` in sync with the files in
+  `public/fonts/`.
 - **Formatting configuration**: `.prettierrc.json` is the single source
   of formatting. Do not add a path to `.prettierignore` to pass CI.
 

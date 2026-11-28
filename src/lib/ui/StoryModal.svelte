@@ -65,6 +65,13 @@
             <div><strong>{story.timeline.to}</strong><span>{story.timeline.toLabel}</span></div>
           </div>
         </div>
+        {#if article.image}
+          <figure class="story-cover">
+            <div class="screenshot-mount">
+              <img src={article.image} alt={article.imageAlt} decoding="async" />
+            </div>
+          </figure>
+        {/if}
         {#each story.passages as passage}
           <section class="story-reading">
             <h3>{passage.heading}</h3>
