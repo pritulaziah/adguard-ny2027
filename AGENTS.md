@@ -50,7 +50,7 @@ year without a long list of release notes.
   motion, keyboard access, and ARIA state must stay. Interface and story
   copy exist in Russian and English.
 - **Scale/Scope**: One page, four seasons, a route of story stops, six
-  stories, one release dialog per story, and 25 test files. The audience
+  stories, one release dialog per story, and 27 test files. The audience
   is public.
 
 ## Project Structure
@@ -220,6 +220,24 @@ MUST NOT import `world/` or `ui/`.
 
 ### Code Quality
 
+- **Tree style and scale**: Keep spring, summer, and autumn broadleaf trees
+  in the same layered paper construction. Use distinct build-time crown
+  silhouettes for neighbouring trees, with restrained changes to the lobes
+  and trunk. Keep the apparent height difference of
+  main trees within 20% with the same camera framing. Distant ridge trees
+  remain smaller. Keep resized crowns clear of story text and buttons.
+  Build forest firs with four broad curved tiers and rounded
+  snow layers, matching the approved festive-tree style. Keep each fir in
+  one static mesh. Keep forest firs slim and slightly taller than the main
+  broadleaf trees. Apply the same size change to the decorated finale tree
+  and its decorations. Keep the gift boxes at their own size and placement.
+- **Tree spacing**: Keep visible gaps between small tree groups throughout
+  the route, including the transitions between stops and seasons. At most
+  two main tree crowns may form one continuous overlapping group. Check
+  the spring and autumn transitions as well as the story stops.
+- **Owl perch**: Use one smooth, tapered branch contour with a clear fork
+  under both feet. Keep the toes in front of the branch face. Preserve the
+  owl's proportions and its head motion when changing the perch.
 - **Summer water**: Keep the river in `scenery/summer/distant-river.ts`
   flat on the meadow floor, narrow, and winding from behind the near
   ridge through the summer bridge arch. Do not add a separate raised

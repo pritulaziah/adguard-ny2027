@@ -5,7 +5,7 @@ import { shapeFrom } from './palette';
 
 /** One decorated paper tree anchors the destination and its gift boxes. */
 export function addFinaleTree(ctx: SceneryContext): void {
-  const tree = ctx.detail('paper-finale-tree', FINALE_TREE_X, -2.45);
+  const tree = ctx.detail('paper-finale-tree', FINALE_TREE_X, -2.45, 1.1);
   tree.rect(0.2, 0.68, '#94735c', 0, 0, -0.04);
   const tiers = [
     [0.3, 2.6, 1.4],

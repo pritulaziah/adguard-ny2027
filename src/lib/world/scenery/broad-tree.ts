@@ -5,6 +5,50 @@ import { shapeFrom } from './palette';
 export type TreeVariant =
   'spring-green' | 'spring-blossom' | 'summer-alder' | 'summer-birch' | 'autumn-maple' | 'autumn-birch' | 'autumn-oak';
 
+export type TreeShape = 'rounded' | 'slender' | 'spreading';
+
+interface TreeForm {
+  width: number;
+  lean: number;
+  lobes: Array<[dx: number, dy: number, width: number, height: number]>;
+}
+
+const forms: Record<TreeShape, TreeForm> = {
+  rounded: {
+    width: 1,
+    lean: 0,
+    lobes: [
+      [0, 0, 1, 1],
+      [0, 0, 1, 1],
+      [0, 0, 1, 1],
+      [0, 0, 1, 1],
+      [0, 0, 1, 1],
+    ],
+  },
+  slender: {
+    width: 0.86,
+    lean: 0.025,
+    lobes: [
+      [-0.03, -0.04, 0.94, 1.08],
+      [0.02, 0.04, 0.96, 1.04],
+      [0.05, 0.1, 0.94, 1.1],
+      [0.08, -0.07, 1, 1.03],
+      [0.16, 0, 0.86, 1],
+    ],
+  },
+  spreading: {
+    width: 0.96,
+    lean: -0.015,
+    lobes: [
+      [-0.01, 0.04, 0.98, 0.94],
+      [0.02, -0.05, 1.05, 0.95],
+      [-0.11, -0.09, 1.04, 0.96],
+      [0.02, 0.09, 1.04, 1.04],
+      [-0.16, 0, 0.9, 1],
+    ],
+  },
+};
+
 interface TreePalette {
   bark: string;
   barkMark?: string;
@@ -24,10 +68,30 @@ const palettes: Record<TreeVariant, TreePalette> = {
   'autumn-oak': { bark: '#785d4d', back: '#985c43', mid: '#bc754b', front: '#d79b59', accent: '#c96249' },
 };
 
-/** Organic multi-layered broadleaf tree with a tapered bark trunk between foliage planes. */
-export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVariant, scale = 1.0, z = -2.1): PaperDetail {
+/** Form presets change the existing paper layers at build time and keep their shared height. */
+export function addBroadTree(
+  ctx: SceneryContext,
+  x: number,
+  variant: TreeVariant,
+  scale = 1.0,
+  z = -2.1,
+  shape: TreeShape = 'rounded',
+): PaperDetail {
   const tree = ctx.detail(`layered-paper-tree-${variant}`, x, z, scale);
   const p = palettes[variant];
+  const form = forms[shape];
+  const rotation: [number, number, number] | undefined = form.lean ? [0, 0, -form.lean] : undefined;
+
+  function canopy(
+    index: number,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): [number, number, number, number] {
+    const [dx, dy, sx, sy] = form.lobes[index];
+    return [x * form.width + dx + y * form.lean, y + dy, width * form.width * sx, height * sy];
+  }
 
   // Back canopy silhouette (deepest layer, gives fullness behind the trunk and branches).
   const backClusters: Array<[number, number, number, number]> = [
@@ -38,7 +102,7 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
     [0.02, 3.05, 1.02, 0.88],
   ];
   for (let i = 0; i < backClusters.length; i++) {
-    const [cx, cy, cw, ch] = backClusters[i];
+    const [cx, cy, cw, ch] = canopy(i, ...backClusters[i]);
     tree.oval(cw, ch, p.back, cx, cy, -0.16 + i * 0.008, undefined, 0.036);
   }
 
@@ -58,7 +122,7 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
     s.quadraticCurveTo(0.14, 0.38, 0.25, 0);
     s.closePath();
   });
-  tree.shape(trunk, p.bark, 0, 0, -0.04, undefined, 0.044);
+  tree.shape(trunk, p.bark, 0, 0, -0.04, rotation, 0.044);
 
   if (p.barkMark) {
     // Horizontal paper dashes on birch trunks.
@@ -68,7 +132,9 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
       [-0.04, 0.94, 0.13],
       [0.04, 1.26, 0.11],
     ]) {
-      tree.rect(bw, 0.028, p.barkMark, bx, by, 0.012, undefined, 0.012);
+      const sin = Math.sin(form.lean);
+      const cos = Math.cos(form.lean);
+      tree.rect(bw, 0.028, p.barkMark, bx * cos + by * sin, by * cos - bx * sin, 0.012, rotation, 0.012);
     }
   }
 
@@ -81,7 +147,7 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
     [-0.36, 2.04, 0.88, 0.78],
   ];
   for (let i = 0; i < midClusters.length; i++) {
-    const [cx, cy, cw, ch] = midClusters[i];
+    const [cx, cy, cw, ch] = canopy(i, ...midClusters[i]);
     tree.oval(cw, ch, p.mid, cx, cy, 0.02 + i * 0.008, undefined, 0.036);
   }
 
@@ -92,20 +158,21 @@ export function addBroadTree(ctx: SceneryContext, x: number, variant: TreeVarian
     [0.02, 2.32, 0.76, 0.66],
   ];
   for (let i = 0; i < frontClusters.length; i++) {
-    const [cx, cy, cw, ch] = frontClusters[i];
+    const [cx, cy, cw, ch] = canopy(i, ...frontClusters[i]);
     tree.oval(cw, ch, p.front, cx, cy, 0.085 + i * 0.008, undefined, 0.03);
   }
 
   // Spring blossom accents perched along the canopy edge.
   if (variant === 'spring-blossom') {
-    const blooms: Array<[number, number]> = [
-      [-0.68, 2.24],
-      [0.06, 2.9],
-      [0.62, 2.32],
-      [-0.2, 2.08],
+    const blooms: Array<[number, number, number]> = [
+      [-0.68, 2.24, 0],
+      [0.06, 2.9, 4],
+      [0.62, 2.32, 1],
+      [-0.2, 2.08, 4],
     ];
     for (let b = 0; b < blooms.length; b++) {
-      const [bx, by] = blooms[b];
+      const [x, y, lobe] = blooms[b];
+      const [bx, by] = canopy(lobe, x, y, 0, 0);
       for (let pt = 0; pt < 5; pt++) {
         const a = (pt / 5) * Math.PI * 2 + b * 0.3;
         tree.oval(0.065, 0.085, '#fceee8', bx + Math.cos(a) * 0.055, by + Math.sin(a) * 0.055, 0.13, [0, 0, a], 0.014);

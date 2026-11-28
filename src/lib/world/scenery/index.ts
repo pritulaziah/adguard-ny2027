@@ -34,6 +34,8 @@ export interface PaperSet {
   objects: Map<Interaction, THREE.Object3D>;
 }
 
+const FOREST_FIR_SCALE = 1.1;
+
 /** Original paper scenery. Each object module adds its own shapes along the route. */
 export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Promise<PaperSet> {
   // Long stretches of shape building are split into frames, so the loading
@@ -114,35 +116,31 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   await pause();
 
   // Stop 0 (Winter start, x = 0.00): deer at +2.05.
-  addFir(ctx, -5.2, 3.7, true, false, -2.1);
-  addFir(ctx, -3.6, 2.7, true, false, -2.35);
+  addFir(ctx, -6.2, 3.2 * FOREST_FIR_SCALE, true, false, -2.35, 'slender');
+  addFir(ctx, -3.6, 3.35 * FOREST_FIR_SCALE, true, false, -2.15, 'leaning');
   await pause();
   new Deer(ctx, 2.05, -1.08).build();
   await pause();
-  addFir(ctx, 7.3, 3.0, true, false, -2.15);
-  addFir(ctx, 9.1, 3.5, true, false, -1.98);
+  addFir(ctx, 7.0, 3.2 * FOREST_FIR_SCALE, true, false, -2.35, 'slender');
+  addFir(ctx, 10.1, 3.25 * FOREST_FIR_SCALE, true, false, -2.15, 'full');
   await pause();
 
   // Stop 1 (iOS v4.5.15, winter, x = 12.65): snowman at +2.35.
-  addFir(ctx, stopX(1) - 4.4, 3.1, true, false, -2.2);
   new Snowman(ctx, stopX(1) + 2.35, true, -1.04).build();
-  addFir(ctx, stopX(1) + 4.45, 3.5, true, false, -2.0);
-  addFir(ctx, stopX(1) + 5.7, 2.6, true, false, -2.32);
+  addFir(ctx, stopX(1) + 4.85, 3.25 * FOREST_FIR_SCALE, true, false, -2.2, 'leaning');
   await pause();
 
   // Stop 2 (AdGuard on Meta Quest, spring, x = 25.30): cool blooming spring orchard.
-  addBroadTree(ctx, stopX(2) - 5.4, 'spring-blossom', 0.9, -2.35);
-  addBroadTree(ctx, stopX(2) - 4.0, 'spring-blossom', 1.08, -2.08);
+  addBroadTree(ctx, stopX(2) - 6.2, 'spring-blossom', 0.98, -2.55, 'slender');
+  addBroadTree(ctx, stopX(2) - 3.6, 'spring-blossom', 1.02, -2.15, 'rounded');
   new Fox(ctx, stopX(2) - 2.75, -1.02).build();
   new Hedgehog(ctx, stopX(2) + 2.85, -1.02).build();
-  addBroadTree(ctx, stopX(2) + 3.5, 'spring-green', 0.96, -2.68);
-  addBroadTree(ctx, stopX(2) + 4.85, 'spring-blossom', 0.88, -2.2);
+  addBroadTree(ctx, stopX(2) + 3.3, 'spring-green', 1.0, -2.7, 'slender');
   await pause();
 
   // Stop 3 (Browser Extension v5.4, spring, x = 37.95): blossoms and pond with frog.
-  addBroadTree(ctx, stopX(3) - 6.35, 'spring-blossom', 0.96, -2.16);
-  addBroadTree(ctx, stopX(3) - 4.15, 'spring-green', 0.9, -3.03);
-  addBroadTree(ctx, stopX(3) - 1.95, 'spring-blossom', 0.82, -2.65);
+  addBroadTree(ctx, stopX(3) - 6.25, 'spring-blossom', 0.99, -2.35, 'rounded');
+  addBroadTree(ctx, stopX(3) - 3.55, 'spring-blossom', 0.97, -2.8, 'spreading');
   new Bird(ctx, stopX(3) - 2.9, -1.45).build();
   new PondWithFrog(ctx, stopX(3) + 3.05, -1.04).build();
   await pause();
@@ -167,8 +165,8 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   await pause();
 
   // Stop 5 (AdGuard Mini for Android v3.0, autumn): bunny and squirrel flank the story.
-  addBroadTree(ctx, stopX(5) - 5.3, 'autumn-maple', 1.12, -2.15);
-  addBroadTree(ctx, stopX(5) - 4.4, 'autumn-oak', 0.82, -3.0);
+  addBroadTree(ctx, stopX(5) - 5.3, 'autumn-maple', 1.02, -2.15, 'rounded');
+  addBroadTree(ctx, stopX(5) + 4.8, 'autumn-oak', 0.99, -2.65, 'spreading');
   new Bunny(ctx, stopX(5) - 2.85, -0.98).build();
   new Squirrel(ctx, stopX(5) + 2.85, -1.02).build();
   await pause();
@@ -176,20 +174,18 @@ export async function createPaperScenery(cameraX: SceneryContext['cameraX']): Pr
   // Stop 6 (AdGuard Home 1.0, autumn): cat and owl flank the story.
   new Cat(ctx, stopX(6) - 2.85, -1.02).build();
   new Owl(ctx, stopX(6) + 2.85, -1.4).build();
-  addBroadTree(ctx, stopX(6) + 3.9, 'autumn-birch', 0.88, -3.05);
-  addBroadTree(ctx, stopX(6) + 4.6, 'autumn-maple', 1.06, -2.12);
-  addBroadTree(ctx, stopX(6) + 5.4, 'autumn-oak', 0.88, -2.84);
+  addBroadTree(ctx, stopX(6) - 4.9, 'autumn-birch', 0.99, -2.8, 'slender');
+  addBroadTree(ctx, stopX(6) + 4.6, 'autumn-maple', 1.02, -2.15, 'spreading');
   await pause();
   addAutumnUndergrowth(ctx);
   await pause();
 
   // The retro van passes one decorated tree and the three gift-givers.
-  addFir(ctx, STORY_END - 5.9, 3.3, true, false, -2.05);
-  addFir(ctx, STORY_END - 4.4, 2.5, true, false, -2.35);
+  addFir(ctx, STORY_END - 4.35, 3.2 * FOREST_FIR_SCALE, true, false, -2.35, 'slender');
   addFinaleTree(ctx);
   await addFinaleMascots(ctx);
-  addFir(ctx, STORY_END + 10.4, 3.2, true, false, -2.1);
-  addFir(ctx, STORY_END + 13.1, 2.6, true, false, -2.0);
+  addFir(ctx, STORY_END + 10.4, 3.3 * FOREST_FIR_SCALE, true, false, -2.1, 'full');
+  addFir(ctx, STORY_END + 13.1, 3.15 * FOREST_FIR_SCALE, true, false, -2.0, 'leaning');
   await pause();
 
   // Close foreground framing elements (bottom-edge foliage and snowbanks).

@@ -3,8 +3,9 @@ import * as THREE from 'three';
 import { createPaperScenery } from './scenery/index.ts';
 import { createScalarUniform } from './paper-materials.ts';
 import { templateCacheSize } from './paper-geometry.ts';
-import { stopX } from './route.ts';
+import { STORY_END, stopX } from './route.ts';
 import { SEASON_BORDERS } from './seasons.ts';
+import { CameraRig } from './year/camera.ts';
 
 test('every scenery object has its own mesh and keeps colors', async () => {
   globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
@@ -100,6 +101,85 @@ test('every animated part can run its motion', async () => {
         }),
       part.kind,
     ).not.toThrow();
+  }
+}, 60000);
+
+test('main trees keep a similar apparent height across seasons while distant trees stay small', async () => {
+  globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
+  const set = await createPaperScenery(createScalarUniform(0));
+  set.group.updateMatrixWorld(true);
+  const camera = new THREE.PerspectiveCamera(54, 1440 / 900, 0.1, 100);
+  const rig = new CameraRig(camera, undefined, true);
+  rig.resize(1440, 900);
+  const mainTrees = set.group.children.filter(
+    object =>
+      object.name === 'paper-fir' ||
+      object.name.startsWith('layered-paper-tree-') ||
+      ['summer-meadow-linden', 'summer-meadow-birch'].includes(object.name),
+  );
+  const heights = [];
+  for (const tree of mainTrees) {
+    const bounds = new THREE.Box3().setFromObject(tree);
+    if (tree.name.startsWith('layered-paper-tree-') && Math.abs(tree.position.x - stopX(3)) < 6) {
+      expect(bounds.max.x, 'pond-side crowns leave the story text and button clear').toBeLessThan(stopX(3) - 2.25);
+    }
+    rig.update(0, true, tree.position.x, 0);
+    const top = new THREE.Vector3(tree.position.x, bounds.max.y, tree.position.z).project(camera);
+    const bottom = new THREE.Vector3(tree.position.x, bounds.min.y, tree.position.z).project(camera);
+    heights.push(top.y - bottom.y);
+  }
+  expect(mainTrees).toHaveLength(19);
+  expect(Math.max(...heights) / Math.min(...heights), 'near-tree heights vary by at most 20%').toBeLessThanOrEqual(1.2);
+  const distant = set.group.getObjectsByProperty('name', 'distant-ridge-tree');
+  expect(distant.length).toBeGreaterThan(10);
+  for (const tree of distant) {
+    const size = new THREE.Box3().setFromObject(tree).getSize(new THREE.Vector3());
+    expect(size.y, 'ridge silhouettes remain a separate, smaller depth layer').toBeLessThan(1.3);
+  }
+}, 60000);
+
+test('forest firs grow by 10% from the spaced layout while their roots stay on the ground', async () => {
+  globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
+  const set = await createPaperScenery(createScalarUniform(0));
+  set.group.updateMatrixWorld(true);
+  const firs = set.group.getObjectsByProperty('name', 'paper-fir');
+  const previousHeights = [
+    [-6.2, 3.2],
+    [-3.6, 3.35],
+    [7.0, 3.2],
+    [10.1, 3.25],
+    [stopX(1) + 4.85, 3.25],
+    [STORY_END - 4.35, 3.2],
+    [STORY_END + 10.4, 3.3],
+    [STORY_END + 13.1, 3.15],
+  ];
+  expect(firs).toHaveLength(previousHeights.length);
+  for (const [x, height] of previousHeights) {
+    const fir = firs.find(tree => Math.abs(tree.position.x - x) < 1e-6);
+    expect(fir, `fir at x=${x}`).toBeDefined();
+    const bounds = new THREE.Box3().setFromObject(fir);
+    expect(bounds.min.y, 'the larger tree stays rooted').toBeCloseTo(0.26, 5);
+    expect(bounds.max.y - bounds.min.y, `10% taller at x=${x}`).toBeCloseTo(height * 1.1, 5);
+  }
+}, 60000);
+
+test('nearby tree crowns leave gaps between small groups along the full route', async () => {
+  globalThis.requestAnimationFrame ??= callback => setTimeout(() => callback(performance.now()), 0);
+  const set = await createPaperScenery(createScalarUniform(0));
+  set.group.updateMatrixWorld(true);
+  const trees = set.group.children.filter(
+    object =>
+      object.name === 'paper-fir' ||
+      object.name.startsWith('layered-paper-tree-') ||
+      ['summer-meadow-linden', 'summer-meadow-birch'].includes(object.name),
+  );
+  const crowns = trees.map(tree => new THREE.Box3().setFromObject(tree)).sort((a, b) => a.min.x - b.min.x);
+  let end = -Infinity;
+  let count = 0;
+  for (const crown of crowns) {
+    count = crown.min.x > end + 0.08 ? 1 : count + 1;
+    end = count === 1 ? crown.max.x : Math.max(end, crown.max.x);
+    expect(count, `tree crowns form a continuous group near x=${crown.min.x}`).toBeLessThanOrEqual(2);
   }
 }, 60000);
 
